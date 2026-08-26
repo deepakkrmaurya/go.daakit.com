@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Courier Package Tracking</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: {
+                                50: '#eff6ff',
+                                100: '#dbeafe',
+                                200: '#bfdbfe',
+                                300: '#93c5fd',
+                                400: '#60a5fa',
+                                500: '#3b82f6',
+                                600: '#2563eb',
+                                700: '#1d4ed8',
+                                800: '#1e40af',
+                                900: '#1e3a8a',
+                            },
+                            secondary: {
+                                50: '#f8fafc',
+                                100: '#f1f5f9',
+                                200: '#e2e8f0',
+                                300: '#cbd5e1',
+                                400: '#94a3b8',
+                                500: '#64748b',
+                                600: '#475569',
+                                700: '#334155',
+                                800: '#1e293b',
+                                900: '#0f172a',
+                            }
+                        },
+                        animation: {
+                            'pulse-slow': 'pulse 3s ease-in-out infinite',
+                            'bounce-slow': 'bounce 2s infinite',
+                            'slide-in': 'slideIn 0.5s ease-out forwards',
+                            'progress-grow': 'progressGrow 1.5s ease-out forwards',
+                            'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                            'timeline-pulse': 'timelinePulse 2s ease-in-out infinite',
+                            'spin-slow': 'spin 2s linear infinite',
+                        },
+                        keyframes: {
+                            slideIn: {
+                                '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                                '100%': { transform: 'translateY(0)', opacity: '1' },
+                            },
+                            progressGrow: {
+                                '0%': { width: '0%' },
+                                '100%': { width: 'var(--progress-width)' },
+                            },
+                            fadeInUp: {
+                                '0%': { transform: 'translateY(30px)', opacity: '0' },
+                                '100%': { transform: 'translateY(0)', opacity: '1' },
+                            },
+                            timelinePulse: {
+                                '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+                                '50%': { transform: 'scale(1.15)', opacity: '0.8' },
+                            }
+                        }
+                    }
+                }
+            }
+        </script>
+        <style>
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 4px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #3b82f6;
+                border-radius: 4px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #2563eb;
+            }
+
+            .step-marker {
+                transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .step-marker.active {
+                animation: timelinePulse 2s ease-in-out infinite;
+            }
+
+            .timeline-progress {
+                transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .event-item {
+                transition: all 0.3s ease;
+            }
+
+            .event-item:hover {
+                transform: translateX(5px);
+            }
+
+            .status-badge {
+                animation: fadeInUp 0.5s ease-out forwards;
+                animation-delay: calc(var(--item-index) * 0.1s);
+                opacity: 0;
+            }
+
+            @keyframes shimmer {
+                0% {
+                    background-position: -1000px 0;
+                }
+
+                100% {
+                    background-position: 1000px 0;
+                }
+            }
+
+            .shimmer {
+                background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+                background-size: 1000px 100%;
+                animation: shimmer 2s infinite linear;
+            }
+
+            /* Timeline responsive styles */
+            .timeline-container {
+                position: relative;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+                scrollbar-color: #3b82f6 #f1f1f1;
+            }
+
+            .timeline-container::-webkit-scrollbar {
+                height: 6px;
+            }
+
+            .timeline-container::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 10px;
+            }
+
+            .timeline-container::-webkit-scrollbar-thumb {
+                background: #3b82f6;
+                border-radius: 10px;
+            }
+
+            .timeline-content {
+                min-width: 500px;
+                padding: 0 20px;
+            }
+
+            /* Mobile specific styles */
+            @media (max-width: 640px) {
+                .timeline-content {
+                    min-width: 450px;
+                    padding: 0 15px;
+                }
+
+                .timeline-step {
+                    min-width: 80px;
+                }
+
+                .step-marker {
+                    width: 28px !important;
+                    height: 28px !important;
+                }
+
+                .step-marker span {
+                    font-size: 14px;
+                }
+
+                .step-title {
+                    font-size: 11px !important;
+                    line-height: 1.2;
+                }
+
+                .step-badge {
+                    font-size: 10px !important;
+                    padding: 2px 6px !important;
+                }
+            }
+
+            @media (min-width: 641px) and (max-width: 768px) {
+                .timeline-content {
+                    min-width: 550px;
+                }
+
+                .timeline-step {
+                    min-width: 90px;
+                }
+            }
+
+            @media (min-width: 769px) {
+                .timeline-container {
+                    overflow-x: hidden;
+                }
+
+                .timeline-content {
+                    min-width: 100%;
+                }
+            }
+        </style>
+        <style>
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .animate-fadeIn {
+                animation: fadeIn 0.6s ease-out forwards;
+            }
+
+            .delay-200 {
+                animation-delay: 0.2s;
+            }
+        </style>
+
+
+        <style>
+            @keyframes blink {
+                0% {
+                    opacity: 1;
+                }
+
+                50% {
+                    opacity: 0;
+                }
+
+                100% {
+                    opacity: 1;
+                }
+            }
+
+            .animate-blink {
+                animation: blink 1s linear infinite;
+            }
+        </style>
+
+
+    </head>
+
+    <body
+        class="min-h-screen bg-[linear-gradient(244deg,#fde6cd_0%,#f7efff_50%,#ebebff_100%)] p-4 md:p-6 flex justify-center items-center">
+        <div class="max-w-4xl grid grid-cols-1 md:grid-cols-2 mx-auto">
+
+            <div class="bg-white rounded-2xl shadow-2xl p-3 transition-all duration-300">
+                <!-- Header -->
+                <div class="text-[#333] text-center mb-[20px] text-[28px] p-0">
+                    <h1 class="text-[#333] text-center mb-[20px] text-[28px] p-0">Track Your Package</h1>
+                    <p class="text-[#666] text-center mb-[2px] text-[16px] p-0">
+                        Enter your AWB (Air Waybill) number to track your shipment in real-time
+                    </p>
+                    <p id="error" class="text-red-500 text-sm mt-3 min-h-5"></p>
+
+                    <!-- Tracking Form -->
+                    <form id="trackingForm">
+                        <div class="flex flex-col items-center gap-6 max-w-xl mx-auto">
+                            <input type="text" id="awbNumber" placeholder="Enter AWB Number (e.g., 35604310462486)"
+                                required maxlength="20" class="
+    md:w-[20rem]
+    px-[10px] py-[10px]
+    text-center text-[16px] text-gray-700
+    bg-[#fafafa]
+    border-2 border-[#e0e0e0]
+    rounded-lg
+    transition-all duration-300
+    box-border
+    focus:outline-none
+    focus:border-[#007cba]
+    focus:bg-white
+    focus:shadow-[0_0_0_3px_rgba(0,124,186,0.1)]
+    hover:shadow-xl
+  " />
+
+                            <button type="submit" id="trackButton" class="
+    track-btn
+    relative
+    px-[40px] py-[6px]
+    min-w-[180px]
+    bg-[linear-gradient(135deg,#007cba,#005a87)]
+    text-white
+    text-[16px] font-semibold 
+    uppercase tracking-[0.5px]
+    rounded-[8px]
+    transition-all duration-300
+    shadow-[0_4px_15px_rgba(0,124,186,0.3)]
+    hover:bg-[linear-gradient(135deg,#005a87,#004066)]
+    hover:-translate-y-[2px]
+    hover:shadow-[0_6px_20px_rgba(0,124,186,0.4)]
+    disabled:bg-[#cccccc]
+    disabled:cursor-not-allowed
+    disabled:shadow-none
+    disabled:translate-y-0
+    flex items-center justify-center gap-3
+  ">
+                                <span id="btnText" class=" cursor-pointer">Track Package</span>
+
+                                <div id="loadingSpinner"
+                                    class="hidden w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin">
+                                </div>
+                            </button>
+
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tracking Results -->
+                <div id="trackingResult"
+                    class="hidden bg-gray-50/50 rounded-xl border border-gray-200 p-1 md:p-2 mt-1 shadow-lg animate-slide-in">
+                    <div
+                        class="flex flex-col md:flex-row md:items-center justify-between  mb-2 pb-1 border-b-2 border-blue-500">
+                        <h2 class="text-[16px] font-semibold text-gray-800">Tracking Results</h2>
+                        <span id="awbDisplay"
+                            class="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 px-5 py-1 md:rounded-full border border-blue-300 shadow-md text-[0.6rem]"></span>
+                    </div>
+
+                    <div id="trackingInfo" class="">
+
+                    </div>
+                </div>
+            </div>
+            <div class="text-center hidden md:flex md:flex-col py-10 px-4">
+
+                <!-- Gradient Heading -->
+                <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold 
+    bg-gradient-to-r from-[#005A87] to-[#004066] 
+    bg-clip-text text-transparent 
+    drop-shadow-md animate-fadeIn">
+                    Track your orders easily
+                </h1>
+
+                <!-- Subtext -->
+                <p class="mt-3 text-lg md:text-2xl text-gray-600 max-w-2xl mx-auto animate-fadeIn delay-200">
+                    Just enter your AWB tracking number & it’s done.
+                </p>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('trackingForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const awbNumber = document.getElementById('awbNumber').value.trim();
+                const trackButton = document.getElementById('trackButton');
+                const btnText = document.getElementById('btnText');
+                const loadingSpinner = document.getElementById('loadingSpinner');
+                const resultDiv = document.getElementById('trackingResult');
+                const awbDisplay = document.getElementById('awbDisplay');
+                const trackingInfo = document.getElementById('trackingInfo');
+                const errorElement = document.getElementById('error');
+
+                // Clear previous errors and results
+                errorElement.textContent = '';
+                resultDiv.classList.add('hidden');
+
+                if (!awbNumber) {
+                    errorElement.textContent = 'Please enter an AWB number';
+                    return;
+                }
+
+                // Show loading state
+                trackButton.disabled = true;
+                btnText.textContent = 'Tracking...';
+                loadingSpinner.classList.remove('hidden');
+
+                setTimeout(async () => {
+                    // Reset button state
+                    trackButton.disabled = false;
+                    btnText.textContent = 'Track Package';
+                    loadingSpinner.classList.add('hidden');
+
+                    const demoData = await generateDemoData(awbNumber);
+                    console.log("API Response:", demoData);
+
+                    if (demoData && demoData.status) {
+                        displayTrackingResults(awbNumber, demoData, awbDisplay, trackingInfo, resultDiv);
+                    } else {
+                        errorElement.textContent = demoData?.message || 'Invalid AWB number or package not found';
+                    }
+                }, 1500);
+            });
+
+            // Function to call API and get tracking data
+            async function generateDemoData(awbNumber) {
+                try {
+                    // First API call
+                    const res1 = await fetch("https://app.daakit.com/index.php/api/WebsiteTracking/get_tracking", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ awb_number: awbNumber })
+                    });
+
+                    let data1 = await res1.json();
+                    console.log("API 1 Response:", data1);
+
+                    if (data1.status && data1.history && data1.history.length > 0) {
+                        return data1;
+                    }
+
+                    // Fallback API call
+                    console.log("Fallback API Called");
+                    const res2 = await fetch("https://go-admin.daakit.com/api/website/getwebsitetracking", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ awb_number: awbNumber })
+                    });
+
+                    let data2 = await res2.json();
+                    console.log("API 2 Response:", data2);
+
+                    if (data2.status) {
+                        return data2;
+                    }
+
+                    // If both APIs fail but have message
+                    if (data2.message) {
+                        return data2;
+                    }
+
+                    return null;
+
+                } catch (error) {
+                    console.error("API Error:", error);
+                    return null;
+                }
+            }
+
+            // Function to display tracking results
+            function displayTrackingResults(awbNumber, data, awbDisplay, trackingInfo, resultDiv) {
+                awbDisplay.textContent = `AWB: ${awbNumber}`;
+
+                const isCancelled = data.order_status && data.order_status.toLowerCase() === "cancelled";
+                const isException = data.order_status && data.order_status.toLowerCase() === "exception";
+                const isRto = data.order_status && data.order_status.toLowerCase() === "rto";
+                const isDelivered = data.order_status && data.order_status.toLowerCase() === "delivered";
+                const currentStatus = data.order_status ? data.order_status.toLowerCase() : '';
+                const latestStatus = data.history && data.history.length > 0 ? data.history[data.history.length - 1] : null;
+
+                // For cancelled orders - show only booked and cancelled
+                let statusSteps = [];
+
+                if (isCancelled) {
+                    // Only show Booked and Cancelled for cancelled orders
+                    statusSteps = [
+                        { id: 'booked', title: 'Booked', icon: '📦', color: 'bg-blue-500' },
+                        { id: 'cancelled', title: 'Cancelled', icon: '❌', color: 'bg-red-500' }
+                    ];
+                } else if (isException) {
+                    // Show all steps for exception orders
+                    statusSteps = [
+                        { id: 'booked', title: 'Booked', icon: '📦', color: 'bg-blue-500' },
+                        { id: 'pending pickup', title: 'Pending Pickup', icon: '⏳', color: 'bg-yellow-500' },
+                        { id: 'in transit', title: 'In Transit', icon: '🚚', color: 'bg-green-500' },
+                        { id: 'out for delivery', title: 'Out for Delivery', icon: '📦', color: 'bg-orange-500' },
+                        { id: 'exception', title: 'Exception', icon: '⚠️', color: 'bg-orange-500' }
+                    ];
+                } else if (isRto) {
+                    // Show all steps for RTO orders
+                    statusSteps = [
+                        { id: 'booked', title: 'Booked', icon: '📦', color: 'bg-blue-500' },
+                        { id: 'pending pickup', title: 'Pending Pickup', icon: '⏳', color: 'bg-yellow-500' },
+                        { id: 'in transit', title: 'In Transit', icon: '🚚', color: 'bg-green-500' },
+                        { id: 'out for delivery', title: 'Out for Delivery', icon: '📦', color: 'bg-orange-500' },
+                        { id: 'rto', title: 'RTO', icon: '↩', color: 'bg-purple-500' }
+                    ];
+                } else {
+
+                    statusSteps = [
+                        { id: 'booked', title: 'Booked', icon: '📦', color: 'bg-blue-500' },
+                        { id: 'pending pickup', title: 'Pending Pickup', icon: '⏳', color: 'bg-yellow-500' },
+                        { id: 'in transit', title: 'In Transit', icon: '🚚', color: 'bg-green-500' },
+                        { id: 'out for delivery', title: 'Out for Delivery', icon: '📦', color: 'bg-orange-500' },
+                        { id: 'delivered', title: 'Delivered', icon: '✓', color: 'bg-green-500' }
+                    ];
+                }
+
+                // Get unique statuses from history
+                const uniqueStatuses = data.history && data.history.length > 0
+                    ? [...new Set(data.history
+                        .filter(item => item.status && item.status.trim() !== '')
+                        .map(item => item.status.toLowerCase()))]
+                    : [];
+                const groupedHistory = {};
+                if (data.history && data.history.length > 0) {
+                    data.history.forEach(item => {
+                        const status = item.status && item.status.trim() !== '' ? item.status : '';
+                        if (!groupedHistory[status]) {
+                            groupedHistory[status] = [];
+                        }
+                        if (item.status.trim() !== '') {
+                            groupedHistory[status].push(item);
+                        }
+                    });
+                }
+
+                // Create horizontal timeline HTML with animation
+                let timelineHTML = `
+                <div class="mb-1">
+                    <h3 class="text-[1rem]  text-gray-800 mb-1 text-center">Shipment Progress Timeline</h3>
+                    
+                    
+                    <div class="timeline-container">
+                        <div class="timeline-content relative py-2">
+                            <!-- Background Line -->
+                            <div class="absolute top-4 md:top-6 left-0 right-0 h-[0.1rem] bg-gray-200 rounded-full"></div>
+                            
+                            <!-- Progress Line -->
+                            <div id="timelineProgress" class="absolute top-4 md:top-6 left-0 h-[0.1rem] rounded-full transition-all duration-1500 ${isCancelled ? 'bg-red-500' :
+                        isException ? 'bg-orange-500' :
+                            isRto ? 'bg-purple-500' :
+                                'bg-emerald-500'
+                    }" style="width: 0%"></div>
+                            
+                            <!-- Steps Container -->
+                            <div class="relative z-10 flex justify-between">
+                `;
+
+                // Find current step index for progress calculation
+                let currentStepIndex = 0;
+
+                statusSteps.forEach((step, index) => {
+                    let isActive = false;
+                    let isCompleted = false;
+                    let isCancelledStep = step.id === 'cancelled';
+                    let isExceptionStep = step.id === 'exception';
+                    let isRtoStep = step.id === 'rto';
+
+                    if (isCancelled) {
+                        // For cancelled orders, show booked as completed and cancelled as active
+                        if (step.id === 'booked') {
+                            isCompleted = true;
+                            currentStepIndex = index;
+                        } else if (step.id === 'cancelled') {
+                            isActive = true;
+                            currentStepIndex = index;
+                        } else if (step.id === 'delivered') {
+                            isActive = true;
+                            currentStepIndex = index;
+                        }
+                    } else if (isException) {
+                        // For exception orders
+                        if (step.id === 'exception') {
+                            isActive = true;
+                            currentStepIndex = index;
+                        } else {
+                            // Check if this step was completed based on history
+                            const hasHistoryForStep = data.history && data.history.some(item =>
+                                item.status && item.status.toLowerCase() === step.id
+                            );
+                            isCompleted = hasHistoryForStep || (step.id === 'booked' && data.history && data.history.length > 0);
+
+                            if (isCompleted) {
+                                currentStepIndex = index;
+                            }
+                        }
+                    } else if (isRto) {
+                        // For RTO orders
+                        if (step.id === 'rto') {
+                            isActive = true;
+                            currentStepIndex = index;
+                        } else {
+                            const hasHistoryForStep = data.history && data.history.some(item =>
+                                item.status && item.status.toLowerCase() === step.id
+                            );
+                            isCompleted = hasHistoryForStep || (step.id === 'booked' && data.history && data.history.length > 0);
+
+                            if (isCompleted) {
+                                currentStepIndex = index;
+                            }
+                        }
+                    } else {
+                        if (step.id === currentStatus) {
+                            isActive = true;
+                            currentStepIndex = index;
+                        } else {
+                            const hasHistoryForStep = data.history && data.history.some(item =>
+                                item.status && item.status.toLowerCase() === step.id
+                            );
+                            isCompleted = hasHistoryForStep || (step.id === 'booked' && data.history && data.history.length > 0);
+
+                            if (isCompleted && step.id !== currentStatus) {
+                                currentStepIndex = index;
+                            }
+                        }
+                    }
+
+                    const stepHistory = groupedHistory[step.id] || [];
+                    const latestItem = stepHistory.length > 0 ? stepHistory[stepHistory.length - 1] : null;
+
+                    timelineHTML += `
+                    <div class="flex flex-col items-center timeline-step animate-fade-in-up" style="animation-delay: ${index * 0.1}s;">
+                        <div class="step-marker w-[40px] h-[40px] rounded-full border-2 ${isActive ? 'border-white shadow-xl transform scale-110' : 'border-gray-200'
+                        } ${(isCompleted || isDelivered) ? step.color : 'bg-white'
+                        } ${isCancelledStep ? 'bg-red-500' : ''
+                        } ${isExceptionStep ? 'bg-orange-500' : ''
+                        } ${isRtoStep ? 'bg-purple-500' : ''
+                        } flex items-center justify-center mb-2 sm:mb-4 shadow-lg transition-all duration-500 ${isActive ? 'animate-timeline-pulse' : ''
+                        }">
+                            ${!isCompleted && !isCancelledStep && !isExceptionStep && !isRtoStep ? `
+                                <span class="text-lg sm:text-xl">${step.icon}</span>
+                            ` : ''}
+                            ${(isCompleted || isCancelledStep || isExceptionStep || isRtoStep) ? `
+                                <span class="text-white font-bold text-sm sm:text-lg">
+                                    ${isCancelledStep ? '✕' : isExceptionStep ? '!' : isRtoStep ? '↩' : '✓'}
+                                </span>
+                            ` : ''}
+                        </div>
+                        <div class="text-center">
+                            <div class="step-title text-[0.5rem] text-gray-800 mb-1 ">
+                                ${step.title}
+                            </div>
+                            
+                        </div>
+                    </div>
+                `;
+                });
+
+                timelineHTML += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+
+                // Group tracking details by date
+                let groupedByDate = {};
+                if (data.history && data.history.length > 0) {
+                    data.history.forEach((item, index) => {
+                        // Extract date from event_time
+                        let date = 'Unknown Date';
+                        if (item.event_time) {
+                            const dateObj = new Date(item.event_time);
+                            if (!isNaN(dateObj)) {
+                                date = dateObj.toLocaleDateString('en-US', {
+                                    weekday: 'short',
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                });
+                            }
+                        }
+
+                        if (!groupedByDate[date]) {
+                            groupedByDate[date] = [];
+                        }
+                        groupedByDate[date].push({
+                            ...item,
+                            originalIndex: index
+                        });
+                    });
+                }
+
+                // Create dropdown HTML for tracking details
+                let trackingDetailsHTML = '';
+                let totalUpdates = 0;
+
+                if (data.history && data.history.length > 0) {
+                    totalUpdates = data.history.length;
+
+                    // Create accordion dropdown for each date
+                    Object.keys(groupedByDate).reverse().forEach((date, dateIndex) => {
+                        const events = groupedByDate[date];
+                        const isFirst = dateIndex === 0;
+                        trackingDetailsHTML += `
+                        <div class="mb-2 border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="accordion-btn w-full flex justify-between items-center px-3 py-2 bg-gray-50 hover:bg-gray-100 transition-all duration-200 text-left" data-date="${date}">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                    <span class="text-[0.8rem] font-medium text-gray-700">${date}</span>
+                                </div>
+                                <span class="text-[0.7rem] text-gray-500 bg-white px-2 py-1 rounded-full">${events.length} events</span>
+                            </button>
+                            <div class="accordion-content px-3 py-2 bg-white max-h-0 overflow-hidden transition-all duration-300 ${isFirst ? 'max-h-96' : ''}">
+                        `;
+
+                        // Add events for this date (newest first for each date)
+                        [...events].reverse().forEach((item, eventIndex) => {
+                            const statusLower = item.status ? item.status.toLowerCase() : '';
+                            let iconClass = '';
+                            let statusBadge = '';
+                            let badgeClass = '';
+
+                            // Determine icon class
+                            if (statusLower.includes('delivered')) {
+                                iconClass = 'bg-green-100 text-green-600';
+                                badgeClass = 'bg-green-100 text-green-800';
+                                statusBadge = 'Delivered';
+                            } else if (statusLower.includes('transit')) {
+                                iconClass = 'bg-blue-100 text-blue-600';
+                                badgeClass = 'bg-blue-100 text-blue-800';
+                                statusBadge = 'In Transit';
+                            } else if (statusLower.includes('pending') || statusLower.includes('pickup')) {
+                                iconClass = 'bg-yellow-100 text-yellow-600';
+                                badgeClass = 'bg-yellow-100 text-yellow-800';
+                                statusBadge = 'Pending';
+                            } else if (statusLower.includes('cancelled')) {
+                                iconClass = 'bg-red-100 text-red-600';
+                                badgeClass = 'bg-red-100 text-red-800';
+                                statusBadge = 'Cancelled';
+                            } else if (statusLower.includes('exception')) {
+                                iconClass = 'bg-orange-100 text-orange-600';
+                                badgeClass = 'bg-orange-100 text-orange-800';
+                                statusBadge = 'Exception';
+                            } else if (statusLower.includes('rto')) {
+                                iconClass = 'bg-purple-100 text-purple-600';
+                                badgeClass = 'bg-purple-100 text-purple-800';
+                                statusBadge = 'RTO';
+                            } else {
+                                iconClass = 'bg-gray-100 text-gray-600';
+                                badgeClass = 'bg-gray-100 text-gray-800';
+                                statusBadge = 'Update';
+                            }
+
+                            // Extract time from event_time
+                            let time = '';
+                            if (item.event_time) {
+                                const timeObj = new Date(item.event_time);
+                                if (!isNaN(timeObj)) {
+                                    time = timeObj.toLocaleTimeString('en-US', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: true
+                                    });
+                                }
+                            }
+
+                            trackingDetailsHTML += `
+                            <div class="event-item flex items-start p-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 rounded transition-all duration-300" style="--item-index: ${eventIndex};">
+                                <div class="flex-1">
+                                    <div class="flex flex-col sm:flex-row sm:items-center gap-1 mb-1">
+                                        ${item.status ? `
+                                            <span class="status-badge ${badgeClass} px-2 py-0.5 rounded-full text-[0.5rem] inline-block w-fit">
+                                                ${statusBadge}
+                                            </span>
+                                        ` : ''}
+                                        <span class="text-gray-500 text-[0.6rem]">${time}</span>
+                                    </div>
+                                    <div class="text-gray-800 text-[0.7rem] mb-0.5">${item.message}</div>
+                                    ${item.location ? `
+                                        <div class="flex items-center text-gray-600 text-[0.6rem]">
+                                            <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            ${item.location}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                        });
+
+                        trackingDetailsHTML += `
+                            </div>
+                        </div>
+                        `;
+                    });
+                }
+
+                // Final HTML assembly
+                const statusMap = {
+                    'delivered': { icon: '✅', text: 'Delivered', bg: 'bg-green-100', border: 'border-green-300', textColor: 'text-green-800' },
+                    'out for delivery': { icon: '🚚', text: 'Out for Delivery', bg: 'bg-blue-100', border: 'border-blue-300', textColor: 'text-blue-800' },
+                    'in transit': { icon: '🚛', text: 'In Transit', bg: 'bg-blue-100', border: 'border-blue-300', textColor: 'text-blue-800' },
+                    'pending pickup': { icon: '⏳', text: 'Pending Pickup', bg: 'bg-yellow-100', border: 'border-yellow-300', textColor: 'text-yellow-800' },
+                    'cancelled': { icon: '❌', text: 'Cancelled', bg: 'bg-red-100', border: 'border-red-300', textColor: 'text-red-800' },
+                    'exception': { icon: '⚠️', text: 'Exception', bg: 'bg-orange-100', border: 'border-orange-300', textColor: 'text-orange-800' },
+                    'rto': { icon: '↩', text: 'RTO', bg: 'bg-purple-100', border: 'border-purple-300', textColor: 'text-purple-800' }
+                };
+
+                const statusInfo = statusMap[currentStatus] || {
+                    icon: '📦',
+                    text: 'Order Booked',
+                    bg: 'bg-blue-100',
+                    border: 'border-blue-300',
+                    textColor: 'text-blue-800'
+                };
+
+                let html = `
+<div class="grid grid-cols-4 gap-2 mb-3">
+
+    <!-- Order Number -->
+    <div class="bg-white p-1 rounded border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+        <div class="text-gray-500 text-[0.5rem] mb-0">Order Number</div>
+        <div class="text-gray-800 text-[0.6rem]">${data.order_no || 'N/A'}</div>
+    </div>
+
+    <!-- Order Date -->
+    <div class="bg-white p-1 rounded border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+        <div class="text-gray-500 text-[0.5rem]  mb-0">Order Date</div>
+        <div class="text-gray-800 text-[0.6rem]">${data.order_placed_at || 'N/A'}</div>
+    </div>
+
+    <!-- Courier -->
+    <div class="bg-white p-1 rounded border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+        <div class="text-gray-500 text-[0.5rem] mb-0">Courier</div>
+        <div class="text-gray-800 text-[0.6rem]">${data.courier_name || 'N/A'}</div>
+    </div>
+
+    <!-- Current Status -->
+    <div class=" h-auto ${statusInfo.text === 'Delivered' ? " bg-green-500 text-white " : " bg-yellow-500 "}  p-1 rounded border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+        
+        <div class="text-white text-[0.5rem]   mb-0">
+            Current Status
+        </div>
+
+        <div class="${statusInfo.textColor} ${statusInfo.text === 'Delivered' ? 'font-bold' : ''} text-[0.6rem] font-semibold animate-blink">
+            ${statusInfo.text}
+        </div>
+
+        ${data?.edd || statusInfo.text !== 'Delivered' ? `
+            <div class="text-white text-[0.4rem]  mb-0 mt-1">
+                Estimated Delivery Date (EDD)
+            </div>
+            <div class="text-gray-800 text-[0.4rem]">
+                ${data.edd}
+            </div>
+        ` : ""}
+    </div>
+
+</div>
+`;
+
+                html += timelineHTML;
+                html += `
+                <div>
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
+                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-2 py-1 border-b border-gray-200 sticky top-0 flex justify-between items-center z-10">
+                            <h3 class="text-[0.7rem] text-gray-800">Tracking Details (${totalUpdates} updates)</h3>
+                            <button id="expandAllBtn" class="text-blue-600 text-[0.7rem] hover:text-blue-800 transition-colors">
+                                Expand All
+                            </button>
+                        </div>
+                        <div class="max-h-60 overflow-y-auto custom-scrollbar p-2">
+                            <div class="tracking-events">
+                                ${trackingDetailsHTML || `
+                                    <div class="text-center py-8">
+                                        <div class="text-3xl mb-2">📭</div>
+                                        <div class="text-gray-500 text-[0.8rem]">No tracking details available</div>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                // Insert timeline UI
+                trackingInfo.innerHTML = html;
+                resultDiv.classList.remove('hidden');
+
+                // Add accordion functionality
+                setTimeout(() => {
+                    // Accordion toggle functionality
+                    const accordionBtns = document.querySelectorAll('.accordion-btn');
+                    const expandAllBtn = document.getElementById('expandAllBtn');
+                    let allExpanded = false;
+
+                    accordionBtns.forEach(btn => {
+                        btn.addEventListener('click', function () {
+                            const content = this.nextElementSibling;
+                            const icon = this.querySelector('svg');
+
+                            if (content.classList.contains('max-h-0')) {
+                                // Expand
+                                content.classList.remove('max-h-0');
+                                content.classList.add('max-h-96');
+                                icon.classList.remove('rotate-0');
+                                icon.classList.add('rotate-180');
+                            } else {
+                                // Collapse
+                                content.classList.remove('max-h-96');
+                                content.classList.add('max-h-0');
+                                icon.classList.remove('rotate-180');
+                                icon.classList.add('rotate-0');
+                            }
+                        });
+                    });
+
+                    // Expand/Collapse All functionality
+                    if (expandAllBtn) {
+                        expandAllBtn.addEventListener('click', function () {
+                            const accordionContents = document.querySelectorAll('.accordion-content');
+                            const accordionIcons = document.querySelectorAll('.accordion-btn svg');
+
+                            if (!allExpanded) {
+                                // Expand all
+                                accordionContents.forEach(content => {
+                                    content.classList.remove('max-h-0');
+                                    content.classList.add('max-h-96');
+                                });
+                                accordionIcons.forEach(icon => {
+                                    icon.classList.remove('rotate-0');
+                                    icon.classList.add('rotate-180');
+                                });
+                                expandAllBtn.textContent = 'Collapse All';
+                                allExpanded = true;
+                            } else {
+                                // Collapse all
+                                accordionContents.forEach(content => {
+                                    content.classList.remove('max-h-96');
+                                    content.classList.add('max-h-0');
+                                });
+                                accordionIcons.forEach(icon => {
+                                    icon.classList.remove('rotate-180');
+                                    icon.classList.add('rotate-0');
+                                });
+                                expandAllBtn.textContent = 'Expand All';
+                                allExpanded = false;
+                            }
+                        });
+                    }
+
+                    //Auto-expand first accordion
+                    const firstAccordionBtn = document.querySelector('.accordion-btn');
+                    if (firstAccordionBtn) {
+                        const firstContent = firstAccordionBtn.nextElementSibling;
+                        const firstIcon = firstAccordionBtn.querySelector('svg');
+                        if (firstContent) {
+                            firstContent.classList.remove('max-h-0');
+                            firstContent.classList.add('max-h-96');
+                            firstIcon.classList.add('rotate-180');
+                        }
+                    }
+                }, 100);
+
+                // Scroll to results with smooth animation
+                setTimeout(() => {
+                    resultDiv.scrollIntoView({
+                        behavior: "smooth",
+                        block: "nearest"
+                    });
+                }, 100);
+
+                // Calculate and set progress line width with animation
+                setTimeout(() => {
+                    const progressLine = document.getElementById('timelineProgress');
+                    if (progressLine && currentStepIndex >= 0) {
+                        const totalSteps = statusSteps.length;
+                        const progressPercentage = (currentStepIndex / (totalSteps - 1)) * 100;
+
+                        // Apply the width with animation
+                        setTimeout(() => {
+                            progressLine.style.width = `${Math.min(Math.max(progressPercentage, 0), 100)}%`;
+                        }, 300);
+                    }
+                }, 500);
+            }
+
+            // Clear results when input changes
+            document.getElementById('awbNumber').addEventListener('input', function () {
+                document.getElementById('trackingResult').classList.add('hidden');
+                document.getElementById('error').textContent = '';
+            });
+
+            // Demo AWB numbers for testing
+            const demoAWB = [
+                '35604310462486',
+                '123456789012',
+                '987654321098'
+            ];
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const awbInput = document.getElementById('awbNumber');
+
+                // Add placeholder demo AWB numbers
+                awbInput.placeholder = `Try: ${demoAWB[0]}`;
+
+                // Cycle through demo AWB numbers on click
+                awbInput.addEventListener('click', function () {
+                    const randomIndex = Math.floor(Math.random() * demoAWB.length);
+                    if (!awbInput.value) {
+                        awbInput.placeholder = `Try: ${demoAWB[randomIndex]}`;
+                    }
+                });
+            });
+        </script>
+    </body>
+
+</html>

@@ -1,0 +1,76 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { Loader } from "lucide-react";
+
+const baseURL = import.meta.env.VITE_BASE_URL;
+
+function IncognitoLogin() {
+  const { token, email, role } = useParams();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const handleIncognitoLogin = async () => {
+        if(role === "vendor"){
+            try {
+              const res = await axios.post(
+                `${baseURL}/api/admin/vendorLogin`,
+                { email },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+      
+              const tkn = res.data.token;
+              if (tkn) {
+                localStorage.setItem("token", tkn);
+                toast.success("Login successful");
+                navigate("/vendor/analytics");
+              }
+            } catch (err) {
+              toast.error(err.response?.data?.message || err.message || "Error during incognito login");
+            } finally {
+              setLoading(false);
+            }      
+        }
+        else if(role === "merchant"){
+            try {
+              const res = await axios.post(
+                `${baseURL}/api/admin/merchantLogin`,
+                { email },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+      
+              const tkn = res.data.token;
+              if (tkn) {
+                localStorage.setItem("token", tkn);
+                toast.success("Login successful");
+                navigate("/merchant/analytics");
+              }
+            } catch (err) {
+              toast.error(err.response?.data?.message || err.message || "Error during incognito login");
+            } finally {
+              setLoading(false);
+            }      
+        }
+    };
+
+    handleIncognitoLogin();
+  }, [token, email, navigate]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      {loading ? <Loader className="animate-spin h-8 w-8" /> : null}
+    </div>
+  );
+}
+
+export default IncognitoLogin;
