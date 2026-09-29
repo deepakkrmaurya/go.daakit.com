@@ -11,7 +11,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 const Register = lazy(() => import("./components/Register"));
 const Login = lazy(() => import("./components/Login"));
 const Analytics = lazy(() => import("./components/admin/Analytics"));
-const Navbar = lazy(() => import("./components/Navbar"));
+const Navbar = lazy(() => import("./components/layout/Navbar"));
 const OrderDetails = lazy(() => import("./components/admin/OrderDetails"));
 const CODRemittances = lazy(() => import("./components/admin/CODRemittances"));
 const RiderOnboarding = lazy(() => import("./components/admin/RiderOnboarding"));
@@ -23,57 +23,57 @@ const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 const VendorRiders = lazy(() => import("./components/admin/VendorRiders"));
 const VendorOnboarding = lazy(() => import("./components/VendorOnboarding"));
 const VendorAnalytics = lazy(() => import("./components/vendor_components/VendorAnalytics"));
-const VendorAllRiders = lazy(() => import("./components/vendor_components/VendorAllRiders"));
-const VendorCodRemittance = lazy(() => import("./components/vendor_components/VendorCodRemittance"));
-const VendorOrderDetails = lazy(() => import("./components/vendor_components/VendorOrderDetails"));
-const VendorMappedOrder = lazy(() => import("./components/vendor_components/VendorMappedOrder"));
-const VendorRiderOnboarding = lazy(() => import("./components/vendor_components/VendorRiderOnboarding"));
+const VendorAllRiders = lazy(() => import("./components/vendor_components/rider/VendorAllRiders"));
+const VendorCodRemittance = lazy(() => import("./components/vendor_components/remittance/VendorCodRemittance"));
+const VendorOrderDetails = lazy(() => import("./components/vendor_components/order/VendorOrderDetails"));
+const VendorMappedOrder = lazy(() => import("./components/vendor_components/order/VendorMappedOrder"));
+const VendorRiderOnboarding = lazy(() => import("./components/vendor_components/rider/VendorRiderOnboarding"));
 const OrderTracking = lazy(() => import("./components/OrderTracking"));
 const TrackOrder = lazy(() => import("./components/TrackOrder"));
 const MerchantAnalytics = lazy(() => import("./components/merchant_component/MerchantAnalytics"));
 const MerchantOrderTracking = lazy(() => import("./components/merchant_component/MerchantOrderTracking"));
-const MerchantNDR = lazy(() => import("./components/merchant_component/MerchantNDR"));
+const MerchantNDR = lazy(() => import("./components/merchant_component/merchant/ndr/MerchantNDR"));
 const MerchantRemittances = lazy(() => import("./components/admin/MerchantRemittances"));
 const MerchantOnboarding = lazy(() => import("./components/MerchantOnboarding"));
 const MerchantDetails = lazy(() => import("./components/admin/MerchantDetails"));
 const MerchantCOD = lazy(() => import("./components/merchant_component/MerchantCOD"));
 const TrackAWBOrder = lazy(() => import("./components/TrackAWBOrder"));
-const RemittanceStatusVendor = lazy(() => import("./components/admin/RemittanceStatusVendor"));
+const RemittanceStatusVendor = lazy(() => import("./components/admin/remittance/RemittanceStatusVendor"));
 const VendorRemittanceRecord = lazy(() => import("./components/vendor_components/VendorRemittanceRecord"));
 const RidersMap = lazy(() => import("./components/admin/RidersMap"));
 const VendorRidersMap = lazy(() => import("./components/vendor_components/VendorRidersMap"));
 const MerchantCX = lazy(() => import("./components/merchant_component/MerchantCX"));
 const IncognitoLogin = lazy(() => import("./components/IncognitoLogin"));
-const MerchantOrderDetails = lazy(() => import("./components/merchant_component/MerchantOrderDetails"));
-const LiveLocation = lazy(() => import("./components/merchant_component/LiveLocation"));
+const MerchantOrderDetails = lazy(() => import("./components/merchant_component/merchant/order/MerchantOrderDetails"));
+const LiveLocation = lazy(() => import("./components/merchant_component/techbasedMerchant/riders/LiveLocation"));
 const CodRemittances = lazy(() => import("./components/merchant_component/CodRemittances"));
-const Subscription = lazy(() => import("./components/admin/Subscription"));
-const TechMerchantOrderDetails = lazy(() => import("./components/merchant_component/techbasedMerchant/TechMerchantOrderDetails"));
+const Subscription = lazy(() => import("./components/admin/couponSub/Subscription"));
+const TechMerchantOrderDetails = lazy(() => import("./components/merchant_component/techbasedMerchant/order/TechMerchantOrderDetails"));
 const TechMerchantAnalytics = lazy(() => import("./components/merchant_component/techbasedMerchant/TechMerchantAnalytics"));
 const TechMerchantOrderTracking = lazy(() => import("./components/merchant_component/techbasedMerchant/TechMerchantOrderTracking"));
-const TechMerchantNDR = lazy(() => import("./components/merchant_component/techbasedMerchant/TechMerchantNDR"));
+const TechMerchantNDR = lazy(() => import("./components/merchant_component/techbasedMerchant/ndr/TechMerchantNDR"));
 const TechMerchantCX = lazy(() => import("./components/merchant_component/techbasedMerchant/TechMerchantCX"));
-const TechBasedOnBoarding = lazy(() => import("./components/merchant_component/techbasedMerchant/TechBasedOnBoarding"));
-const TechBasedRiderStats = lazy(() => import("./components/merchant_component/techbasedMerchant/TechBasedRiderStats"));
-const TechCreateOrder = lazy(() => import("./components/merchant_component/techbasedMerchant/TechCreateOrder"));
+const TechBasedOnBoarding = lazy(() => import("./components/merchant_component/techbasedMerchant/riders/TechBasedOnBoarding"));
+const TechBasedRiderStats = lazy(() => import("./components/merchant_component/techbasedMerchant/riders/TechBasedRiderStats"));
+const TechCreateOrder = lazy(() => import("./components/merchant_component/techbasedMerchant/order/CreateOrder"));
 const CreateOrder = lazy(() => import("./components/merchant_component/CreateOrder"));
 const BulkUpload = lazy(() => import("./components/merchant_component/BulkUpload"));
-const DraftsList = lazy(() => import("./components/merchant_component/DraftsList"));
+const DraftsList = lazy(() => import("./components/merchant_component/merchant/order/DraftsList"));
 const Insurance  = lazy(() => import("./components/merchant_component/Insurance"));
-const Recharge = lazy(() => import("./components/merchant_component/techbasedMerchant/Recharge"));
+const Recharge = lazy(() => import("./components/merchant_component/techbasedMerchant/recharge/Recharge"));
 const PaymentSuccess = lazy(() => import("./components/merchant_component/techbasedMerchant/PaymentSuccess"));
 const PaymentFailed = lazy(() => import("./components/merchant_component/techbasedMerchant/paymentFaild"));
-const TechCodRemittances = lazy(() => import("./components/merchant_component/techbasedMerchant/TechCodRemittances"));
-const CouponForm = lazy(() => import("./components/admin/CouponForm"));
-const Coupon = lazy(() => import("./components/admin/Coupon"));
+const TechCodRemittances = lazy(() => import("./components/merchant_component/techbasedMerchant/pricing/TechCodRemittances"));
+const CouponForm = lazy(() => import("./components/admin/couponSub/CouponForm"));
+const Coupon = lazy(() => import("./components/admin/couponSub/Coupon"));
 const Pricing = lazy(() => import("./components/admin/PricingPlans"));
 const UpdatePlanDetails = lazy(() => import("./components/UpdatePlanDetails"));
-const TechbasedMerchentRemittances = lazy(() => import("./components/merchant_component/techbasedMerchant/TechbasedMerchentRemittances"));
-const TechProfile = lazy(() => import("./components/merchant_component/techbasedMerchant/TechProfile"));
+const TechbasedMerchentRemittances = lazy(() => import("./components/merchant_component/techbasedMerchant/remittances/TechbasedMerchentRemittances"));
+const TechProfile = lazy(() => import("./components/merchant_component/techbasedMerchant/profile/TechProfile"));
 const Profile = lazy(() => import("./components/merchant_component/Profile"));
 const TechCreateOrderTurant = lazy(() => import("./components/merchant_component/techbasedMerchant/TechCreateOrderTurant"));
 const TechbasedTransaction = lazy(() => import("./components/merchant_component/techbasedMerchant/TechbasedTransaction"));
-const Transaction = lazy(() => import("./components/merchant_component/Transaction"));
+const Transaction = lazy(() => import("./components/merchant_component/history/Transaction"));
 const Support = lazy(() => import("./components/merchant_component/Support"));
 const OTPSendComponent = lazy(() => import("./components/handleSendOTP"));
 const ForgotPasswordMerchant = lazy(() => import("./components/FotgotPasswordMerchant"));
@@ -83,30 +83,30 @@ const ChangePassword = lazy(() => import("./components/merchant_component/Change
 const SecurityKey = lazy(() => import("./components/merchant_component/SecurityKey"));
 const Integration = lazy(() => import("./components/merchant_component/Integration"));
 
-const TechChangePassword = lazy(() => import("./components/merchant_component/techbasedMerchant/TechChangePassword"));
+const TechChangePassword = lazy(() => import("./components/merchant_component/techbasedMerchant/chnagepassword/TechChangePassword"));
 const TechSecurityKey = lazy(() => import("./components/merchant_component/techbasedMerchant/TechSecurityKey"));
 const TechIntegration = lazy(() => import("./components/merchant_component/techbasedMerchant/Integration"));
 
 const Unauthorized = lazy(() => import("./components/Unauthorized"));
-const CreateRiderRate = lazy(() => import("./components/merchant_component/CreateRiderRate"));
-const RiderRates = lazy(() => import("./components/merchant_component/techbasedMerchant/RiderRates"));
+const CreateRiderRate = lazy(() => import("./components/merchant_component/techbasedMerchant/rate/CreateRiderRate"));
+const RiderRates = lazy(() => import("./components/merchant_component/techbasedMerchant/rate/RiderRates"));
 const VendorProfile = lazy(() => import("./components/vendor_components/VendorProfile"));
-const RiderRateList = lazy(() => import("./components/vendor_components/RiderRateList"));
-const CreateRider = lazy(() => import("./components/vendor_components/CreateRate"));
+const RiderRateList = lazy(() => import("./components/vendor_components/rate/RiderRateList"));
+const CreateRider = lazy(() => import("./components/vendor_components/rate/CreateRate"));
 const AdminLogin = lazy(() => import("./components/admin/AdminLogin"));
 const FestiveWisher = lazy(() => import("./components/ddd/FestiveWisher"));
 const Page404 = lazy(() => import("./components/Page404"));
 const InspectController = lazy(() => import("./Helper/InspectController"));
 const OrderSuccess = lazy(() => import("./components/OrderSuccess"));
-const HubList = lazy(() => import("./components/vendor_components/HubList"));
+const HubList = lazy(() => import("./components/vendor_components/hub/HubList"));
 const MerchantPricing = lazy(() => import("./components/merchant_component/Pricing"));
-const CreateHub = lazy(() => import("./components/vendor_components/CreateHub"));
+const CreateHub = lazy(() => import("./components/vendor_components/hub/CreateHub"));
 const OrderHistory = lazy(() => import("./components/admin/OrderHistory"));
 const PriceDetails = lazy(() => import("./components/merchant_component/PriceDetails"));
 const MerchantRecharge = lazy(() => import("./components/merchant_component/Recharge"));
 const PriceCalculate = lazy(() => import("./components/merchant_component/PriceCalculate"));
-const TechMerchantPricingCalculator = lazy(() => import("./components/merchant_component/techbasedMerchant/PricingCalculater"));
-const TechPriceDetails = lazy(() => import("./components/merchant_component/techbasedMerchant/PriceDetails"));
+const TechMerchantPricingCalculator = lazy(() => import("./components/merchant_component/techbasedMerchant/pricing/PricingCalculater"));
+const TechPriceDetails = lazy(() => import("./components/merchant_component/techbasedMerchant/pricing/PriceDetails"));
 const LabelSetting = lazy(() => import("./components/merchant_component/LabelSetting"));
 const TechLabelSetting = lazy(() => import("./components/merchant_component/techbasedMerchant/LabelSetting"));
 const RolePermission = lazy(() => import("./components/admin/RolePermission"));
@@ -130,6 +130,16 @@ import NewMappingOrders from "./components/admin/NewMappingOrders";
 import AssignmentConsole from "./components/User/AssignmentConsole";
 import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
 import { ScrollToTop } from "./components/UiComponents/ScrollToTop";
+import ShipmentTracking from "./components/vendor_components/ShipmentTracking";
+import TeachDraftsList from "./components/merchant_component/techbasedMerchant/order/DraftOrder";
+import TeachBulkUpload from "./components/merchant_component/techbasedMerchant/order/BulkUpload";
+import BillingAndInvoices from "./components/admin/BillingAndInvoices";
+import Billing from "./components/merchant_component/merchant/billing/Billing";
+import IntegrateChannel from "./components/merchant_component/merchant/channel/IntegrateChannel";
+import ChannelList from "./components/merchant_component/merchant/channel/ChannelList";
+import AddShopifyDetails from "./components/merchant_component/merchant/channel/AddShopifyDetails";
+import RidrShipmentTracking from "./components/merchant_component/techbasedMerchant/riders/riderOrderTracking";
+import TechInsurance from "./components/merchant_component/techbasedMerchant/insurance/Techinsurance";
 
 
 const getLocalPermissions = () => {
@@ -187,46 +197,11 @@ function App() {
   const [user, setUser] = useState({})
   const appRouter = createBrowserRouter([
 
-    {
-      path: "/FestiveWisher",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <FestiveWisher />
-        </Suspense>
-      )
-    },
-    {
-      path: "/register",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <Register />
-        </Suspense>
-      )
-    },
-    {
-      path: "/vendor/register",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <VendorRegistrationPage />
-        </Suspense>
-      )
-    },
-    {
-      path: "/merchant-forgot-password",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <ForgotPasswordMerchant />
-        </Suspense>
-      )
-    },
-    {
-      path: "/vendor-forgot-password",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <VendorForgotPassword />
-        </Suspense>
-      )
-    },
+    { path: "/FestiveWisher",element: (<Suspense fallback={<LoadingFallback />}><FestiveWisher /></Suspense>)},
+    {path: "/register",element: (<Suspense fallback={<LoadingFallback />}><Register /></Suspense>)},
+    { path: "/vendor/register", element: ( <Suspense fallback={<LoadingFallback />}><VendorRegistrationPage /></Suspense>)},
+    { path: "/merchant-forgot-password", element: (<Suspense fallback={<LoadingFallback />}><ForgotPasswordMerchant /></Suspense> )},
+    {path: "/vendor-forgot-password",element: ( <Suspense fallback={<LoadingFallback />}> <VendorForgotPassword /></Suspense>)},
     {
       path: "/track-order",
       element: (
@@ -259,30 +234,9 @@ function App() {
         </Suspense>
       )
     },
-    {
-      path: "/login",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <Login />
-        </Suspense>
-      )
-    },
-    {
-      path: "/login/admin",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <AdminLogin />
-        </Suspense>
-      )
-    },
-    {
-      path: "/login/user",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <UserLogin />
-        </Suspense>
-      )
-    },
+    { path: "/login",element: (<Suspense fallback={<LoadingFallback />}><Login /></Suspense>)},
+    { path: "/login/admin",element: (<Suspense fallback={<LoadingFallback />}><AdminLogin /></Suspense>)},
+    { path: "/login/user", element: (<Suspense fallback={<LoadingFallback />}><UserLogin /></Suspense>)},
     {
       path: "/incognitoLogin/:token/:email/:role",
       element: (
@@ -321,6 +275,7 @@ function App() {
         { path: "add-user", element: <Suspense fallback={<LoadingFallback />}><CreateAdmin /></Suspense> },
         { path: "bookOrders", element: <Suspense fallback={<LoadingFallback />}><BookOrders /></Suspense> },
         { path: "orderNewMappings", element: <Suspense fallback={<LoadingFallback />}><NewMappingOrders /></Suspense> },
+        { path: "billingandinvoices", element: <Suspense fallback={<LoadingFallback />}><BillingAndInvoices /></Suspense> },
         { index: true, element: <Navigate to="analytics" /> },
       ],
     },
@@ -407,6 +362,7 @@ function App() {
         { path: "support", element: <Suspense fallback={<LoadingFallback />}><Support /></Suspense> },
         { path: "hub_list", element: <Suspense fallback={<LoadingFallback />}><HubList /></Suspense> },
         { path: "hub_create", element: <Suspense fallback={<LoadingFallback />}><CreateHub /></Suspense> },
+        { path: "shipment-tracking", element: <Suspense fallback={<LoadingFallback />}><ShipmentTracking /></Suspense> },
         { index: true, element: <Navigate to="analytics" /> },
       ],
     },
@@ -440,6 +396,14 @@ function App() {
         { path: "label/setting", element: <Suspense fallback={<LoadingFallback />}><TechLabelSetting /></Suspense> },
         { path: "integration", element: <Suspense fallback={<LoadingFallback />}><TechIntegration /></Suspense> },
 
+        { path: "create_order", element: <Suspense fallback={<LoadingFallback />}><TechCreateOrder /></Suspense> },
+        { path: "order-draft", element: <Suspense fallback={<LoadingFallback />}><TeachDraftsList /></Suspense> },
+        { path: "bulk-upload", element: <Suspense fallback={<LoadingFallback />}><TeachBulkUpload /></Suspense> },
+
+
+
+        { path: "rider/shipment/tracking", element: <Suspense fallback={<LoadingFallback />}><RidrShipmentTracking /></Suspense> },
+        { path: "insurance", element: <Suspense fallback={<LoadingFallback />}><TechInsurance /></Suspense> },
         { index: true, element: <Navigate to="analytics" /> },
       ]
     },
@@ -456,7 +420,7 @@ function App() {
         { path: "ndr", element: <Suspense fallback={<LoadingFallback />}><MerchantNDR /></Suspense> },
         { path: "remittance", element: <Suspense fallback={<LoadingFallback />}><MerchantCOD /></Suspense> },
         { path: "cx", element: <Suspense fallback={<LoadingFallback />}><MerchantCX /></Suspense> },
-       
+        { path: "billing", element: <Suspense fallback={<LoadingFallback />}><Billing /></Suspense> },
 
         { path: "create_order", element: <Suspense fallback={<LoadingFallback />}><CreateOrder /></Suspense> },
         { path: "bulk-upload", element: <Suspense fallback={<LoadingFallback />}><BulkUpload /></Suspense> },
@@ -474,6 +438,14 @@ function App() {
         { path: "pricing/calculate", element: <Suspense fallback={<LoadingFallback />}><PriceCalculate /></Suspense> },
         { path: "label/setting", element: <Suspense fallback={<LoadingFallback />}><LabelSetting /></Suspense> },
         { path: "integration", element: <Suspense fallback={<LoadingFallback />}><Integration /></Suspense> },
+
+
+        { path: "channels", element: <Suspense fallback={<LoadingFallback />}><ChannelList /></Suspense> },
+        { path: "channels/integrate", element: <Suspense fallback={<LoadingFallback />}><IntegrateChannel /></Suspense> },
+        { path: "channels/shopify", element: <Suspense fallback={<LoadingFallback />}><AddShopifyDetails  /></Suspense> },
+
+
+        
 
         { index: true, element: <Navigate to="analytics" /> },
       ],

@@ -1,295 +1,290 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
 import ReCAPTCHA from "react-google-recaptcha";
 import DaakitGoLogo from "../../assets/DaakitGo-Logo.jpg";
 import DaakitMap from "../../assets/daakitmap.png";
-import Warehouse1 from "../../assets/fulfillmenthype_warehouse.png";
-import Warehouse2 from "../../assets/warehouse5.png";
 import axiosInstance from "../../Helper/axiosInstance";
-import { Button } from "@/components/ui/stateful-button";
-const slider = [
-  { link: DaakitMap, alt: "Daakit Map", title: "Comprehensive Logistics Network", description: "Track and manage your deliveries across our extensive network covering major cities and regions." },
-  { link: Warehouse1, alt: "Warehouse 1", title: "Advanced Warehouse Management", description: "State-of-the-art fulfillment centers equipped with cutting-edge technology for efficient order processing." },
-  { link: Warehouse2, alt: "Warehouse 2", title: "Secure Storage Solutions", description: "Climate-controlled warehouses ensuring your goods are stored safely and delivered in perfect condition." },
-];
+import { FiEye, FiEyeOff, FiLock, FiShield } from "react-icons/fi";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
-// import.meta.env.VITE_API_URL
 function AdminLogin() {
-
-  const [captchaToken, setCaptchaToken] = useState("");
   const navigate = useNavigate();
-  const [index, setIndex] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    // Redirect to admin analytics if user is already logged in
-    if (localStorage.getItem("token")) {
-      const decoded = jwtDecode(localStorage.getItem("token"));
-      const userRole = decoded.usertype || decoded.type || decoded.userType;
-      if (userRole === "admin") {
-        navigate("/admin/analytics");
-      }
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setIndex((prev) => {
-        if (prev == slider.length - 1) {
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleCaptchaChange = (value) => {
-    setCaptchaToken(value);
-  };
-
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const decoded = jwtDecode(token);
+      const role = decoded?.usertype || decoded?.type || decoded?.userType;
+      if (role === "admin") navigate("/admin/analytics");
+    } catch {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userType");
+    }
+  }, [navigate]);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAdminSubmit = async (e) => {
     e.preventDefault();
-
+    if (!formData.email.trim() || !formData.password || !captchaToken) return;
+    setLoading(true);
     try {
-      const res = await axiosInstance.post(`${baseURL}/api/admin/login`, formData);
-      const token = res.data.token;
-      
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("userType", res?.data?.userType);
-        
-        navigate("/admin/analytics");
-        toast.success("Login successful");
-        return new Promise((resolve) => {
-          setTimeout(resolve, 4000);
-        });
-      }
+      const res = await axiosInstance.post(`${baseURL}/api/admin/login`, {
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+      const token = res?.data?.token;
+      if (!token) return toast.error(res?.data?.message || "Login failed");
+      localStorage.setItem("token", token);
+      localStorage.setItem("userType", res?.data?.userType || "admin");
+      toast.success("Login successful");
+      navigate("/admin/analytics");
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Login Failed");
+      toast.error(
+        err?.response?.data?.message || err?.message || "Login Failed",
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Left Section - Hero/Brand Area */}
-      <div className="hidden lg:flex lg:w-[58%] xl:w-[60%] bg-[#0446DB] text-white relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute top-0 left-0 w-72 h-72 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3"></div>
-        <div className="relative z-10 w-full flex flex-col items-center justify-center px-12 py-8">
-          {/* Branding */}
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold mb-2">Welcome to DAAKitGo</h1>
-            <p className="text-indigo-100 text-lg">Your all-in-one logistics solution</p>
-          </div>
+    <main className="flex min-h-screen bg-[#0446DB] lg:h-screen lg:overflow-hidden">
+      <section
+        className="relative hidden w-[51%] shrink-0 overflow-hidden rounded-tr-[58px] lg:flex"
+        style={{
+          background:
+            "radial-gradient(circle at 100% 0%,rgba(232,225,160,.8),rgba(141,170,198,.55) 28%,rgba(4,70,219,0) 55%),linear-gradient(135deg,#0647d9,#245acb)",
+        }}
+      >
+        <div className="relative z-10 flex h-full w-full flex-col px-12 py-14">
+  {/* Content */}
+  <div>
+    
 
-          {/* Enhanced Slider */}
-          <div className="w-full max-w-2xl">
-            <div className="relative h-120 rounded-2xl overflow-hidden shadow-2xl bg-white/5 backdrop-blur-sm border border-white/10">
-              <div
-                className="flex w-full h-full transition-transform duration-500 ease-out"
-                style={{ transform: `translateX(-${index * 100}%)` }}
-              >
-                {slider.map((item, i) => (
-                  <div
-                    key={i}
-                    className="w-full h-full shrink-0 flex flex-col items-center justify-center p-8"
-                  >
-                    <img
-                      src={item.link}
-                      alt={item.alt}
-                      className="w-full h-64 object-contain mb-6 transition-transform duration-300 hover:scale-105"
-                    />
-                    <div className="text-center">
-                      <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                      <p className="text-indigo-100 text-sm leading-relaxed">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+    <h1 className="max-w-2xl text-[clamp(2.5rem,3.3vw,4rem)] font-extrabold leading-[1.05] tracking-tight text-white">
+      Powering Smarter
+      <br />
+      Logistics Operations
+    </h1>
 
-              {/* Slider Indicators */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                {slider.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setIndex(i)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${i === index ? 'bg-white w-6' : 'bg-white/50'
-                      }`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+    <p className="mt-5 max-w-xl text-[clamp(1rem,1.15vw,1.2rem)] font-medium leading-relaxed text-white/80">
+      DAAKit brings fulfillment, smart warehousing and last-mile
+      delivery together to help businesses manage logistics faster,
+      smarter and more efficiently.
+    </p>
+
+    {/* Features */}
+    <div className="mt-7 flex flex-wrap gap-3">
+      <div className="rounded-lg border border-white/15 bg-white/10 px-4 py-2.5 backdrop-blur-sm">
+        <p className="text-sm font-bold text-white">
+          Smart Fulfillment
+        </p>
+        <p className="mt-0.5 text-[11px] text-white/60">
+          Efficient Operations
+        </p>
       </div>
 
-      {/* Right Section - Login Area */}
-      <div className="flex-1 lg:max-w-[42%] xl:max-w-[40%] flex flex-col overflow-auto bg-white">
-        {/* Logo */}
-        <div className="flex justify-center pt-12 pb-4">
-          <img
-            src={DaakitGoLogo}
-            alt="DaakitGo"
-            className="h-20 w-auto object-contain"
-          />
-        </div>
+      <div className="rounded-lg border border-white/15 bg-white/10 px-4 py-2.5 backdrop-blur-sm">
+        <p className="text-sm font-bold text-white">
+          Hyperlocal
+        </p>
+        <p className="mt-0.5 text-[11px] text-white/60">
+          Faster Deliveries
+        </p>
+      </div>
 
-        {/* Login Container */}
-        <div className="flex-1 flex flex-col justify-center px-2 sm:px-5 w-full pb-12">
-          {/* Login Form */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Admin Login
-              </h2>
-              <p className="text-gray-500 text-sm">
-                Enter your credentials to access the admin panel
-              </p>
-            </div>
-
-            <form onSubmit={handleAdminSubmit} className="space-y-6">
-              {/* Email Field */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
-                    required
-                    placeholder="admin@daakitgo.com"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Password Field */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
-
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Enter your password"
-                    required
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute cursor-pointer inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? (
-                      // Eye Off
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.038.157-2.04.45-2.981M6.1 6.1A9.956 9.956 0 0112 5c5.523 0 10 4.477 10 10 0 2.21-.716 4.253-1.926 5.91M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                    ) : (
-                      // Eye
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* ReCAPTCHA */}
-               <div className="w-full flex justify-start overflow-x-auto">
-                <ReCAPTCHA
-                  sitekey={RECAPTCHA_SITE_KEY}
-                  onChange={handleCaptchaChange}
-                />
-              </div>
-
-
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={!formData.email || !formData.password || !captchaToken}
-                className="w-full cursor-pointer bg-[#0446DB] hover:bg-[rgb(70,62,180)] disabled:bg-gray-400 text-white font-medium py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0446DB] flex items-center justify-center"
-              >
-                Sign In
-              </button>
-              {/* <Button
-              
-                className="w-full cursor-pointer bg-[#0446DB] text-white font-medium py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              > Sign In</Button> */}
-
-            </form>
-
-            {/* Footer */}
-            <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-              <p className="text-gray-500 text-sm">
-                © {new Date().getFullYear()} DAAKitGo. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="rounded-lg border border-white/15 bg-white/10 px-4 py-2.5 backdrop-blur-sm">
+        <p className="text-sm font-bold text-white">
+          Tech Powered
+        </p>
+        <p className="mt-0.5 text-[11px] text-white/60">
+          Connected Logistics
+        </p>
       </div>
     </div>
+  </div>
+
+  {/* Existing Image */}
+  <div className="mt-auto flex min-h-0 flex-1 items-end justify-center pb-6 pt-6">
+    <img
+      src={DaakitMap}
+      alt="DAAKitGo logistics"
+      className="max-h-[43vh] w-[92%] object-contain"
+    />
+  </div>
+</div>
+      </section>
+
+      <section className="flex min-w-0 flex-1 bg-[#0446DB] p-2 lg:pl-4">
+        <div className="flex h-[calc(100vh-16px)] w-full flex-col overflow-y-auto rounded-[3px] border border-gray-200 bg-white">
+          <div className="mx-auto flex w-full max-w-[850px] flex-1 flex-col px-5 py-8 sm:px-10 lg:px-12 xl:px-14">
+            <div className="flex justify-center pt-6 lg:pt-14">
+              <Link to="/">
+                <img
+                  src={DaakitGoLogo}
+                  alt="DaakitGo"
+                  className="h-[72px] w-auto object-contain"
+                />
+              </Link>
+            </div>
+
+            <div className="my-auto py-8">
+              <div className="mb-8 text-center">
+                <h2 className="text-[30px] font-extrabold tracking-tight text-[#111827]">
+                  Admin Login
+                </h2>
+                <p className="mt-2 text-sm font-medium text-[#667085]">
+                  Enter your credentials to access the admin panel
+                </p>
+              </div>
+
+              <form onSubmit={handleAdminSubmit} className="space-y-5">
+                <div>
+                  <label className="mb-2 block text-[11px] font-extrabold uppercase tracking-[.06em] text-[#344054]">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-xl text-[#98A2B3]">
+                      ✉
+                    </span>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      autoComplete="email"
+                      placeholder="name@company.com"
+                      className="h-[52px] w-full rounded-sm border border-[#D0D5DD] bg-[#F8F9FB] pl-12 pr-4 text-sm outline-none transition placeholder:text-[#98A2B3] focus:border-[#0446DB] focus:bg-white focus:ring-4 focus:ring-blue-50"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-[11px] font-extrabold uppercase tracking-[.06em] text-[#344054]">
+                    Password
+                  </label>
+
+                  <div className="relative">
+                    {/* Lock Icon */}
+                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-[#98A2B3]">
+                      <FiLock className="h-[18px] w-[18px]" />
+                    </span>
+
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      className="h-[52px] w-full rounded-sm border border-[#D0D5DD] bg-[#F8F9FB] pl-12 pr-12 text-sm outline-none transition
+                 placeholder:text-[#98A2B3]
+                 focus:border-[#0446DB]
+                 focus:bg-white
+                 focus:ring-4
+                 focus:ring-blue-50"
+                    />
+
+                    {/* Show / Hide Password */}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-0 flex items-center justify-center px-4 text-[#98A2B3] transition-colors hover:text-[#475467]"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? (
+                        <FiEyeOff className="h-[19px] w-[19px]" />
+                      ) : (
+                        <FiEye className="h-[19px] w-[19px]" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[.06em] text-[#667085]">
+                  <FiShield className="h-4 w-4 " />
+                  <span>Security Verification</span>
+                </div>
+                  <div className="min-h-[88px] overflow-x-auto rounded-sm border border-[#D0D5DD] bg-[#F8F9FB] p-2">
+                    {RECAPTCHA_SITE_KEY ? (
+                      <ReCAPTCHA
+                        sitekey={RECAPTCHA_SITE_KEY}
+                        onChange={(v) => setCaptchaToken(v || "")}
+                        onExpired={() => setCaptchaToken("")}
+                        onErrored={() => setCaptchaToken("")}
+                      />
+                    ) : (
+                      <div className="p-4 text-xs text-red-500">
+                        VITE_RECAPTCHA_SITE_KEY is missing.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={
+                    loading ||
+                    !formData.email.trim() ||
+                    !formData.password ||
+                    !captchaToken
+                  }
+                  className="flex h-[54px] w-full items-center justify-center gap-3 rounded-sm bg-[#0446DB] text-sm font-bold text-white transition hover:bg-[#0338AF] disabled:cursor-not-allowed disabled:bg-[#98A2B3]"
+                >
+                  {loading ? (
+                    <>
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      Logging in...
+                    </>
+                  ) : (
+                    <>
+                      Login <span className="text-xl">→</span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div className="mt-7 flex items-center justify-between border-t border-[#EAECF0] pt-5 text-[11px] text-[#98A2B3]">
+                <span>© {new Date().getFullYear()} DAAKitGo</span>
+                <div className="flex gap-5">
+                  <a
+                    href="https://daakit.com/privacy-policy/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Privacy Policy
+                  </a>
+                  <a
+                    href="https://daakit.com/terms-and-conditions/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Terms of Service
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
 

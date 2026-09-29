@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import Loader from "../Loader";
+
 
 import { FaFilter, FaRegCopy } from "react-icons/fa";
-import { CiCircleCheck } from "react-icons/ci";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -15,10 +14,9 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
+} from "@/components/ui/drawer";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
-
 
 function VendorRemittanceRecord() {
   const [loading, setLoading] = useState(false);
@@ -71,10 +69,9 @@ function VendorRemittanceRecord() {
   useEffect(() => {
     resetAdvanceFilters();
   }, []);
-
+  const startDateRef = useRef(null);
   // Fetch data from API
   const fetchData = async () => {
-
     setLoading(true);
     try {
       const res = await axios.get(
@@ -88,16 +85,16 @@ function VendorRemittanceRecord() {
             limit,
             start_date: advanceFilters.startDate,
             end_date: advanceFilters.endDate,
-            awb_number: advanceFilters.awb_number
+            awb_number: advanceFilters.awb_number,
           },
-        }
+        },
       );
       setData(res.data.data || []);
       setTotalPages(Math.max(1, res.data.total_pages));
-
-
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Failed to fetch data:");
+      toast.error(
+        err.response?.data?.message || err.message || "Failed to fetch data:",
+      );
     } finally {
       setLoading(false);
     }
@@ -130,22 +127,20 @@ function VendorRemittanceRecord() {
 
   return (
     <>
-
       <div className="bg-gray-100 dark:bg-gray-900 min-h-screen w-full">
-
         {/* Heading */}
-        <div className="mb-6 bg-[#0446DB] dark:bg-gray-900 py-[24px] shadow-md h-auto px-[24px]">
+        <div className="mb-6 bg-[#0446DB] dark:bg-gray-900 py-[24px] shadow-sm h-auto px-[24px]">
           <div className="flex flex-wrap items-center justify-between">
-
             <h1 className="text-2xl text-white">Remittance Record</h1>
             <div className="flex flex-wrap items-end gap-4 text-white">
-
-              <Drawer direction="right"
+              <Drawer
+                direction="right"
                 open={isFilterOpen}
                 onOpenChange={setIsFilterOpen}
               >
                 <DrawerTrigger asChild>
-                  <Button variant="outline"
+                  <Button
+                    variant="outline"
                     className="bg-white text-[#0446DB] font-medium px-5 py-2 rounded-lg shadow hover:bg-indigo-100 transition"
                   >
                     <FaFilter className="text-sm" />
@@ -179,6 +174,9 @@ function VendorRemittanceRecord() {
                               startDate: e.target.value,
                             }))
                           }
+                          onFocus={(e) => {
+                            e.currentTarget.showPicker?.();
+                          }}
                           className="border  w-full px-3 py-2 rounded text-sm"
                         />
                       </div>
@@ -196,6 +194,9 @@ function VendorRemittanceRecord() {
                               endDate: e.target.value,
                             }))
                           }
+                          onFocus={(e) => {
+                            e.currentTarget.showPicker?.();
+                          }}
                           className="border w-full px-3 py-2 rounded rounded-md text-sm"
                         />
                       </div>
@@ -239,28 +240,19 @@ function VendorRemittanceRecord() {
                         </Button>
                       </div>
                     </div>
-
                   </form>
                   <DrawerFooter>
-
                     <DrawerClose asChild>
                       <Button variant="outline">Cancel</Button>
                     </DrawerClose>
                   </DrawerFooter>
                 </DrawerContent>
               </Drawer>
-              {/* <button
-                onClick={() => setIsFilterOpen(true)}
-                className="bg-white text-[#0446DB] font-medium px-5 py-2 rounded-lg shadow hover:bg-indigo-100 transition"
-              >
-                Filter
-              </button> */}
             </div>
           </div>
         </div>
 
-
-        <div className="mx-3 relative -top-5 z-10 bg-white dark:bg-gray-900 rounded-md">
+        <div className=" bg-white dark:bg-gray-900">
           {/* Table */}
           <div className="max-w-full dark:bg-gray-900 p-4 -mt-6 relative z-10 overflow-x-auto bg-white rounded-xl shadow">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
@@ -269,7 +261,9 @@ function VendorRemittanceRecord() {
                   <th className="px-6 py-3 text-left">AWB NUMBER</th>
                   <th className="px-6 py-3 text-left">AMOUNT</th>
                   <th className="px-6 py-3 text-left">UTR NUMBER</th>
-                  <th className="px-6 py-3 whitespace-nowrap text-left">UPLOAD DATE</th>
+                  <th className="px-6 py-3 whitespace-nowrap text-left">
+                    UPLOAD DATE
+                  </th>
                   <th className="px-6 py-3 text-left">DOWNLOAD</th>
                 </tr>
               </thead>
@@ -281,7 +275,6 @@ function VendorRemittanceRecord() {
                         colSpan="6"
                         className="text-center px-6 py-6 text-gray-500"
                       >
-
                         <div className=" w-full  flex justify-center items-center">
                           <div>
                             <Loader2 className="h-8 w-8 animate-spin mx-auto" />
@@ -290,7 +283,6 @@ function VendorRemittanceRecord() {
                         </div>
                       </td>
                     </tr>
-
                   </>
                 ) : data.length == 0 ? (
                   <tr key={"No record found"}>
@@ -301,34 +293,41 @@ function VendorRemittanceRecord() {
                       No records found.
                     </td>
                   </tr>
-
                 ) : (
                   data.map((d, index) => {
                     return (
-                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800 dark:border dark:border-white">
+                      <tr
+                        key={index}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800 dark:border dark:border-white"
+                      >
                         <td className="px-6 py-4 dark:text-white">
                           {d.awb_number}
                         </td>
                         <td className="px-6 py-4 dark:text-white">
                           {indianFormat(Number(d.amount))}
                         </td>
-                        <td className="px-6 py-4 dark:text-white">{d.utr_number}</td>
                         <td className="px-6 py-4 dark:text-white">
-                          {new Date(d.created_at).toLocaleString(
-                            "en-IN",
-                            {
-                              timeZone: "Asia/Kolkata",
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            }
-                          )}
+                          {d.utr_number}
+                        </td>
+                        <td className="px-6 py-4 dark:text-white">
+                          {new Date(d.created_at).toLocaleString("en-IN", {
+                            timeZone: "Asia/Kolkata",
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
                         </td>
                         <td className="px-6 py-4">
-                          <a href={`${baseURL}/${d.file_url}`} className="text-red-500 cursor-pointer border px-2 py-1 hover:bg-red-500 hover:text-white rounded" target="_blank">Download</a>
+                          <a
+                            href={`${baseURL}/${d.file_url}`}
+                            className="text-red-500 cursor-pointer border px-2 py-1 hover:bg-red-500 hover:text-white rounded"
+                            target="_blank"
+                          >
+                            Download
+                          </a>
                         </td>
                       </tr>
                     );
@@ -343,10 +342,11 @@ function VendorRemittanceRecord() {
             <button
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page === 1}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${page === 1
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[#0446DB] text-white hover:bg-indigo-800"
-                }`}
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
+                page === 1
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-[#0446DB] text-white hover:bg-indigo-800"
+              }`}
             >
               Previous
             </button>
@@ -354,23 +354,21 @@ function VendorRemittanceRecord() {
               Page {page} of {totalPages}
             </span>
             <button
-              onClick={() =>
-                setPage((prev) => Math.min(prev + 1, totalPages))
-              }
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={page === totalPages}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${page === totalPages
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[#0446DB] text-white hover:bg-indigo-800"
-                }`}
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
+                page === totalPages
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-[#0446DB] text-white hover:bg-indigo-800"
+              }`}
             >
               Next
             </button>
           </div>
         </div>
       </div>
-
     </>
   );
 }
 
-export default VendorRemittanceRecord
+export default VendorRemittanceRecord;

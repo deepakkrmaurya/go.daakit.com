@@ -7,7 +7,7 @@ import './index.css'
 import './styles/speener.css'
 import "leaflet/dist/leaflet.css";
 import { ToastContainer } from 'react-toastify'
-// import 'leaflet/dist/leaflet.css';
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

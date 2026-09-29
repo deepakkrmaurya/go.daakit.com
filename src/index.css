@@ -203,3 +203,181 @@ thead .sticky-column {
   animation: blink 1s infinite;
 }
 
+
+
+
+
+
+/* Admin billing css start  */
+
+.awb-detail-row td {
+  padding: 0 !important;
+}
+
+.awb-detail-row .border {
+  border-color: #e5e7eb;
+}
+
+.awb-detail-row .bg-gray-50 {
+  background-color: #f9fafb;
+}
+
+/* Smooth expand/collapse animation */
+.awb-detail-row .border {
+  animation: expandIn 0.25s ease-out;
+}
+
+@keyframes expandIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Smooth expand/collapse animation */
+.animate-expandIn {
+  animation: expandIn 0.25s ease-out;
+}
+/* AWB detail row styles */
+.awb-detail-row td {
+  padding: 0 !important;
+}
+
+
+/* Hover effect on detail rows */
+.awb-detail-row tbody tr:hover {
+  background-color: #f0f7ff;
+}
+
+/* Expand button animation */
+button[aria-expanded="true"] {
+  background-color: #eff6ff;
+  border-color: #93b5e8;
+  color: #2563eb;
+}
+
+
+button[aria-expanded="true"]:hover {
+  background-color: #dbeafe;
+}
+
+/* Component callout styling */
+.component-callout {
+  display: flex;
+  gap: 10px;
+  padding: 10px 15px;
+  background: #f7f3ff;
+  border-bottom: 1px solid #e2d9fa;
+  color: #5d4c8e;
+}
+
+.component-callout > span {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: #ebe4ff;
+  font-size: 14px;
+}
+
+.component-callout strong {
+  font-size: 10px;
+}
+
+.component-callout p {
+  margin: 2px 0 0;
+  font-size: 9px;
+  color: #75679c;
+}
+
+.link-button {
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: inherit;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+/* Expand button animation */
+button[aria-expanded="true"] {
+  background-color: #eff6ff;
+  border-color: #93b5e8;
+  color: #2563eb;
+}
+
+button[aria-expanded="true"]:hover {
+  background-color: #dbeafe;
+}
+
+
+@keyframes expandIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth expand/collapse animation */
+.animate-expandIn {
+  animation: expandIn 0.25s ease-out;
+}
+
+
+
+
+
+
+
+@keyframes slideInRight { 
+  0% { 
+    transform: translateX(100%); 
+    opacity: 0;
+  } 
+  100% { 
+    transform: translateX(0); 
+    opacity: 1;
+  } 
+}
+
+@keyframes slideOutRight { 
+  0% { 
+    transform: translateX(0); 
+    opacity: 1;
+  } 
+  100% { 
+    transform: translateX(100%); 
+    opacity: 0;
+  } 
+}
+
+.animate-slideInRight { 
+  animation: slideInRight 0.3s ease-out; 
+}
+
+.animate-slideOutRight { 
+  animation: slideOutRight 0.3s ease-in forwards; 
+}
+
+
+
+
+
+
+
+
+

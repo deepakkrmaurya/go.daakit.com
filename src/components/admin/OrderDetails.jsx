@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import {
   Drawer,
   DrawerContent,
-
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -30,6 +29,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 import {
   Dialog,
@@ -48,6 +60,7 @@ import { CiCircleCheck } from "react-icons/ci";
 import { toast } from "react-toastify";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import AxiosInstance from "../../Helper/axiosInstance";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 
@@ -59,6 +72,8 @@ const options = [
 ];
 
 function OrderDetails() {
+  const [newStatus,setNewStatus]=useState('')
+  const [remark,setRemark]=useState('')
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [copySuccess, setCopySuccess] = useState(null);
@@ -131,8 +146,54 @@ function OrderDetails() {
   const [checkVendorMapping, setCheckVendorMapping] = useState(null);
   const [filterUpdate, setFilterUpdate] = useState(false);
   const navigate = useNavigate()
-
+   const clearAll = ()=>{
+    setNewStatus('')
+    setRemark("")
+    
+    setBulkOrderWeight(0);
+    setFetchBulkAssignmentVendor(false);
+    setSelectedMapType(null);
+    setEditingStatusId(null);
+    setAssignmentState("");
+    setLoading(false);
+    setRiders([]);
+    setopenOfd([]);
+    setopenDeliverde([]);
+    setRescheduleDate('');
+    setRemarks('');
+    setSub_remarks('');
+    setdetailed_remarks('');
+    setFetchBulkAssignmentRider(false);
+    setcanceledBulkOrder(false);
+    setIsOpenIndividualAssignmnet("");
+    setIsOpenIndividualVendorAssignmnet("");
+    setIsOpenIndividualAssignmnetMap("");
+    setIsOpenIndividualVendorMap("");
+    setVendor([]); // Clear vendors
+    setCheckVendorMapping(null); // Reset vendor mapping check
+    setBulkStatusState(""); // Clear bulk status
+    setEditingDeliveryId(null); // Clear delivery editing state
+    setEditingPickupId(null); // Clear pickup editing state
+    // Reset form data if needed
+    setDeliveryFormData({
+      delivery_contact_name: '',
+      delivery_address_line: '',
+      delivery_city: '',
+      delivery_state: '',
+      delivery_pincode: '',
+    });
+    setPickupFormData({
+      pickup_contact_name: '' || "",
+      pickup_phone: "",
+      pickup_address_line: "",
+      pickup_city: "",
+      pickup_state: "",
+      pickup_pincode: "",
+    });
+   }
   const clearAllState = () => {
+    setNewStatus('')
+    setRemark("")
     setSelectedBulkOrders([]);
     setBulkOrderWeight(0);
     setFetchBulkAssignmentVendor(false);
@@ -343,7 +404,19 @@ function OrderDetails() {
 
  
 
-
+  const generateBulkPickupRequest = async(order_ids)=>{
+    try {
+         
+        const res = await AxiosInstance.post(`/api/admin/generateBulkPickupRequest`,{
+          order_ids:order_ids
+        })
+        fetchOrders()
+        toast.success(res?.data?.message)
+        clearAllState()
+    } catch (error) {
+       toast.error(error?.response?.data?.message)
+    }
+  }
 
 
 
@@ -387,34 +460,7 @@ function OrderDetails() {
   };
 
 
-  const fetchEligibleVendir = async () => {
-    try {
-
-
-      const order_ids = [...new Set(selectedBulkOrders.map(o => o.id))];
-
-      const res = await axios.get(`${baseURL}/api/admin/getEligibleVendorsByOrders?order_id=${order_ids}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        }
-      });
-
-
-      setVendor(res.data.data || []);
-      if (res.data.data.length == 0) {
-        setSelectedBulkOrders([]);
-        setBulkOrderWeight(0);
-        setFetchBulkAssignmentRider(false);
-        setFetchBulkAssignmentVendor(false);
-        setcanceledBulkOrder(false)
-        clearAllState()
-      }
-    } catch (err) {
-
-    } finally {
-      setLoading(false);
-    }
-  }
+  
 
 
   const fetchVendor = async (order_ids) => {
@@ -433,13 +479,13 @@ function OrderDetails() {
 
 
       setVendor(res.data.data || []);
-      if (res.data.data.length == 0) {
-        setSelectedBulkOrders([]);
-        setBulkOrderWeight(0);
-        setFetchBulkAssignmentRider(false);
-        setFetchBulkAssignmentVendor(false);
-        setcanceledBulkOrder(false)
-      }
+      // if (res.data.data.length == 0) {
+      //   setSelectedBulkOrders([]);
+      //   setBulkOrderWeight(0);
+      //   setFetchBulkAssignmentRider(false);
+      //   setFetchBulkAssignmentVendor(false);
+      //   setcanceledBulkOrder(false)
+      // }
     } catch (err) {
 
 
@@ -620,9 +666,9 @@ function OrderDetails() {
     try {
 
       await axios.post(
-        `${baseURL}/api/admin/assignOrderToVendor`,
+        `${baseURL}/api/admin/bulkAssignOrdersToVendor`,
         {
-          order_id: orderIds,
+          order_ids: orderIds,
           vendor_id: vendorId,
         },
         {
@@ -690,13 +736,17 @@ function OrderDetails() {
     }
   };
 
-  const changeStatus = async (id, newStatus) => {
+  const changeStatus = async ({id, newStatus,remark}) => {
 
+    
     setLoading(true);
     try {
       const res = await axios.post(
         `${baseURL}/api/admin/updatestatus/${id}`,
-        { status: newStatus },
+         {
+           status: newStatus ,
+           remarks:remark 
+          },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -706,6 +756,7 @@ function OrderDetails() {
       fetchOrders();
       setEditingStatusId(null);
       toast.success(res?.data?.message)
+      clearAllState()
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || "Failed to update status");
     } finally {
@@ -834,14 +885,14 @@ function OrderDetails() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedBulkOrders.length === orders.filter((o) => o.tpc_awb_number === null).length) {
-      console.log("All selected, clearing selection");
+    if (selectedBulkOrders.length === orders.filter((o) => o.tpc_awb_number === null && o.rider_preference === "daakit").length) {
+      
       setSelectedBulkOrders([]);
       setBulkOrderWeight(0);
       clearAllState()
     } else {
-
-      const ord = orders.filter(order => order.tpc_awb_number == null);
+      const ord = orders.filter(order => order.tpc_awb_number == null &&  order.rider_preference === "daakit");
+      
       setSelectedBulkOrders(ord);
 
 
@@ -1004,24 +1055,49 @@ function OrderDetails() {
   );
 
 
+  const [loadingPage, setLoadingPage] = useState(true);
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoadingPage(false);
+  }, 2000);
+
+  return () => clearTimeout(timer);
+}, []);
+
+
+
+
   return (
     <>
 
-      <div className="bg-gray-100  dark:bg-gray-900 min-h-screen w-full">
+    {
+      loadingPage?(
+        <>
+         <div className=" w-full h-[90vh] flex justify-center items-center">
+                  <div>
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                    <p className="mt-2"> Loading Order Details...</p>
+                  </div>
+                </div>
+        </>
+      ):(
+        <>
+      <div className="bg-[#f5f8fb]  dark:bg-gray-900 min-h-screen w-full">
 
-        <div className="sticky top-0 left-0  z-10 bg-[#0446DB] dark:border-b dark:border-[#0446DB] dark:bg-gray-900 py-4 md:py-6 shadow-md ">
+        <div className=" left-0  z-10  dark:bg-neutral-900 py-4 md:py-6 ">
           <div className="  mx-auto px-8  ">
             {/* Mobile Layout */}
             <div className="md:hidden  flex flex-col space-y-4">
               {/* Top Row: Heading and Buttons */}
               <div className="flex-col items-center justify-between">
-                <h1 className="text-xl font-bold text-white">Order Details</h1>
+                <h1 className="text-xl font-bold text-gray-800 ">Order Details</h1>
 
                 <div className="flex-col  items-center gap-2">
                   <Link to="/admin/bookOrders">
                     <Button
                       variant="outline"
-                      className="bg-white w-full mt-1 text-[#0446DB] font-medium px-5 py-2.5 rounded-lg shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
+                      className="bg-white w-full mt-1 text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
                     >
                       <FaTasks className="text-sm" />
                       <span>Assignment Console</span>
@@ -1030,7 +1106,7 @@ function OrderDetails() {
                   </Link>
                   <Button variant="outline"
                     onClick={exportCSV}
-                    className="bg-white w-full mt-1 text-[#0446DB] font-medium px-5 py-2.5 rounded-lg shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
+                    className="bg-white w-full mt-1 text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
                   >
                     <FaFileExport className="text-sm" />
                     <span>Export</span>
@@ -1041,7 +1117,7 @@ function OrderDetails() {
                     <DrawerTrigger asChild>
 
                       <Button variant="outline"
-                        className="bg-white w-full mt-1 text-[#0446DB] font-medium px-5 py-2.5 rounded-lg shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
+                        className="bg-white w-full mt-1 text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
                       >
                         <FaFilter className="text-sm" />
                         <span>Filter</span>
@@ -1073,7 +1149,7 @@ function OrderDetails() {
                                   onFocus={openDatePicker}
                                   onChange={(e) => updateAdvanceFilter("startDate", e.target.value)}
                                   className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
-                                          dark:text-white px-3 py-2 rounded-lg text-sm 
+                                          dark:text-white px-3 py-2 rounded-sm text-sm 
                                           focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                               </div>
@@ -1091,7 +1167,7 @@ function OrderDetails() {
                                   onFocus={openDatePicker}
                                   onChange={(e) => updateAdvanceFilter("endDate", e.target.value)}
                                   className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                               </div>
@@ -1113,7 +1189,7 @@ function OrderDetails() {
                                     }));
                                   }}
                                   className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
                                   <option value="">All orders</option>
@@ -1137,7 +1213,7 @@ function OrderDetails() {
                                   }
                                   placeholder="AWB Number(s)"
                                   className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                               </div>
@@ -1162,7 +1238,7 @@ function OrderDetails() {
                                   }
                                   placeholder="Integer Only"
                                   className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                               </div>
@@ -1184,7 +1260,7 @@ function OrderDetails() {
                                   }
                                   placeholder="Enter City"
                                   className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                               </div>
@@ -1208,7 +1284,7 @@ function OrderDetails() {
                                   }
                                   placeholder="Integer Only"
                                   className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                               </div>
@@ -1229,7 +1305,7 @@ function OrderDetails() {
                                   }
                                   placeholder="Enter Pincode"
                                   className="w-full border dark:border-gray-700 dark:bg-gray-800 
-                          dark:text-white px-3 py-2 rounded-lg text-sm 
+                          dark:text-white px-3 py-2 rounded-sm text-sm 
                              focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                               </div>
@@ -1256,7 +1332,7 @@ function OrderDetails() {
                                 }
                                 placeholder="Integer Only"
                                 className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
@@ -1318,7 +1394,7 @@ function OrderDetails() {
             <div className="hidden md:flex  items-center justify-between h-full">
 
               <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold text-white">Order Details</h1>
+                <h1 className="text-2xl font-bold dark:text-white">Order Details</h1>
 
               </div>
 
@@ -1352,7 +1428,7 @@ function OrderDetails() {
                 <Link to="/admin/bookOrders">
                   <Button
                     variant="outline"
-                    className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-lg shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
+                    className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
                   >
                     <FaTasks className="text-sm" />
                     <span>Assignment Console</span>
@@ -1361,7 +1437,7 @@ function OrderDetails() {
                 </Link>
                 <Button variant="outline"
                   onClick={exportCSV}
-                  className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-lg shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
+                  className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
                 >
                   <FaFileExport className="text-sm" />
                   <span>Export</span>
@@ -1369,7 +1445,7 @@ function OrderDetails() {
                 <Drawer direction="right" open={isDesktopFilterDrawerOpen} onOpenChange={setIsDesktopFilterDrawerOpen}>
                   <DrawerTrigger asChild>
                     <Button variant="outline"
-                      className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-lg shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
+                      className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
                     >
                       <FaFilter className="text-sm" />
                       <span>Filter</span>
@@ -1401,7 +1477,7 @@ function OrderDetails() {
                                 onFocus={openDatePicker}
                                 onChange={(e) => updateAdvanceFilter("startDate", e.target.value)}
                                 className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
@@ -1419,13 +1495,14 @@ function OrderDetails() {
                                 onFocus={openDatePicker}
                                 onChange={(e) => updateAdvanceFilter("endDate", e.target.value)}
                                 className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
 
                           </div>
 
+                    
 
                           <div className=" mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                             <div>
@@ -1441,7 +1518,7 @@ function OrderDetails() {
                                   }));
                                 }}
                                 className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               >
                                 <option value="">All orders</option>
@@ -1465,7 +1542,7 @@ function OrderDetails() {
                                 }
                                 placeholder="AWB Number(s)"
                                 className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
@@ -1490,7 +1567,7 @@ function OrderDetails() {
                                 }
                                 placeholder="Integer Only"
                                 className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
@@ -1512,7 +1589,7 @@ function OrderDetails() {
                                 }
                                 placeholder="Enter City"
                                 className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
@@ -1536,7 +1613,7 @@ function OrderDetails() {
                                 }
                                 placeholder="Integer Only"
                                 className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
@@ -1557,7 +1634,7 @@ function OrderDetails() {
                                 }
                                 placeholder="Enter Pincode"
                                 className="w-full border dark:border-gray-700 dark:bg-gray-800 
-                          dark:text-white px-3 py-2 rounded-lg text-sm 
+                          dark:text-white px-3 py-2 rounded-sm text-sm 
                              focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
@@ -1584,7 +1661,7 @@ function OrderDetails() {
                               }
                               placeholder="Integer Only"
                               className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-lg text-sm 
+      dark:text-white px-3 py-2 rounded-sm text-sm 
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                           </div>
@@ -1619,10 +1696,10 @@ function OrderDetails() {
           </div>
         </div>
 
-        <div className="mx-0 z-10 md:px-1 -mt-4 md:-mt-0 bg-white dark:bg-gray-900 rounded-md">
+        <div className="mx-0 z-10 md:px-1 -mt-4 md:-mt-0 bg-white dark:bg-neutral-900/50 rounded-md">
 
 
-          <div className="w-full  bg-white dark:border dark:border-[#0446DB] rounded shadow-2xl  dark:bg-gray-900   left-0 px-4 z-40   ">
+          <div className="w-full  bg-white   dark:bg-neutral-800   left-0 px-4 z-40   ">
             <div className="relative flex justify-center ">
               <div className=" flex  overflow-x-auto  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2">
                 <div className="flex gap-2 min-w-max px-8 mt-3">
@@ -1638,7 +1715,7 @@ function OrderDetails() {
 
                       className={`px-5 py-2.5 rounded-full my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${selectedStatus === st
                         ? "bg-[#0446DB] text-white "
-                        : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
+                        : "bg-white hover:bg-[#0446DB] hover:text-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
                         }`}
                     >
                       {st === "rto in transit"
@@ -1649,243 +1726,489 @@ function OrderDetails() {
                       {selectedStatus === st && ` (${totalOrders})`}
                     </Button>
                   ))}
+                    
                 </div>
               </div>
-
-
             </div>
-          </div>
-
-          {/* Bulk Assignment */}
-          {selectedBulkOrders.length > 0 && (selectedStatus === "booked") && (
-
-            <>
-              <div className="mb-10 bg-white  rounded-xl shadow-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800 mb-5">
-                  Bulk Orders ({selectedBulkOrders.length} Selected)
-                </h2>
-
-
-
-                <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-
-                  <table className="min-w-full h-[30%] table-auto border border-gray-200 rounded-md overflow-hidden">
-                    <thead className="bg-gray-100 text-gray-600 text-sm font-semibold">
-                      <tr>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order ID
-                        </th>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order Weight
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-800 text-sm">
-                      {selectedBulkOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 border-b">{order.id}</td>
-                          <td className="px-4 py-2 border-b">
-                            {Number(order.total_weight).toLocaleString()}g
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-indigo-50 text-indigo-700 font-semibold text-sm">
-                        <td className="px-4 py-2 border-t">Total Weight</td>
-                        <td className="px-4 py-2 border-t">
-                          {Number(bulkOrderWeight).toLocaleString()}g
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-center gap-4">
-                  {!canceledBulkOrder ? (
-                    <button
-                      onClick={() => {
-                        setcanceledBulkOrder(true);
-                        // const order_ids = [...new Set(selectedBulkOrders.map(o => o.id))];
-                        //  fetchVendor(order_ids);
-
-                      }}
-                      className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                    >
-                      Change Action
-                    </button>
-                  ) : (
-                    <>
-                      <form
-                        onSubmit={async (e) => {
-                          e.preventDefault();
-                          const newStatus =
-                            e.target.elements.status.value;
-                          if (!newStatus) {
-                            toast.error('Please select status')
-                            return
-                          }
-                          for (const order of selectedBulkOrders) {
-                            const result = await changeStatus(
-                              order.id,
-                              newStatus
-                            );
-                          }
-                        }}
-                      >
-                        <select
-                          className="border border-gray-300 text-sm text-gray-700 px-4 py-2 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-64"
-                          name="status"
-
-                        >
-
-                          <option value="">
-                            Select Status
-                          </option>
-                          <option value="cancelled">
-                            Cancel Orders
-                          </option>
-                          <option value="lost">
-                            Lost Orders
-                          </option>
-                        </select>
-                        <button
-                          type="submit"
-                          className="bg-[#0446DB] ml-2 hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                        >
-                          Apply Action
-                        </button>
-                      </form>
-                    </>
-                  )}
-
-
-                  {!fetchBulkAssignmentVendor || vendor?.length == 0 ? (
-                    <button
-                      onClick={() => {
-                        setFetchBulkAssignmentVendor(true);
-                        const order_ids = [...new Set(selectedBulkOrders.map(o => o.id))];
-                        fetchVendor(order_ids);
-
-                      }}
-                      className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                    >
-                      Get Available Vendor
-                    </button>
-                  ) : (
-                    <>
-                      {
-                        vendor?.length > 0 && (
-                          <>
-                            <select
-                              className="border border-gray-300 text-sm text-gray-700 px-4 py-2 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-64"
-                              value={assignmentState}
-                              onChange={(e) => setAssignmentState(e.target.value)}
-                            >
-                              <option value="">
-                                Select Vendor for Bulk Assignment
-                              </option>
-                              {vendor.map((vendor) => (
-                                <option
-                                  key={vendor.vendor_id}
-                                  value={vendor.vendor_id}
-                                >
-                                  {vendor.vendor_id} :{" "}
-                                  {vendor.vendor_name}
-
-                                </option>
-                              ))}
-                            </select>
-                            <button
-                              onClick={async () => {
-                                if (!assignmentState) {
-                                  toast.warn("Please select a vendor");
-                                  return;
-                                }
-                                for (const order of selectedBulkOrders) {
-                                  const result = await assignBulkOrderVendor(
-                                    order.id,
-                                    assignmentState
-                                  );
-                                }
-                                setSelectedBulkOrders([]);
-                                setBulkOrderWeight(0);
-                                setFetchBulkAssignmentVendor(false);
-                              }}
-                              className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                            >
-                              Bulk Assign
-                            </button>
-                          </>
-                        )
-                      }
-
-                    </>
-                  )}
-                  <button
-                    className="bg-red-500 hover:bg-red-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                    onClick={() => {
-                      setSelectedBulkOrders([]);
-                      setBulkOrderWeight(0);
-                      setFetchBulkAssignmentRider(false);
-                      setFetchBulkAssignmentVendor(false);
-                      setcanceledBulkOrder(false)
-                      clearAllState()
-                    }}
+                  <div 
+                   className="flex gap-2 min-w-max px-8  my-2"
                   >
-                    Clear Selected Orders
-                  </button>
-                </div>
+                      {selectedBulkOrders.length > 0 && (selectedStatus === "booked") && (
+
+                              <>       
+                                <AlertDialog>
+                                        {/* =========================
+                                            OPEN DIALOG BUTTON
+                                        ========================= */}
+                                        <AlertDialogTrigger
+                                          
+                                        >
+
+                                          <Button
+                                              variant="outline"
+                                              className="h-7 bg-[#0446DB] cursor-pointer gap-2 rounded-sm border-[#0446DB] px-4 text-sm font-medium text-white hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                                            >
+                                          Action
+                                              </Button>
+                                        </AlertDialogTrigger>
+
+                                        {/* =========================
+                                            DIALOG
+                                        ========================= */}
+                                        <AlertDialogContent className="!max-w-2xl overflow-hidden rounded-lg border border-gray-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+                                          {/* =========================
+                                              HEADER
+                                          ========================= */}
+                                          <AlertDialogHeader className="border-b border-gray-200 px-6 py-5 dark:border-neutral-800">
+                                            <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                                              Bulk Order Actions
+                                            </AlertDialogTitle>
+
+                                            <AlertDialogDescription className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
+                                              Manage status and vendor assignment for{" "}
+                                              <span className="font-semibold text-[#0446DB]">
+                                                {selectedBulkOrders?.length || 0}
+                                              </span>{" "}
+                                              selected orders.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+
+                                          {/* =========================
+                                              BODY
+                                          ========================= */}
+                                          <div className="max-h-[65vh] space-y-5 overflow-y-auto px-6 py-5">
+                                            {/* ============================================
+                                                CHANGE ORDER STATUS
+                                            ============================================ */}
+                                            <div className="rounded-md border border-gray-200 dark:border-neutral-800">
+                                              {/* SECTION HEADER */}
+                                              <div className="border-b border-gray-100 bg-gray-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/50">
+                                                <h3 className="text-sm font-semibold text-gray-800 dark:text-neutral-200">
+                                                  Change Order Status
+                                                </h3>
+
+                                                <p className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
+                                                  Update the status of all selected orders.
+                                                </p>
+                                              </div>
+
+                                              <div className="p-4">
+                                                {!canceledBulkOrder ? (
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      setcanceledBulkOrder(true);
+                                                    }}
+                                                    className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md bg-[#0446DB] px-4 text-sm font-medium text-white transition-colors hover:bg-[#0339b5]"
+                                                  >
+                                                    Change Action
+                                                  </button>
+                                                ) : (
+                                                  
 
 
+                                                  <form
+                                                className="flex w-full flex-col gap-3 lg:flex-row lg:items-start"
+                                                onSubmit={async (e) => {
+                                                  e.preventDefault();
 
-              </div>
-            </>
+                                                  const status = e.currentTarget.elements.status.value;
+                                                  const selectedRemark =
+                                                    e.currentTarget.elements.remark?.value || "";
+
+                                                  if (!status) {
+                                                    toast.error("Please select status");
+                                                    return;
+                                                  }
+
+                                                  if (status === "cancelled" && !selectedRemark) {
+                                                    toast.error("Please select remark");
+                                                    return;
+                                                  }
+
+                                                  for (const order of selectedBulkOrders) {
+                                                    await changeStatus({
+                                                      id: order.id,
+                                                      newStatus: status,
+                                                      remark: selectedRemark,
+                                                    });
+                                                  }
+
+
+                                                  // Reset
+                                                  clearAllState()
+
+                                                
+                                                }}
+                                              >
+                                              {/* STATUS */}
+                                              <select
+                                                name="status"
+                                                defaultValue=""
+                                                onChange={(e) => {
+                                                  if (e.target.value === "cancelled") {
+                                                    setNewStatus(e.target.value);
+                                                  } else {
+                                                    setNewStatus("");
+                                                  }
+                                                }}
+                                                className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none lg:flex-1 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                                              >
+                                                <option value="">Select Status</option>
+
+                                                <option value="cancelled">
+                                                  Cancel Orders
+                                                </option>
+                                              </select>
+
+                                              {/* REMARK */}
+                                              {newStatus === "cancelled" && (
+                                                <select
+                                                  name="remark"
+                                                  defaultValue=""
+                                                  onChange={(e) => {
+                                                    setRemark(e.target.value);
+                                                  }}
+                                                  className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none lg:flex-1 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                                                >
+                                                  <option value="">Select Remark</option>
+
+                                                  <option value="Seller Requested Future Pick up">
+                                                    Seller Requested Future Pick up
+                                                  </option>
+
+                                                  <option value="Awb rejected">
+                                                    AWB Rejected
+                                                  </option>
+
+                                                  <option value="Duplicate Pickup Request">
+                                                    Duplicate Pickup Request
+                                                  </option>
+
+                                                  <option value="Non Serviceable Location">
+                                                    Non Serviceable Location
+                                                  </option>
+
+                                                  <option value="Pick Failed Due to Dangerous Goods">
+                                                    Pick Failed Due to Dangerous Goods
+                                                  </option>
+
+                                                  <option value="Product packaging Issue">
+                                                    Product Packaging Issue
+                                                  </option>
+
+                                                  <option value="Shipment Handedover to other courier">
+                                                    Shipment Handedover to Other Courier
+                                                  </option>
+
+                                                  <option value="Seller Closed">
+                                                    Seller Closed
+                                                  </option>
+
+                                                  <option value="Pick up Request Expired">
+                                                    Pick up Request Expired
+                                                  </option>
+
+                                                  <option value="Entry not Permitted">
+                                                    Entry not Permitted
+                                                  </option>
+
+                                                  <option value="Customer wants refund/replacement first">
+                                                    Customer wants refund/replacement first
+                                                  </option>
+                                                </select>
+                                              )}
+
+                                                      <button
+                                                        type="submit"
+                                                        className="h-10 w-full shrink-0 cursor-pointer rounded-md bg-[#0446DB] px-5 text-sm font-medium text-white hover:bg-[#0339b5] lg:w-auto"
+                                                      >
+                                                        Apply Action
+                                                      </button>
+                                                  </form>
+                                                )}
+                                              </div>
+                                            </div>
+
+                                            {/* ============================================
+                                                VENDOR ASSIGNMENT
+                                            ============================================ */}
+                                            {/* ================= VENDOR ASSIGNMENT ================= */}
+                                            <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                                              {/* Header */}
+                                              <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                                                <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                                  Vendor Assignment
+                                                </h3>
+
+                                                <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                                                  Find an available vendor and assign the selected orders.
+                                                </p>
+                                              </div>
+
+                                              <div className="p-4">
+                                                {!fetchBulkAssignmentVendor ? (
+                                                  /* ================= GET AVAILABLE VENDOR ================= */
+                                                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                                    <div>
+                                                      <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                                        Available Vendors
+                                                      </p>
+
+                                                      <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                                        Get eligible vendors for{" "}
+                                                        <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                                                          {selectedBulkOrders?.length || 0}
+                                                        </span>{" "}
+                                                        selected orders.
+                                                      </p>
+                                                    </div>
+
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => {
+                                                        setFetchBulkAssignmentVendor(true);
+
+                                                        const order_ids = [
+                                                          ...new Set(
+                                                            selectedBulkOrders.map((order) => order.id)
+                                                          ),
+                                                        ];
+
+                                                        fetchVendor(order_ids);
+                                                      }}
+                                                      className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
+                                                    >
+                                                      Get Available Vendor
+                                                    </button>
+                                                  </div>
+                                                ) : vendor?.length > 0 ? (
+                                                  /* ================= VENDOR FOUND ================= */
+                                                  <div className="space-y-4">
+                                                    <div>
+                                                      <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                                        Select Vendor
+                                                      </label>
+
+                                                      <select
+                                                        value={assignmentState}
+                                                        onChange={(e) =>
+                                                          setAssignmentState(e.target.value)
+                                                        }
+                                                        className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                                                      >
+                                                        <option value="">
+                                                          Select Vendor for Bulk Assignment
+                                                        </option>
+
+                                                        {vendor?.map((vendorItem) => (
+                                                          <option
+                                                            key={vendorItem?.vendor_id}
+                                                            value={vendorItem?.vendor_id}
+                                                          >
+                                                            {vendorItem?.vendor_id} :{" "}
+                                                            {vendorItem?.vendor_name}
+                                                          </option>
+                                                        ))}
+                                                      </select>
+                                                    </div>
+
+                                                    {/* Selected Orders Info */}
+                                                    <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
+                                                      <div>
+                                                        <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                                          Selected Orders
+                                                        </p>
+
+                                                        <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+                                                          Selected vendor will be assigned to all orders.
+                                                        </p>
+                                                      </div>
+
+                                                      <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+                                                        {selectedBulkOrders?.length || 0}
+                                                      </span>
+                                                    </div>
+
+                                                    {/* Action */}
+                                                    <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
+                                                      
+
+
+                                                      <button
+                                                        type="button"
+                                                        disabled={!assignmentState}
+                                                        onClick={async () => {
+                                                          if (!assignmentState) {
+                                                            toast.warn("Please select a vendor");
+                                                            return;
+                                                          }
+
+                                                          const order_ids = selectedBulkOrders.map(
+                                                            (order) => order.id
+                                                          );
+
+                                                          await assignBulkOrderVendor(
+                                                            order_ids,
+                                                            assignmentState
+                                                          );
+
+                                                          setSelectedBulkOrders([]);
+                                                          setBulkOrderWeight(0);
+                                                          setFetchBulkAssignmentVendor(false);
+                                                        }}
+                                                        className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500"
+                                                      >
+                                                        Bulk Assign
+                                                      </button>
+                                                    </div>
+                                                  </div>
+                                                ) : (
+                                                  /* ================= NO VENDOR ================= */
+                                                  <div className="rounded-sm border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/20 dark:bg-amber-500/5">
+                                                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+                                                      No Vendor Available
+                                                    </p>
+
+                                                    <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+                                                      No eligible vendor was found for the selected orders.
+                                                    </p>
+
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => {
+                                                        setFetchBulkAssignmentVendor(false);
+                                                        setAssignmentState("");
+                                                        setVendor([]);
+                                                      }}
+                                                      className="mt-3 h-8 cursor-pointer rounded-sm border border-amber-300 bg-white px-3 text-xs font-medium text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-neutral-900 dark:text-amber-400"
+                                                    >
+                                                      Try Again
+                                                    </button>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+
+
+                                                                      {/* ================= GENERATE BULK PICKUP REQUEST ================= */}
+                                              <div className="overflow-hidden rounded-sm border border-emerald-200 dark:border-emerald-500/20">
+                                                {/* Header */}
+                                                <div className="border-b border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+                                                  <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                                    Generate Bulk Pickup Request
+                                                  </h3>
+
+                                                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                                                    Generate pickup requests for all selected orders.
+                                                  </p>
+                                                </div>
+
+                                                {/* Content */}
+                                                <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                                                  {/* Info */}
+                                                  <div>
+                                                    <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                                      Generate Pickup for Selected Orders
+                                                    </p>
+
+                                                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                                        {selectedBulkOrders?.length || 0}
+                                                      </span>{" "}
+                                                      selected orders will be included in the pickup request.
+                                                    </p>
+                                                  </div>
+
+                                                  {/* Button */}
+                                                  <button
+                                                    type="submit"
+                                                    disabled={!selectedBulkOrders?.length}
+                                                    onClick={async () => {
+                                                      if (!selectedBulkOrders?.length) {
+                                                        toast.warn("Please select at least one order");
+                                                        return;
+                                                      }
+
+                                                      const order_ids = [
+                                                        ...new Set(
+                                                          selectedBulkOrders.map((order) => order.id)
+                                                        ),
+                                                      ];
+
+                                                      await generateBulkPickupRequest(order_ids);
+
+                                                      clearAllState();
+                                                    }}
+                                                    className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-emerald-600 px-5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                                  >
+                                                    Generate Pickup Request
+                                                  </button>
+                                                </div>
+                                              </div>
+
+                                            {/* ============================================
+                                                CLEAR SELECTED ORDERS
+                                            ============================================ */}
+                                            <div className="rounded-md border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5">
+                                              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                                <div>
+                                                  <h3 className="text-sm font-semibold text-gray-800 dark:text-neutral-200">
+                                                    Clear Selection
+                                                  </h3>
+
+                                                  <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                                                    Remove all currently selected orders.
+                                                  </p>
+                                                </div>
+
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setSelectedBulkOrders([]);
+                                                    setBulkOrderWeight(0);
+
+                                                    setFetchBulkAssignmentRider(false);
+                                                    setFetchBulkAssignmentVendor(false);
+
+                                                    setcanceledBulkOrder(false);
+
+                                                    clearAllState();
+                                                  }}
+                                                  className="h-10 shrink-0 cursor-pointer rounded-md border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
+                                                >
+                                                  Clear Selected Orders
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          {/* =========================
+                                              FOOTER
+                                          ========================= */}
+                                          <AlertDialogFooter className="border-t border-gray-200 bg-gray-50 px-6 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
+                                            <AlertDialogCancel
+                                            onClick={()=>{
+                                              clearAll()
+                                              clearAllState()
+                                            }}
+                                            className="cursor-pointer">
+                                              Close
+                                            </AlertDialogCancel>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                </AlertDialog>
+                              </>
 
           )}
-
-
-
-
-
 
           {selectedBulkOrders.length > 0 && (selectedStatus === "picked" || selectedStatus === "undelivered") && (
 
             <>
-              <div className="mb-10 bg-white  rounded-xl shadow-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800 mb-5">
-                  Bulk Orders Rider ({selectedBulkOrders.length} Selected)
-                </h2>
-                <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+              {/* <div className="">
+                
 
-                  <table className="min-w-full h-[30%] table-auto border border-gray-200 rounded-md overflow-hidden">
-                    <thead className="bg-gray-100 text-gray-600 text-sm font-semibold">
-                      <tr>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order ID
-                        </th>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order Weight
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-800 text-sm">
-                      {selectedBulkOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 border-b">{order.id}</td>
-                          <td className="px-4 py-2 border-b">
-                            {Number(order.total_weight).toLocaleString()}g
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-
-                  </table>
-
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-center gap-4">
+                <div className="py-2 px-3 flex flex-wrap items-center gap-4">
                   {selectedMapType === "mapped" && (
                     selectedBulkOrders.length > 0 ? (
                       <form
@@ -1951,7 +2274,7 @@ function OrderDetails() {
 
                             fetchVendor(order_ids);
                           }}
-                          className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
+                          className="bg-[#0446DB] transition text-white px-5 py-2 rounded-md shadow font-medium"
                         >
                           Get Available Vendor
                         </button>
@@ -1987,12 +2310,12 @@ function OrderDetails() {
                                         return;
                                       }
 
-                                      for (const order of selectedBulkOrders) {
-                                        await assignBulkOrderVendor(
-                                          order.id,
+                                      const order_ids = selectedBulkOrders.map((order) => order.id);
+
+                                        const result = await assignBulkOrderVendor(
+                                          order_ids,
                                           assignmentState
                                         );
-                                      }
 
                                       setSelectedBulkOrders([]);
                                       setBulkOrderWeight(0);
@@ -2014,84 +2337,6 @@ function OrderDetails() {
                     </>
                   )}
 
-                  {/* {
-                   
-
-                  (selectedStatus === "picked" || selectedStatus === "undelivered") && (
-                  <>
-                    {selectedBulkOrders.length > 0 && riders.length == 0 ? (
-                      <button
-                        onClick={() => {
-                          // setFetchBulkAssignmentVendor(true);
-
-                          // const order_ids = [
-                          //   ...new Set(selectedBulkOrders.map((o) => o.id)),
-                          // ];
-                          const vendor_ids = [
-                            ...new Set(selectedBulkOrders.map((o) => o.mapped_with)),
-                          ];
-
-                          fetchRider(vendor_ids);
-                        }}
-                        className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                      >
-                        Get Available Rider
-                      </button>
-                    ) : (
-                      <>
-                        {riders?.length > 0 && (
-                          <>
-                            <select
-                              className="border border-gray-300 text-sm text-gray-700 px-4 py-2 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-64"
-                              value={assignmentState}
-                              onChange={(e) => setAssignmentState(e.target.value)}
-                            >
-                              <option value="">
-                                Select Rider for Bulk Assignment
-                              </option>
-
-                              {riders.map((rider, index) => (
-                                <option
-                                  key={index}
-                                  value={rider.id}
-                                >
-                                  {rider.id} : {rider.name}
-                                </option>
-                              ))}
-                            </select>
-                            <button
-                              onClick={async () => {
-                                if (!assignmentState) {
-                                  toast.warn("Please select a rider");
-                                  return;
-                                }
-
-                                for (const order of selectedBulkOrders) {
-
-                                  await changeOrderStatus(
-                                    {
-                                      order_id: order.id || "",
-                                      newStatus: selectedStatus === "undelivered" ? "undelivered assigned" : "in transit",
-                                      rider_id: assignmentState || ""
-                                    }
-                                  );
-                                }
-
-                                clearAllState()
-                              }}
-                              className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                            >
-                              Bulk Assign
-                            </button>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </>
-                  )} */}
-
-
-
                   {((selectedStatus === "picked" && canMarkInTransit) ||
                     (selectedStatus === "undelivered" && canAssignUndelivered)) && (
                       <>
@@ -2104,7 +2349,7 @@ function OrderDetails() {
 
                               fetchRider(vendor_ids);
                             }}
-                            className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-1 rounded-md shadow font-medium"
+                            className="bg-[#0446DB]  transition text-white px-5 py-1 rounded-md shadow font-medium"
                           >
                             Get Available Rider
                           </button>
@@ -2165,11 +2410,6 @@ function OrderDetails() {
                         )}
                       </>
                     )}
-
-
-
-
-
                   <button
                     className="bg-red-500 hover:bg-red-800 transition text-white px-5 py-1 rounded-md shadow font-medium"
                     onClick={() => {
@@ -2188,51 +2428,387 @@ function OrderDetails() {
 
 
 
-              </div>
+              </div> */}
+
+
+              <AlertDialog>
+  {/* =====================================================
+      OPEN BULK ACTION DIALOG
+  ===================================================== */}
+  <AlertDialogTrigger
+    
+  >
+    <Button
+        variant="outline"
+        className="h-7 cursor-pointer rounded-sm bg-[#0446DB] border-[#0446DB] px-4 text-sm font-medium text-[#fff] hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10"
+      >
+    Action
+        </Button>
+  </AlertDialogTrigger>
+
+  <AlertDialogContent className="!max-w-2xl overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+    {/* =====================================================
+        HEADER
+    ===================================================== */}
+    <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+        Bulk Order Actions
+      </AlertDialogTitle>
+
+      <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        Manage{" "}
+        <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+          {selectedBulkOrders?.length || 0}
+        </span>{" "}
+        selected orders.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+
+    {/* =====================================================
+        BODY
+    ===================================================== */}
+    <div className="max-h-[65vh] overflow-y-auto px-5 py-5">
+      <div className="space-y-4">
+
+        {/* =================================================
+            MAPPED ORDERS
+        ================================================= */}
+        {selectedMapType === "mapped" && (
+          <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+            {/* HEADER */}
+            <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                Change Order Action
+              </h3>
+
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                Apply an action to the selected mapped orders.
+              </p>
+            </div>
+
+            {/* CONTENT */}
+            <div className="p-4">
+              {selectedBulkOrders.length > 0 ? (
+                <form
+                  className="flex flex-col gap-3 sm:flex-row sm:items-center"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+
+                    await Promise.all(
+                      selectedBulkOrders.map((order) =>
+                        cancelVendorAssignment(order.id)
+                      )
+                    );
+
+                    setSelectedBulkOrders([]);
+                    setSelectedMapType(null);
+                  }}
+                >
+                  <select
+                    className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                    name="status"
+                  >
+                    <option value="">
+                      Select Status
+                    </option>
+
+                    <option value="Cancel Vendor Mapped">
+                      Cancel Vendor Mapping
+                    </option>
+                  </select>
+
+                  <button
+                    type="submit"
+                    className="h-10 shrink-0 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                  >
+                    Apply Action
+                  </button>
+                </form>
+              ) : (
+                <button
+                  onClick={() => {
+                    setcanceledBulkOrder(true);
+                  }}
+                  className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                >
+                  Change Action
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* =================================================
+            UNMAPPED ORDERS - VENDOR ASSIGNMENT
+        ================================================= */}
+        {selectedMapType === "unmapped" && (
+          <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+            {/* HEADER */}
+            <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                Vendor Assignment
+              </h3>
+
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                Find an available vendor and assign the selected
+                orders.
+              </p>
+            </div>
+
+            {/* CONTENT */}
+            <div className="p-4">
+              {selectedBulkOrders.length > 0 &&
+              !fetchBulkAssignmentVendor ? (
+                <button
+                  onClick={() => {
+                    setFetchBulkAssignmentVendor(true);
+
+                    const order_ids = [
+                      ...new Set(
+                        selectedBulkOrders.map((o) => o.id)
+                      ),
+                    ];
+
+                    fetchVendor(order_ids);
+                  }}
+                  className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                >
+                  Get Available Vendor
+                </button>
+              ) : (
+                <>
+                  {vendor?.length > 0 && (
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <select
+                        className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                        value={assignmentState}
+                        onChange={(e) =>
+                          setAssignmentState(e.target.value)
+                        }
+                      >
+                        <option value="">
+                          Select Vendor for Bulk Assignment
+                        </option>
+
+                        {vendor.map((vendorItem) => (
+                          <option
+                            key={vendorItem.vendor_id}
+                            value={vendorItem.vendor_id}
+                          >
+                            {vendorItem.vendor_id} :{" "}
+                            {vendorItem.vendor_name}
+                          </option>
+                        ))}
+                      </select>
+
+                      {assignmentState && (
+                        <button
+                          onClick={async () => {
+                            if (!assignmentState) {
+                              toast.warn(
+                                "Please select a vendor"
+                              );
+                              return;
+                            }
+
+                            const order_ids =
+                              selectedBulkOrders.map(
+                                (order) => order.id
+                              );
+
+                            const result =
+                              await assignBulkOrderVendor(
+                                order_ids,
+                                assignmentState
+                              );
+
+                            setSelectedBulkOrders([]);
+                            setBulkOrderWeight(0);
+                            setFetchBulkAssignmentVendor(false);
+                            setSelectedMapType(null);
+                            setAssignmentState("");
+                          }}
+                          className="h-10 shrink-0 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                        >
+                          Bulk Assign Orders to Vendor
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* =================================================
+            RIDER ASSIGNMENT
+        ================================================= */}
+        {((selectedStatus === "picked" && canMarkInTransit) ||
+          (selectedStatus === "undelivered" &&
+            canAssignUndelivered)) && (
+          <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+            {/* HEADER */}
+            <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                Rider Assignment
+              </h3>
+
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                Find an available rider and assign the selected
+                orders.
+              </p>
+            </div>
+
+            {/* CONTENT */}
+            <div className="p-4">
+              {selectedBulkOrders.length > 0 &&
+              riders.length === 0 ? (
+                <button
+                  onClick={() => {
+                    const vendor_ids = [
+                      ...new Set(
+                        selectedBulkOrders.map(
+                          (o) => o.mapped_with
+                        )
+                      ),
+                    ];
+
+                    fetchRider(vendor_ids);
+                  }}
+                  className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                >
+                  Get Available Rider
+                </button>
+              ) : (
+                <>
+                  {riders.length > 0 && (
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <select
+                        className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                        value={assignmentState}
+                        onChange={(e) =>
+                          setAssignmentState(e.target.value)
+                        }
+                      >
+                        <option value="">
+                          Select Rider for Bulk Assignment
+                        </option>
+
+                        {riders.map((rider) => (
+                          <option
+                            key={rider.id}
+                            value={rider.id}
+                          >
+                            {rider.id} : {rider.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      {assignmentState && (
+                        <button
+                          onClick={async () => {
+                            if (!assignmentState) {
+                              toast.warn(
+                                "Please select a rider"
+                              );
+                              return;
+                            }
+
+                            const order_ids =
+                              selectedBulkOrders.map(
+                                (o) => o.id
+                              );
+
+                            await changeOrderStatus({
+                              order_ids: order_ids,
+                              newStatus:
+                                selectedStatus ===
+                                "undelivered"
+                                  ? "undelivered assigned"
+                                  : "in transit",
+                              rider_id: assignmentState,
+                            });
+
+                            // for (const order of selectedBulkOrders) {
+                            // }
+
+                            clearAllState();
+                          }}
+                          className="h-10 shrink-0 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                        >
+                          Bulk Assign Orders to Rider
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* =================================================
+            CLEAR SELECTED ORDERS
+        ================================================= */}
+        <div className="flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+              Clear Selection
+            </p>
+
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+              Remove all currently selected orders and reset
+              bulk actions.
+            </p>
+          </div>
+
+          <button
+            className="h-10 shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
+            onClick={() => {
+              setSelectedBulkOrders([]);
+              setBulkOrderWeight(0);
+              setFetchBulkAssignmentRider(false);
+              setFetchBulkAssignmentVendor(false);
+              setcanceledBulkOrder(false);
+              setSelectedMapType(null);
+              clearAllState();
+            }}
+          >
+            Clear Selected Orders
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* =====================================================
+        FOOTER
+    ===================================================== */}
+    <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
+      <AlertDialogCancel
+      onClick={()=>{
+                            clearAll()
+                            clearAllState()
+                           }}
+      className="cursor-pointer rounded-sm">
+        Close
+      </AlertDialogCancel>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+             </AlertDialog>
+
+             
             </>
 
           )}
 
-
           {selectedBulkOrders.length > 0 && (selectedStatus === "in transit" || selectedStatus == 'undelivered assigned') && (
 
             <>
-              <div className="mb-10 bg-white  rounded-xl shadow-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800 mb-5">
-                  Bulk Orders ({selectedBulkOrders.length} Selected)
-                </h2>
+              {/* <div className="">
+                
 
-
-
-                <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-
-                  <table className="min-w-full h-[30%] table-auto border border-gray-200 rounded-md overflow-hidden">
-                    <thead className="bg-gray-100 text-gray-600 text-sm font-semibold">
-                      <tr>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order ID
-                        </th>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order Weight
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-800 text-sm">
-                      {selectedBulkOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 border-b">{order.id}</td>
-                          <td className="px-4 py-2 border-b">
-                            {Number(order.total_weight).toLocaleString()}g
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-
-                  </table>
-
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-center gap-4">
+                <div className="py-2 px-3 flex flex-wrap items-center gap-4">
 
 
                   {(selectedStatus === "in transit" || selectedStatus == 'undelivered assigned') && (
@@ -2349,51 +2925,253 @@ function OrderDetails() {
 
 
 
-              </div>
+              </div> */}
+
+              <AlertDialog>
+  {/* =====================================================
+      OPEN DIALOG BUTTON
+  ===================================================== */}
+  <AlertDialogTrigger
+   
+  >
+    <Button
+        variant="outline"
+        className="h-7 cursor-pointer rounded-sm bg-[#0446DB] border-[#0446DB] px-4 text-sm font-medium text-[#fff] hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10"
+      >
+    Action
+        </Button>
+  </AlertDialogTrigger>
+
+  {/* =====================================================
+      DIALOG
+  ===================================================== */}
+  <AlertDialogContent className="!max-w-2xl overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+    {/* ===================================================
+        HEADER
+    =================================================== */}
+    <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+        Bulk Order Actions
+      </AlertDialogTitle>
+
+      <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        Manage{" "}
+        <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+          {selectedBulkOrders?.length || 0}
+        </span>{" "}
+        selected orders.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+
+    {/* ===================================================
+        BODY
+    =================================================== */}
+    <div className="max-h-[65vh] overflow-y-auto px-5 py-5">
+      <div className="space-y-4">
+        {/* ===============================================
+            ORDER ACTION
+        =============================================== */}
+
+        {(selectedStatus === "in transit" ||
+          selectedStatus == "undelivered assigned") && (
+          <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+            {/* SECTION HEADER */}
+            <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                Change Order Action
+              </h3>
+
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                Select an action to apply to all selected orders.
+              </p>
+            </div>
+
+            {/* CONTENT */}
+            <div className="p-4">
+              {selectedBulkOrders.length > 0 &&
+              openOfd.length == 0 ? (
+                /* =========================================
+                    CHANGE ACTION
+                ========================================= */
+                <button
+                  onClick={() => {
+                    const order_ids = [
+                      ...new Set(
+                        selectedBulkOrders.map(
+                          (o) => o.id
+                        )
+                      ),
+                    ];
+
+                    setopenOfd(order_ids);
+                  }}
+                  className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                >
+                  Change Action
+                </button>
+              ) : (
+                <>
+                  {openOfd.length > 0 && (
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      {/* ===============================
+                          STATUS SELECT
+                      =============================== */}
+
+                      <select
+                        className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                        value={assignmentState}
+                        onChange={(e) =>
+                          setAssignmentState(
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="">
+                          Select Status
+                        </option>
+
+                        <option value={"out for delivery"}>
+                          Mark Out For Delivery
+                        </option>
+
+                        {selectedStatus ==
+                          "undelivered assigned" || selectedStatus ==
+                          "in transit"  && (
+                          <option
+                            value={
+                              "cancel rider assignment"
+                            }
+                          >
+                            Cancel Rider Assignment
+                          </option>
+                        )}
+
+                        <option value="lost">
+                          Lost
+                        </option>
+                      </select>
+
+                      {/* ===============================
+                          APPLY ACTION
+                      =============================== */}
+
+                      {assignmentState && (
+                        <button
+                          onClick={async () => {
+                            if (!assignmentState) {
+                              toast.warn(
+                                "Please select a status"
+                              );
+                              return;
+                            }
+
+                            const order_ids =
+                              selectedBulkOrders.map(
+                                (o) => o.id
+                              );
+
+                            if (
+                              assignmentState ===
+                              "cancel rider assignment"
+                            ) {
+                              await cancelRiderAssignments(
+                                order_ids
+                              );
+                            } else {
+                              // for (const order of selectedBulkOrders) {
+                              // }
+
+                              await changeOrderStatus({
+                                order_ids: order_ids,
+                                newStatus:
+                                  assignmentState,
+                                rider_id: "",
+                              });
+                            }
+
+                            clearAllState();
+                          }}
+                          className="h-10 shrink-0 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                        >
+                          {assignmentState == ""
+                            ? "Select Status"
+                            : assignmentState ===
+                                "cancel rider assignment"
+                              ? "Cancel Rider Assignment"
+                              : "Mark Bulk Orders as Out for Delivery"}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ===============================================
+            CLEAR SELECTED ORDERS
+        =============================================== */}
+
+        <div className="flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+              Clear Selection
+            </p>
+
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+              Remove all currently selected orders and reset
+              bulk actions.
+            </p>
+          </div>
+
+          <button
+            className="h-10 shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
+            onClick={() => {
+              clearAllState();
+              setSelectedBulkOrders([]);
+              setBulkOrderWeight(0);
+              setFetchBulkAssignmentRider(false);
+              setFetchBulkAssignmentVendor(false);
+              setcanceledBulkOrder(false);
+              setSelectedMapType(null);
+              clearAllState();
+            }}
+          >
+            Clear Selected Orders
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* ===================================================
+        FOOTER
+    =================================================== */}
+    <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
+      <AlertDialogCancel
+      onClick={()=>{
+                            clearAll()
+                            clearAllState()
+                           }}
+      className="cursor-pointer rounded-sm">
+        Close
+      </AlertDialogCancel>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+            </AlertDialog>
+
+               
             </>
 
           )}
 
-
           {selectedBulkOrders.length > 0 && selectedStatus === "out for delivery" && (
 
             <>
-              <div className="mb-10 bg-white  rounded-xl shadow-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800 mb-5">
-                  Bulk Orders ({selectedBulkOrders.length} Selected)
-                </h2>
+              {/* <div className="">
+                
 
-
-
-                <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-
-                  <table className="min-w-full h-[30%] table-auto border border-gray-200 rounded-md overflow-hidden">
-                    <thead className="bg-gray-100 text-gray-600 text-sm font-semibold">
-                      <tr>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order ID
-                        </th>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order Weight
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-800 text-sm">
-                      {selectedBulkOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 border-b">{order.id}</td>
-                          <td className="px-4 py-2 border-b">
-                            {Number(order.total_weight).toLocaleString()}g
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-
-                  </table>
-
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-center gap-4">
+                <div className="py-2 px-3 flex flex-wrap items-center gap-4">
 
 
                   {selectedStatus === "out for delivery" && (
@@ -2707,52 +3485,591 @@ function OrderDetails() {
 
 
 
-              </div>
+              </div> */}
+
+
+              <AlertDialog>
+  {/* =====================================================
+      OPEN BULK ACTIONS
+  ===================================================== */}
+  <AlertDialogTrigger
+    
+  >
+    <Button
+        variant="outline"
+        className="h-7 cursor-pointer rounded-sm border-[#0446DB] px-4 text-sm font-medium bg-[#0446DB] text-[#fff] hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10"
+      >
+    Action
+        </Button>
+  </AlertDialogTrigger>
+
+  {/* =====================================================
+      MAIN BULK ACTION DIALOG
+  ===================================================== */}
+  <AlertDialogContent className="!max-w-2xl overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+    {/* HEADER */}
+    <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+        Bulk Order Actions
+      </AlertDialogTitle>
+
+      <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        Manage{" "}
+        <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+          {selectedBulkOrders?.length || 0}
+        </span>{" "}
+        selected orders.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+
+    {/* =====================================================
+        BODY
+    ===================================================== */}
+    <div className="max-h-[70vh] overflow-y-auto px-5 py-5">
+      <div className="space-y-4">
+        {/* =================================================
+            OUT FOR DELIVERY ACTIONS
+        ================================================= */}
+        {selectedStatus === "out for delivery" && (
+          <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+            {/* SECTION HEADER */}
+            <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                Change Order Action
+              </h3>
+
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                Update the status of selected out for delivery
+                orders.
+              </p>
+            </div>
+
+            {/* CONTENT */}
+            <div className="p-4">
+              {selectedBulkOrders.length > 0 &&
+              openDelivered.length == 0 ? (
+                /* =========================================
+                    CHANGE ACTION BUTTON
+                ========================================= */
+                <button
+                  onClick={() => {
+                    const order_ids = [
+                      ...new Set(
+                        selectedBulkOrders.map(
+                          (o) => o.id
+                        )
+                      ),
+                    ];
+
+                    setopenDeliverde(order_ids);
+                  }}
+                  className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                >
+                  Change Action
+                </button>
+              ) : (
+                <>
+                  {openDelivered.length > 0 && (
+                    <div className="space-y-4">
+                      {/* =====================================
+                          STATUS SELECT
+                      ===================================== */}
+                      <div>
+                        <label className="mb-2 block text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                          Select New Status
+                        </label>
+
+                        <select
+                          className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                          value={assignmentState}
+                          onChange={(e) =>
+                            setAssignmentState(
+                              e.target.value
+                            )
+                          }
+                        >
+                          <option value="">
+                            Select Status
+                          </option>
+
+                          <option value={"delivered"}>
+                            Mark Delivered
+                          </option>
+
+                          <option value={"ndr"}>
+                            Mark NDR
+                          </option>
+
+                          <option value="lost">
+                            Mark Lost
+                          </option>
+                        </select>
+                      </div>
+
+                      {/* =====================================
+                          NDR
+                      ===================================== */}
+                      {assignmentState == "ndr" && (
+                        <>
+                          <Dialog className="w-5xl">
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="h-10 cursor-pointer rounded-sm border border-[#0446DB] bg-[#0446DB] px-5 text-sm font-semibold text-white hover:bg-[#0339B5] hover:text-white"
+                              >
+                                <span>
+                                  Mark Bulk Orders as NDR
+                                </span>
+                              </Button>
+                            </DialogTrigger>
+
+                            {/* ===============================
+                                NDR DIALOG
+                            =============================== */}
+                            <DialogContent className="!max-w-lg overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 dark:border-neutral-800 dark:bg-neutral-900">
+                              {/* NDR HEADER */}
+                              <DialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+                                <DialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+                                  NDR
+                                </DialogTitle>
+
+                                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                                  Add undelivered details for
+                                  selected orders.
+                                </p>
+                              </DialogHeader>
+
+                              {/* NDR BODY */}
+                              <div className="max-h-[65vh] space-y-4 overflow-y-auto px-5 py-5">
+                                {/* ===========================
+                                    DELIVERY REASON
+                                =========================== */}
+                                <div>
+                                  <label
+                                    htmlFor="delivery_reason"
+                                    className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+                                  >
+                                    Undelivered Reason
+                                  </label>
+
+                                  <select
+                                    name="delivery_reason"
+                                    id="delivery_reason"
+                                    onChange={(e) => {
+                                      setRemarks(
+                                        e.target.value
+                                      );
+                                      setRescheduleDate("");
+                                      setSub_remarks("");
+                                    }}
+                                    className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                                  >
+                                    <option value="">
+                                      -- Select Reason --
+                                    </option>
+
+                                    <option value="Address Incorrect / Incomplete">
+                                      Address Incorrect /
+                                      Incomplete
+                                    </option>
+
+                                    <option value="Customer Requested Reschedule">
+                                      Customer Requested
+                                      Reschedule
+                                    </option>
+
+                                    <option value="Customer Refused / Cancelled">
+                                      Customer Refused /
+                                      Cancelled
+                                    </option>
+
+                                    <option value="Delivery Attempted – Not Reachable">
+                                      Delivery Attempted – Not
+                                      Reachable
+                                    </option>
+
+                                    <option value="Delivery Attempted – No Response">
+                                      Delivery Attempted – No
+                                      Response
+                                    </option>
+
+                                    <option value="Wrong Pincode / Address">
+                                      Wrong Pincode / Address
+                                    </option>
+
+                                    <option value="Wrong Contact Details">
+                                      Wrong Contact Details
+                                    </option>
+
+                                    <option value="Vehicle / Weather / Road Issue">
+                                      Vehicle / Weather / Road
+                                      Issue
+                                    </option>
+
+                                    <option value="Package Damaged">
+                                      Package Damaged
+                                    </option>
+                                  </select>
+                                </div>
+
+                                {/* ===========================
+                                    RESCHEDULE DATE
+                                =========================== */}
+                                {remarks ==
+                                  "Customer Requested Reschedule" && (
+                                  <>
+                                    <div>
+                                      <label
+                                        htmlFor=""
+                                        className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+                                      >
+                                        Reschedule Date
+                                      </label>
+
+                                      <input
+                                        type="date"
+                                        value={
+                                          rescheduleDate
+                                        }
+                                        onClick={(e) =>
+                                          e.target.showPicker?.()
+                                        }
+                                        onChange={(e) =>
+                                          setRescheduleDate(
+                                            e.target.value
+                                          )
+                                        }
+                                        className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                                      />
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* ===========================
+                                    RESCHEDULE SUB REMARK
+                                =========================== */}
+                                {remarks ==
+                                  "Customer Requested Reschedule" && (
+                                  <>
+                                    <div>
+                                      <label
+                                        htmlFor=""
+                                        className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+                                      >
+                                        Sub Remark
+                                      </label>
+
+                                      <select
+                                        onChange={(e) => {
+                                          setSub_remarks(
+                                            e.target.value
+                                          );
+                                        }}
+                                        className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                                      >
+                                        <option value="">
+                                          -- Select Reason --
+                                        </option>
+
+                                        <option value="Unavailable at Location">
+                                          Unavailable at Location
+                                        </option>
+
+                                        <option value="Out of Station">
+                                          Out of Station
+                                        </option>
+
+                                        <option value="COD Amount Not Ready">
+                                          COD Amount Not Ready
+                                        </option>
+
+                                        <option value="Require Different Time Slot">
+                                          Require Different Time
+                                          Slot
+                                        </option>
+
+                                        <option value="Other">
+                                          Other
+                                        </option>
+                                      </select>
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* ===========================
+                                    CUSTOMER REFUSED SUB REMARK
+                                =========================== */}
+                                {remarks ==
+                                  "Customer Refused / Cancelled" && (
+                                  <>
+                                    <div>
+                                      <label
+                                        htmlFor=""
+                                        className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+                                      >
+                                        Sub Remark
+                                      </label>
+
+                                      <select
+                                        onChange={(e) => {
+                                          setSub_remarks(
+                                            e.target.value
+                                          );
+                                        }}
+                                        className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                                      >
+                                        <option value="">
+                                          -- Select Reason --
+                                        </option>
+
+                                        <option value="Duplicate Order">
+                                          Duplicate Order
+                                        </option>
+
+                                        <option value="Order Placed by Mistake">
+                                          Order Placed by Mistake
+                                        </option>
+
+                                        <option value="COD Amount Not Ready">
+                                          COD Amount Not Ready
+                                        </option>
+
+                                        <option value="Better Price Elsewhere">
+                                          Better Price Elsewhere
+                                        </option>
+
+                                        <option value="Other">
+                                          Other
+                                        </option>
+                                      </select>
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* ===========================
+                                    DETAILED REMARK
+                                =========================== */}
+                                <div>
+                                  <label
+                                    htmlFor="remark"
+                                    className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+                                  >
+                                    Remark (Optional)
+                                  </label>
+
+                                  <input
+                                    type="text"
+                                    value={
+                                      detailed_remarks
+                                    }
+                                    placeholder="Enter remark"
+                                    onChange={(e) =>
+                                      setdetailed_remarks(
+                                        e.target.value
+                                      )
+                                    }
+                                    className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors placeholder:text-neutral-400 focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* ===============================
+                                  NDR FOOTER
+                              =============================== */}
+                              <DialogFooter className="border-t border-neutral-200 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+                                <DialogClose asChild>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                      clearAllState();
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </DialogClose>
+
+                                <Button
+                                  onClick={async () => {
+                                    const order_ids =
+                                      selectedBulkOrders.map(
+                                        (o) => o.id
+                                      );
+
+                                    await changeOrderStatus({
+                                      order_ids:
+                                        order_ids,
+                                      newStatus:
+                                        assignmentState,
+                                      remarks: remarks,
+                                      sub_remarks:
+                                        sub_remarks,
+                                      detailed_remarks:
+                                        detailed_remarks,
+                                      rescheduled_date:
+                                        rescheduleDate,
+                                      rider_id: "",
+                                    });
+
+                                    // for (const order of selectedBulkOrders) {
+                                    // }
+                                  }}
+                                  className="bg-[#0446DB] text-white hover:bg-[#0339B5]"
+                                >
+                                  Submit
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </>
+                      )}
+
+                      {/* =====================================
+                          DELIVERED
+                      ===================================== */}
+                      {assignmentState == "delivered" && (
+                        <button
+                          onClick={async () => {
+                            if (!assignmentState) {
+                              toast.warn(
+                                "Please select a status"
+                              );
+                              return;
+                            }
+
+                            const order_ids =
+                              selectedBulkOrders.map(
+                                (o) => o.id
+                              );
+
+                            await changeOrderStatus({
+                              order_ids: order_ids,
+                              newStatus:
+                                assignmentState,
+                              rider_id: "",
+                            });
+
+                            // for (const order of selectedBulkOrders) {
+                            // }
+
+                            clearAllState();
+                          }}
+                          className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                        >
+                          Mark Bulk Orders as{" "}
+                          {assignmentState ==
+                          "delivered"
+                            ? "Delivered"
+                            : "NDR"}
+                        </button>
+                      )}
+
+                      {/* =====================================
+                          LOST
+                      ===================================== */}
+                      {assignmentState == "lost" && (
+                        <button
+                          onClick={async () => {
+                            if (!assignmentState) {
+                              toast.warn(
+                                "Please select a status"
+                              );
+                              return;
+                            }
+
+                            const order_ids =
+                              selectedBulkOrders.map(
+                                (o) => o.id
+                              );
+
+                            await changeOrderStatus({
+                              order_ids: order_ids,
+                              newStatus:
+                                assignmentState,
+                              rider_id: "",
+                            });
+
+                            // for (const order of selectedBulkOrders) {
+                            // }
+
+                            clearAllState();
+                          }}
+                          className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                        >
+                          Mark Bulk Orders as{" "}
+                          {assignmentState == "lost"
+                            ? "Lost"
+                            : ""}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* =================================================
+            CLEAR SELECTED ORDERS
+        ================================================= */}
+        <div className="flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+              Clear Selection
+            </p>
+
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+              Remove all currently selected orders and reset
+              bulk actions.
+            </p>
+          </div>
+
+          <button
+            className="h-10 shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
+            onClick={() => {
+              clearAllState();
+              setSelectedBulkOrders([]);
+              setBulkOrderWeight(0);
+              setFetchBulkAssignmentRider(false);
+              setFetchBulkAssignmentVendor(false);
+              setcanceledBulkOrder(false);
+              setSelectedMapType(null);
+              clearAllState();
+            }}
+          >
+            Clear Selected Orders
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* =====================================================
+        FOOTER
+    ===================================================== */}
+    <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+      <AlertDialogCancel 
+      onClick={()=>{
+                            clearAll()
+                            clearAllState()
+                           }}
+      className="cursor-pointer rounded-sm">
+        Close
+      </AlertDialogCancel>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+              </AlertDialog>
+             
             </>
 
           )}
 
-
-
           {selectedBulkOrders.length > 0 && selectedStatus === "rto in transit" && (
 
             <>
-              <div className="mb-10 bg-white  rounded-xl shadow-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800 mb-5">
-                  Bulk Orders ({selectedBulkOrders.length} Selected)
-                </h2>
+              {/* <div className="">
+                
 
-
-
-                <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-
-                  <table className="min-w-full h-[30%] table-auto border border-gray-200 rounded-md overflow-hidden">
-                    <thead className="bg-gray-100 text-gray-600 text-sm font-semibold">
-                      <tr>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order ID
-                        </th>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order Weight
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-800 text-sm">
-                      {selectedBulkOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 border-b">{order.id}</td>
-                          <td className="px-4 py-2 border-b">
-                            {Number(order.total_weight).toLocaleString()}g
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-
-                  </table>
-
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-center gap-4">
+                <div className="py-2 px-3 flex flex-wrap items-center gap-4">
                   {selectedStatus === "rto in transit" && (
                     selectedBulkOrders.length > 0 ? (
                       <form
@@ -2822,60 +4139,168 @@ function OrderDetails() {
 
 
 
-              </div>
+              </div> */}
+
+              {selectedStatus === "rto in transit" && (
+  <AlertDialog>
+    {/* ================= TRIGGER ================= */}
+    <AlertDialogTrigger
+     
+    >
+       <Button
+          variant="outline"
+          className="h-7 cursor-pointer rounded-sm border-[#0446DB] bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-[#0339B5] hover:text-white dark:border-blue-500 dark:bg-blue-600 dark:text-white"
+        >
+       Action
+          </Button>
+    </AlertDialogTrigger>
+
+    {/* ================= POPUP ================= */}
+    <AlertDialogContent className="!max-w-lg overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+      {/* ================= HEADER ================= */}
+      <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 text-left dark:border-neutral-800">
+        <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+          Bulk Order Actions
+        </AlertDialogTitle>
+
+        <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          Change action for{" "}
+          <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+            {selectedBulkOrders?.length || 0}
+          </span>{" "}
+          selected RTO orders.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+
+      {/* ================= BODY ================= */}
+      <div className="max-h-[70vh] overflow-y-auto px-5 py-5">
+        {/* =====================================================
+            RTO ORDER STATUS
+        ===================================================== */}
+        <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+          {/* SECTION HEADER */}
+          <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+              Change RTO Status
+            </h3>
+
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              Update the status of all selected RTO in transit orders.
+            </p>
+          </div>
+
+          {/* ================= ACTION ================= */}
+          <div className="p-4">
+            {selectedBulkOrders.length > 0 ? (
+              <form
+                className="flex flex-col gap-3 sm:flex-row sm:items-center"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+
+                  const ids = selectedBulkOrders.map(
+                    (order) => order.id
+                  );
+
+                  await rtoDelivered(ids);
+
+                  setSelectedBulkOrders([]);
+                  setSelectedMapType(null);
+                }}
+              >
+                {/* STATUS SELECT */}
+                <select
+                  className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                  name="status"
+                >
+                  <option value="">
+                    Select Status
+                  </option>
+
+                  <option value="rto delivered">
+                    RTO Delivered
+                  </option>
+
+                  <option value="lost">
+                    Lost
+                  </option>
+                </select>
+
+                {/* APPLY ACTION */}
+                <button
+                  type="submit"
+                  className="h-10 w-full shrink-0 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5] sm:w-auto"
+                >
+                  Apply Action
+                </button>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setcanceledBulkOrder(true);
+                }}
+                className="h-10 w-full cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5] sm:w-auto"
+              >
+                Change Action
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* =====================================================
+            CLEAR SELECTION
+        ===================================================== */}
+        <div className="mt-4 flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+              Clear Selection
+            </p>
+
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+              Remove all selected orders and reset bulk actions.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="h-10 w-full shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10 sm:w-auto"
+            onClick={() => {
+              setSelectedBulkOrders([]);
+              setBulkOrderWeight(0);
+              setFetchBulkAssignmentRider(false);
+              setFetchBulkAssignmentVendor(false);
+              setcanceledBulkOrder(false);
+              setSelectedMapType(null);
+              clearAllState();
+            }}
+          >
+            Clear Selected Orders
+          </button>
+        </div>
+      </div>
+
+      {/* ================= FOOTER ================= */}
+      <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+        <AlertDialogCancel className="cursor-pointer rounded-sm">
+          Close
+        </AlertDialogCancel>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+)}
             </>
 
           )}
 
 
-
-
-
-
-
-
           {/* Bulk Pending Pickup Handle */}
           {selectedBulkOrders.length > 0 &&
             selectedStatus === "pending pickup" && (
-              <div className="mb-10 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800 mb-5">
-                  Orders ({selectedBulkOrders.length} Selected)
-                </h2>
+              <>
+              {/* <div className="">
+                
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full table-auto border border-gray-200 rounded-md overflow-hidden">
-                    <thead className="bg-gray-100 text-gray-600 text-sm font-semibold">
-                      <tr>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order ID
-                        </th>
-                        <th className="px-4 py-3 text-left border-b">
-                          Order Weight
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-800 text-sm">
-                      {selectedBulkOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 border-b">{order.id}</td>
-                          <td className="px-4 py-2 border-b">
-                            {order.total_weight}g
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-indigo-50 text-indigo-700 font-semibold text-sm">
-                        <td className="px-4 py-2 border-t">Total Weight</td>
-                        <td className="px-4 py-2 border-t">
-                          {Number(bulkOrderWeight).toLocaleString()}g
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-center gap-4">
+                <div className="py-2 px-3 flex flex-wrap items-center gap-4">
                   <select
                     className="border border-gray-300 text-sm text-gray-700 px-4 py-2 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-64"
                     value={bulkStatusState}
@@ -2914,9 +4339,9 @@ function OrderDetails() {
                             await Promise.all(
                               selectedBulkOrders.map(order =>
                                 cancelVendorAssignment(order.id)
-                              )
+                              ) 
                             );
-                          }
+                          } 
                           else {
                             await Promise.all(
                               selectedBulkOrders.map(order =>
@@ -2948,25 +4373,755 @@ function OrderDetails() {
                     Clear Selected Orders
                   </button>
                 </div>
-              </div>
+              </div> */}
+
+
+              <AlertDialog>
+                  <AlertDialogTrigger
+                    
+                  >
+
+                    <Button
+                        variant="outline"
+                        className="h-7 cursor-pointer bg-[#0446DB] rounded-sm border-[#0446DB] px-4 text-sm font-medium text-white hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                      >
+                    Action
+                        </Button>
+                  </AlertDialogTrigger>
+
+                  <AlertDialogContent className="!max-w-3xl !max-h-[90Vh] overflow-y-scroll overflow-x-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+                  
+                    <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+                      <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+                        Bulk Order Actions
+                      </AlertDialogTitle>
+
+                      <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                        Change action for{" "}
+                        <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                          {selectedBulkOrders?.length || 0}
+                        </span>{" "}
+                        selected orders.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                   
+                    {/* <div className="px-5 py-5">
+                      <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                    
+                        <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            Change Order Status
+                          </h3>
+
+                          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                            Select an action to apply to all selected orders.
+                          </p>
+                        </div>
+
+                       
+                        <div className="p-4">
+                          <div className="grid gap-3 sm:flex-row sm:items-center">
+                            
+
+                            <div>
+
+                            <select
+                              className="h-10 w-full flex  rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                              value={bulkStatusState}
+                              onChange={(e) =>
+                                {setBulkStatusState(e.target.value)
+                                  if(e.target.value=='Cancelled'){
+
+                                    setNewStatus(e.target.value)
+                                  }else{
+                                     setNewStatus("")
+                                  }
+                                  }
+                              }
+                            >
+                              <option value="">
+                                Select Status
+                              </option>
+
+                              <option value="cancelled">
+                                Mark Cancelled
+                              </option>
+
+                              <option value="Cancel Vendor Mapped">
+                                Cancel Vendor Mapping
+                              </option>
+
+                              <option value="lost">
+                                Lost
+                              </option>
+                            </select> 
+                          
+
+                                 {
+                                      
+                                     newStatus=='cancelled' && (
+                                      <>
+                                        <select
+                                        name="status"
+                                        defaultValue=""
+                                        onChange={(e)=>{
+                                          setRemark(e.target.value)
+                                        }}
+                                        className="h-10 w-full mt-2 flex rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-blue-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:ring-blue-500/10"
+                                      >
+                                        <option value="">Select Remark</option>
+
+                                       
+
+                                        <option value="Seller Requested Future Pick up">
+                                          Seller Requested Future Pick up
+                                        </option>
+
+                                        <option value="Awb rejected">
+                                          AWB Rejected
+                                        </option>
+
+                                        <option value="Duplicate Pickup Request">
+                                          Duplicate Pickup Request
+                                        </option>
+
+                                        <option value="Non Serviceable Location">
+                                          Non Serviceable Location
+                                        </option>
+
+                                        <option value="Pick Failed Due to Dangerous Goods">
+                                          Pick Failed Due to Dangerous Goods
+                                        </option>
+
+                                        <option value="Product packaging Issue">
+                                          Product Packaging Issue
+                                        </option>
+
+                                        <option value="Shipment Handedover to other courier">
+                                          Shipment Handedover to Other Courier
+                                        </option>
+
+                                        <option value="Seller Closed">
+                                          Seller Closed
+                                        </option>
+
+                                        <option value="Pick up Request Expired">
+                                          Pick up Request Expired
+                                        </option>
+
+                                        <option value="Entry not Permitted">
+                                          Entry not Permitted
+                                        </option>
+
+                                        <option value="Customer wants refund/replacement first">
+                                          Customer wants refund/replacement first
+                                        </option>
+                                      </select>
+                                      </>
+                                     )
+                                  
+                  
+                                  }
+                            </div>
+
+                                  
+
+                           
+                            {bulkStatusState && (
+                              <button
+                                onClick={async () => {
+                                  if (!bulkStatusState) {
+                                    toast.warn("Select new status");
+                                    return;
+                                  }
+
+                                  if (
+                                    bulkStatusState ===
+                                    "Cancel Assignment"
+                                  ) {
+                                    await Promise.all(
+                                      selectedBulkOrders.map(
+                                        (order) =>
+                                          cancelRiderAssignment(
+                                            order.id
+                                          )
+                                      )
+                                    );
+                                  } else if (
+                                    bulkStatusState ===
+                                    "Cancel Vendor Mapped"
+                                  ) {
+                                    await Promise.all(
+                                      selectedBulkOrders.map(
+                                        (order) =>
+                                          cancelVendorAssignment(
+                                            order.id
+                                          )
+                                      )
+                                    );
+                                  } else {
+                                    if(!bulkStatusState){
+                                      toast.error('please select status')
+                                      return
+                                    }
+                                    if(bulkStatusState=='cancelled'){
+
+                                      if(!remark){
+                                        toast.error('please select remark')
+                                        return
+                                      }
+                                    }
+
+                                    await Promise.all(
+                                      selectedBulkOrders.map(
+                                        (order) =>
+                                          changeStatus(
+                                            {
+                                            id: order.id,
+                                            newStatus: bulkStatusState,
+                                            remark:remark
+                                          }
+                                          )
+                                      )
+                                    );
+                                  }
+
+                                  setSelectedBulkOrders([]);
+                                  setBulkStatusState("");
+                                }}
+                                className="h-10 shrink-0 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+                              >
+                                {bulkStatusState ===
+                                "Cancel Vendor Mapped"
+                                  ? "Cancel Vendor Mapped"
+                                  : "Change Action"}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                   
+                      <div className="mt-4 flex items-center justify-between gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                            Clear Selection
+                          </p>
+
+                          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                            Remove all selected orders from bulk action.
+                          </p>
+                        </div>
+
+                        <button
+                          className="h-10 shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
+                          onClick={() => {
+                            setSelectedBulkOrders([]);
+                            clearAllState();
+                          }}
+                        >
+                          Clear Selected Orders
+                        </button>
+                      </div>
+                    </div> */}
+
+
+
+                    <div className="px-5 py-5">
+  
+<div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+  
+  <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+    <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+      Change Order Status
+    </h3>
+
+    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+      Select an action to apply to all selected orders.
+    </p>
+  </div>
+
+ 
+  <div className="space-y-4 p-4">
+   
+    <div>
+      <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+        Select Status
+      </label>
+
+      <select
+        className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+        value={bulkStatusState}
+        onChange={(e) => {
+          const value = e.target.value;
+
+          setBulkStatusState(value);
+
+          if (value === "cancelled") {
+            setNewStatus(value);
+          } else {
+            setNewStatus("");
+            setRemark("");
+          }
+        }}
+      >
+        <option value="">Select Status</option>
+
+        <option value="cancelled">
+          Mark Cancelled
+        </option>
+        {
+          selectedBulkOrders[0].mapped_with!==null && (
+
+        <option value="Cancel Vendor Mapped">
+          Cancel Vendor Mapping
+        </option>
+          )
+        }
+
+        
+      </select>
+    </div>
+     
+     
+    
+    {newStatus === "cancelled" && (
+      <div className="rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5">
+        <div className="mb-3">
+          <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+            Cancellation Details
+          </p>
+
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+            Select a cancellation remark for all selected orders.
+          </p>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+            Cancel Remark
+            <span className="ml-1 text-red-500">*</span>
+          </label>
+
+          <select
+            name="remark"
+            value={remark || ""}
+            onChange={(e) => {
+              setRemark(e.target.value);
+            }}
+            className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+          >
+            <option value="">
+              Select Remark
+            </option>
+
+            <option value="Seller Requested Future Pick up">
+              Seller Requested Future Pick up
+            </option>
+
+            <option value="Awb rejected">
+              AWB Rejected
+            </option>
+
+            <option value="Duplicate Pickup Request">
+              Duplicate Pickup Request
+            </option>
+
+            <option value="Non Serviceable Location">
+              Non Serviceable Location
+            </option>
+
+            <option value="Pick Failed Due to Dangerous Goods">
+              Pick Failed Due to Dangerous Goods
+            </option>
+
+            <option value="Product packaging Issue">
+              Product Packaging Issue
+            </option>
+
+            <option value="Shipment Handedover to other courier">
+              Shipment Handedover to Other Courier
+            </option>
+
+            <option value="Seller Closed">
+              Seller Closed
+            </option>
+
+            <option value="Pick up Request Expired">
+              Pick up Request Expired
+            </option>
+
+            <option value="Entry not Permitted">
+              Entry not Permitted
+            </option>
+
+            <option value="Customer wants refund/replacement first">
+              Customer wants refund/replacement first
+            </option>
+          </select>
+
+          <p className="mt-1.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+            This remark will be applied to all{" "}
+            <span className="font-semibold text-red-600 dark:text-red-400">
+              {selectedBulkOrders?.length || 0}
+            </span>{" "}
+            selected orders.
+          </p>
+        </div>
+      </div>
+    )}
+
+   
+    {bulkStatusState && (
+      <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
+        <div>
+          <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+            Selected Orders
+          </p>
+
+          <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+            This action will be applied to all selected orders.
+          </p>
+        </div>
+
+        <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+          {selectedBulkOrders?.length || 0}
+        </span>
+      </div>
+    )}
+
+   
+    {bulkStatusState && (
+      <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
+        <button
+          type="button"
+          onClick={async () => {
+            if (!bulkStatusState) {
+              toast.warn("Select new status");
+              return;
+            }
+
+            if (
+              bulkStatusState === "Cancel Assignment"
+            ) {
+              await Promise.all(
+                selectedBulkOrders.map((order) =>
+                  cancelRiderAssignment(order.id)
+                )
+              );
+            } else if (
+              bulkStatusState === "Cancel Vendor Mapped"
+            ) {
+              await Promise.all(
+                selectedBulkOrders.map((order) =>
+                  cancelVendorAssignment(order.id)
+                )
+              );
+            } else {
+              if (!bulkStatusState) {
+                toast.error("Please select status");
+                return;
+              }
+
+              if (bulkStatusState === "cancelled") {
+                if (!remark) {
+                  toast.error("Please select remark");
+                  return;
+                }
+              }
+
+              await Promise.all(
+                selectedBulkOrders.map((order) =>
+                  changeStatus({
+                    id: order.id,
+                    newStatus: bulkStatusState,
+                    remark: remark,
+                  })
+                )
+              );
+            }
+
+            setSelectedBulkOrders([]);
+            setBulkStatusState("");
+          }}
+          className={`h-9 w-full shrink-0 cursor-pointer rounded-sm px-5 text-sm font-medium text-white transition sm:w-auto ${
+            bulkStatusState === "cancelled"
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-[#0446DB] hover:bg-indigo-800"
+          }`}
+        >
+          {bulkStatusState === "Cancel Vendor Mapped"
+            ? "Cancel Vendor Mapped"
+            : bulkStatusState === "cancelled"
+              ? "Mark Cancelled"
+              : bulkStatusState === "lost"
+                ? "Mark Lost"
+                : "Change Action"}
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+
+  
+                    <div className="overflow-hidden mt-4 rounded-sm border border-neutral-200 dark:border-neutral-800">
+                    
+                      <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                          Map Vendor
+                        </h3>
+
+                        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                          Select an available vendor and map selected orders.
+                        </p>
+                      </div>
+
+                      {/* Body */}
+                      <div className="p-4">
+                        {!fetchBulkAssignmentVendor ? (
+                       
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                Available Vendors
+                              </p>
+
+                              <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                Get eligible vendors for{" "}
+                                <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                                  {selectedBulkOrders?.length || 0}
+                                </span>{" "}
+                                selected orders.
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (
+                                  !selectedBulkOrders ||
+                                  selectedBulkOrders.length === 0
+                                ) {
+                                  toast.warn("Please select at least one order");
+                                  return;
+                                }
+
+                                const order_ids = [
+                                  ...new Set(
+                                    selectedBulkOrders.map(
+                                      (order) => order.id
+                                    )
+                                  ),
+                                ];
+
+                                setFetchBulkAssignmentVendor(true);
+                                fetchVendor(order_ids);
+                              }}
+                              className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
+                            >
+                              Get Available Vendors
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            {vendor?.length > 0 ? (
+                            
+                              <div className="space-y-4">
+                              
+                                <div>
+                                  <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                    Select Vendor
+                                  </label>
+
+                                  <select
+                                    value={assignmentState}
+                                    onChange={(e) =>
+                                      setAssignmentState(e.target.value)
+                                    }
+                                    className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                                  >
+                                    <option value="">
+                                      Select Vendor for Bulk Assignment
+                                    </option>
+
+                                    {vendor.map((vendorItem) => (
+                                      <option
+                                        key={vendorItem.vendor_id}
+                                        value={vendorItem.vendor_id}
+                                      >
+                                        {vendorItem.vendor_id} :{" "}
+                                        {vendorItem.vendor_name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                               
+                                <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
+                                  <div>
+                                    <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                      Selected Orders
+                                    </p>
+
+                                    <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+                                      Selected vendor will be mapped to all orders.
+                                    </p>
+                                  </div>
+
+                                  <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+                                    {selectedBulkOrders?.length || 0}
+                                  </span>
+                                </div>
+
+                             
+                                <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      if (!assignmentState) {
+                                        toast.warn("Please select a vendor");
+                                        return;
+                                      }
+
+                                      const order_ids =
+                                        selectedBulkOrders.map(
+                                          (order) => order.id
+                                        );
+
+                                      await assignBulkOrderVendor(
+                                        order_ids,
+                                        assignmentState
+                                      );
+
+                                      setSelectedBulkOrders([]);
+                                      setBulkOrderWeight(0);
+                                      setFetchBulkAssignmentVendor(false);
+                                      setAssignmentState("");
+                                    }}
+                                    className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800"
+                                  >
+                                    Map Vendor
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                             
+                              <div className="space-y-4">
+                                <div className="rounded-sm border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/20 dark:bg-amber-500/5">
+                                  <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+                                    No Vendor Available
+                                  </p>
+
+                                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+                                    No eligible vendor was found for the selected orders.
+                                  </p>
+                                </div>
+
+                               
+                                <div className="flex justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (
+                                        !selectedBulkOrders ||
+                                        selectedBulkOrders.length === 0
+                                      ) {
+                                        toast.warn(
+                                          "Please select at least one order"
+                                        );
+                                        return;
+                                      }
+
+                                      const order_ids = [
+                                        ...new Set(
+                                          selectedBulkOrders.map(
+                                            (order) => order.id
+                                          )
+                                        ),
+                                      ];
+
+                                      setFetchBulkAssignmentVendor(true);
+                                      fetchVendor(order_ids);
+                                    }}
+                                    className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
+                                  >
+                                    Get Available Vendors
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                     
+                      <div className="mt-4 flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                            Clear Selection
+                          </p>
+
+                          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                            Remove all selected orders from bulk
+                            action.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="h-10 w-full shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10 sm:w-auto"
+                          onClick={() => {
+                            setSelectedBulkOrders([]);
+                            clearAllState();
+                          }}
+                        >
+                          Clear Selected Orders
+                        </button>
+                      </div>
+                    </div>
+
+                   
+
+                   
+                    <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
+                      <AlertDialogCancel
+                      onClick={()=>{
+                            clearAll()
+                            clearAllState()
+                           }}
+                      
+                      className="cursor-pointer rounded-sm">
+                        Close
+                      </AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+              </AlertDialog>
+
+                 
+              </>
             )}
-
-
-
+                  </div>
+          </div>
+          {/* Bulk Assignment */}
+        
           {/* Table */}
-          <div className="overflow-x-auto bg-white dark:bg-gray-900">
+          <div className="overflow-x-auto bg-[#f5f8fb] dark:bg-neutral-900/50">
 
 
             <div className="relative -mx-4 sm:-mx-6 lg:mx-0">
 
 
-
+            
               <div className="w-full overflow-x-auto overscroll-x-contain">
 
                 <Table>
                   <TableHeader >
                     <TableRow>
-                      {(selectedStatus === "booked" ||
+                      {(
+                        
+                        selectedStatus === "booked" ||
                         selectedStatus === "pending pickup" ||
                         selectedStatus === "rto in transit" ||
                         selectedStatus === 'picked' ||
@@ -2982,7 +5137,7 @@ function OrderDetails() {
                                 type="checkbox"
                                 className="w-4 h-4 text-indigo-600 rounded border-gray-300"
                                 checked={
-                                  selectedBulkOrders.length === orders.filter((o) => o.tpc_awb_number === null).length
+                                  selectedBulkOrders.length === orders.filter((o) => o.tpc_awb_number === null && o.rider_preference === "daakit").length
 
                                 }
                                 onChange={toggleSelectAll}
@@ -3061,70 +5216,187 @@ function OrderDetails() {
                               (o) => o.id === order.id
                             );
                           }
-                          const canItMarkInTransit = selectedBulkOrders.every(
-                            (order) =>
-
-                              order.mapped_with &&
-                              (order.pickup_stage === null || order.pickup_stage === "at_vendor")
-                          );
+                          
                           return (
                             <TableRow key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 border-b overflow-x-scroll">
                               {/* Select */}
                               {
 
-                                ((selectedStatus === "booked") && (order.tpc_awb_number == null) || selectedStatus === "pending pickup" && order.tpc_awb_number == null) ? (
+                                ((selectedStatus === "booked" && order?.rider_preference == 'daakit') && (order.tpc_awb_number == null) || (selectedStatus === "pending pickup" && order?.rider_preference == 'daakit') && order.tpc_awb_number == null )  ? (
+                                  // <td className="px-6 py-4 text-center">
+                                  //   <input
+                                  //     type="checkbox"
+                                  //     checked={isSelected}
+
+                                  //     onChange={(e) => {
+                                  //       const isChecked = e.target.checked;
+
+                                  //       if ((selectedStatus === "booked" || selectedStatus === "pending pickup"  ) ) {
+                                  //         if (isChecked) {
+                                  //           setSelectedBulkOrders((prev) => {
+                                  //             const updated = [...prev, order];
+
+                                  //             const order_ids = updated.map((o) => o.id);
+                                              
+                                              
+
+                                  //             return updated;
+                                  //           });
+
+                                  //           setBulkOrderWeight(
+                                  //             (prev) => Number(prev) + Number(order.total_weight)
+                                  //           );
+                                  //         } else {
+                                  //           setSelectedBulkOrders((prev) => {
+                                  //             const updated = prev.filter((o) => o.id !== order.id);
+
+                                  //             const order_ids = updated.map((o) => o.id);
+                                  //             if (selectedStatus === "booked") {
+                                  //               fetchVendor(order_ids);
+                                  //             }
+
+
+                                  //             return updated;
+                                  //           });
+
+                                  //           setBulkOrderWeight(
+                                  //             (prev) => Number(prev) - Number(order.total_weight) // ✅ fixed bug
+                                  //           );
+                                  //         }
+                                  //       }
+
+
+                                  //     }}
+                                  //     className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
+                                  //   />
+
+                                  // </td>
+
                                   <td className="px-6 py-4 text-center">
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
+                                    {(() => {
+                                      // true  = mapped
+                                      // false = unmapped
+                                      const currentIsMapped =
+                                        order?.mapped_with !== null &&
+                                        order?.mapped_with !== undefined;
 
-                                      onChange={(e) => {
-                                        const isChecked = e.target.checked;
+                                      const firstSelectedIsMapped =
+                                        selectedBulkOrders.length > 0
+                                          ? selectedBulkOrders[0]?.mapped_with !== null &&
+                                            selectedBulkOrders[0]?.mapped_with !== undefined
+                                          : null;
 
-                                        if (selectedStatus === "booked" || selectedStatus === "pending pickup") {
-                                          if (isChecked) {
-                                            setSelectedBulkOrders((prev) => {
-                                              const updated = [...prev, order];
+                                      // Sirf Pending Pickup me mapped/unmapped group check hoga
+                                      const isDifferentMappingType =
+                                        selectedStatus === "pending pickup" &&
+                                        selectedBulkOrders.length > 0 &&
+                                        firstSelectedIsMapped !== currentIsMapped;
 
-                                              const order_ids = updated.map((o) => o.id);
+                                      // Ek mapped order select hai aur current unmapped hai
+                                      // YA ek unmapped select hai aur current mapped hai
+                                      // => checkbox ki jagah --
+                                      if (isDifferentMappingType) {
+                                        return (
+                                          <span
+                                            className="text-sm font-medium text-gray-400 dark:text-gray-500"
+                                            title={
+                                              firstSelectedIsMapped
+                                                ? "Only mapped orders can be selected"
+                                                : "Only unmapped orders can be selected"
+                                            }
+                                          >
+                                            --
+                                          </span>
+                                        );
+                                      }
 
-                                              if (selectedStatus === "booked") {
+                                      return (
+                                        <input
+                                          type="checkbox"
+                                          checked={isSelected}
+                                          onChange={(e) => {
+                                            const isChecked = e.target.checked;
 
-                                                fetchVendor(order_ids);
+                                            if (
+                                              selectedStatus === "booked" ||
+                                              selectedStatus === "pending pickup"
+                                            ) {
+                                              if (isChecked) {
+                                                // =========================================
+                                                // PENDING PICKUP
+                                                // Mapped + Unmapped ko mix nahi hone dena
+                                                // =========================================
+                                                if (
+                                                  selectedStatus === "pending pickup" &&
+                                                  selectedBulkOrders.length > 0
+                                                ) {
+                                                  const firstIsMapped =
+                                                    selectedBulkOrders[0]?.mapped_with !== null &&
+                                                    selectedBulkOrders[0]?.mapped_with !== undefined;
+
+                                                  const thisIsMapped =
+                                                    order?.mapped_with !== null &&
+                                                    order?.mapped_with !== undefined;
+
+                                                  if (firstIsMapped !== thisIsMapped) {
+                                                    return;
+                                                  }
+                                                }
+
+                                                setSelectedBulkOrders((prev) => {
+                                                  const alreadySelected = prev.some(
+                                                    (o) => o.id === order.id
+                                                  );
+
+                                                  if (alreadySelected) {
+                                                    return prev;
+                                                  }
+
+                                                  const updated = [...prev, order];
+
+                                                  return updated;
+                                                });
+
+                                                setBulkOrderWeight(
+                                                  (prev) =>
+                                                    Number(prev) +
+                                                    Number(order?.total_weight || 0)
+                                                );
+                                              } else {
+                                                setSelectedBulkOrders((prev) => {
+                                                  const updated = prev.filter(
+                                                    (o) => o.id !== order.id
+                                                  );
+
+                                                  const order_ids = updated.map(
+                                                    (o) => o.id
+                                                  );
+
+                                                  // Booked ka existing logic
+                                                  if (selectedStatus === "booked") {
+                                                    fetchVendor(order_ids);
+                                                  }
+
+                                                  return updated;
+                                                });
+
+                                                setBulkOrderWeight(
+                                                  (prev) =>
+                                                    Math.max(
+                                                      0,
+                                                      Number(prev) -
+                                                        Number(order?.total_weight || 0)
+                                                    )
+                                                );
                                               }
-
-                                              return updated;
-                                            });
-
-                                            setBulkOrderWeight(
-                                              (prev) => Number(prev) + Number(order.total_weight)
-                                            );
-                                          } else {
-                                            setSelectedBulkOrders((prev) => {
-                                              const updated = prev.filter((o) => o.id !== order.id);
-
-                                              const order_ids = updated.map((o) => o.id);
-                                              if (selectedStatus === "booked") {
-                                                fetchVendor(order_ids);
-                                              }
-
-
-                                              return updated;
-                                            });
-
-                                            setBulkOrderWeight(
-                                              (prev) => Number(prev) - Number(order.total_weight) // ✅ fixed bug
-                                            );
-                                          }
-                                        }
-
-
-                                      }}
-                                      className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
-                                    />
-
+                                            }
+                                          }}
+                                          className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
+                                        />
+                                      );
+                                    })()}
                                   </td>
-                                ) : selectedStatus === "picked" && order?.pickup_stage === "at_central_hub" ? (
+                                ) : selectedStatus === "picked" && order?.pickup_stage === "at_central_hub" && order?.rider_preference == 'daakit' ? (
                                   <td className="px-6 py-4 text-center">
                                     <input
                                       type="checkbox"
@@ -3133,7 +5405,7 @@ function OrderDetails() {
                                       className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
                                     />
                                   </td>
-                                ) : selectedStatus === 'rto in transit' ? (
+                                ) : selectedStatus === 'rto in transit' && order?.rider_preference == 'daakit' ? (
                                   <>
                                     <td className="px-6 py-4 text-center">
                                       <input
@@ -3174,7 +5446,7 @@ function OrderDetails() {
 
                                     </td>
                                   </>
-                                ) : ['in transit', 'out for delivery', 'undelivered', 'undelivered assigned'].includes(selectedStatus) ? (
+                                ) : ['in transit', 'out for delivery', 'undelivered', 'undelivered assigned'].includes(selectedStatus) && order?.rider_preference == 'daakit' ? (
                                   <>
                                     <td className="px-6 py-4 text-center">
                                       <input
@@ -3229,7 +5501,7 @@ function OrderDetails() {
 
                                     </td>
                                   </>
-                                ) : canMarkInTransit && selectedStatus == 'picked' ? (
+                                ) : canMarkInTransit && selectedStatus == 'picked' && order?.rider_preference == 'daakit'  ? (
                                   <>
                                     <td className="px-6 py-4 text-center">
                                       <input
@@ -3405,59 +5677,16 @@ function OrderDetails() {
                                             {Number(order.total_weight).toLocaleString()}g
                                           </div>
                                           <div>
+                                            <strong>Charge Weight:</strong>{" "}
+                                            {Number(order.charged_weight).toLocaleString()}g
+                                          </div>
+                                          <div>
                                             <strong>Number of Packets:</strong>{" "}
                                             {order.number_of_boxes}
                                           </div>
                                         </div>
 
-                                        {/* Document Info */}
-                                        {/* <div className="pt-4 border-t">
-                                          <h3 className="font-semibold text-[#0446DB] mb-2">
-                                            Delivery Details
-                                          </h3>
-                                          <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                              <strong>Customer Name:</strong>{" "}
-                                              {order.delivery_contact_name}
-                                            </div>
-
-                                            <div>
-                                              <strong>Address:</strong>{" "}
-                                              {order.delivery_address_line}
-                                            </div>
-                                            <div>
-                                              <strong>City:</strong>{" "}
-                                              {`${order.delivery_city}, ${order.delivery_state} - ${order.delivery_pincode}` ||
-                                                "N/A"}
-                                            </div>
-                                          </div>
-                                        </div> */}
-
-
-                                        {/* <div className="pt-4 border-t">
-                                          <h3 className="font-semibold text-[#0446DB] mb-2">
-                                            Pickup Details
-                                          </h3>
-                                          <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                              <strong>Name:</strong>{" "}
-                                              {order.pickup_contact_name || "N/A"}
-                                            </div>
-                                            <div>
-                                              <strong>Pickup Phone No:</strong>{" "}
-                                              {`${order.pickup_phone}` || "N/A"}
-                                            </div>
-                                            <div>
-                                              <strong>Address:</strong>{" "}
-                                              {order.pickup_address_line || "N/A"}
-                                            </div>
-                                            <div>
-                                              <strong>City:</strong>{" "}
-                                              {`${order.pickup_city}, ${order.pickup_state} - ${order.pickup_pincode}` ||
-                                                "N/A"}
-                                            </div>
-                                          </div>
-                                        </div> */}
+                                        
 
 
                                         <div className="pt-4 border-t">
@@ -3692,6 +5921,7 @@ function OrderDetails() {
 
                                           <button
                                             onClick={() => {
+                                             
                                               navigate(`/admin/order-history?awb=${order?.awb_number}`);
                                             }}
                                             className="bg-green-500 mr-2 text-white px-4 py-2 rounded hover:bg-indigo-800 transition"
@@ -3756,6 +5986,15 @@ function OrderDetails() {
 
                                 <p className="text-s text-gray-400 dark:text-white">
                                   Merchant ID: {order.merchant_id}
+                                   <span
+                                    className={`ml-2 inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-xs font-semibold ${
+                                      order?.rider_preference === "daakit"
+                                        ? "border-blue-500 bg-blue-50/50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                                        : "border-emerald-500 bg-emerald-50/50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+                                    }`}
+                                  >
+                                    {order?.rider_preference === "daakit" ? "Daakit" : "Self"}
+                                  </span>
                                 </p>
                                 <p className="text-s text-gray-400 dark:text-white">
                                   Merchant Order ID:{" "}
@@ -3783,7 +6022,7 @@ function OrderDetails() {
                                       <FaRegCopy />
                                     )}
                                   </button>
-                                  <span className="bg-[#0446DB] px-2 text-white rounded">{order.rider_preference === 'daakit' ? "Daakit" : "Self"}</span>
+                                  {/* <span className="bg-[#0446DB] px-2 text-white rounded">{order.rider_preference === 'daakit' ? "Daakit" : "Self"}</span> */}
                                 </p>
                               </TableCell>
 
@@ -3794,18 +6033,7 @@ function OrderDetails() {
                                 selectedStatus === "in transit" ||
                                 selectedStatus === "undelivered assigned") && (
                                   <>
-                                    {/* {
-                                        order.mapped_with !== null && order.rider_id !==null  ? (
-                                          <td className="text-center">
-                                            {order.mapped_with ? `M_${order.mapped_with}_${order.rider_id}` : "-"}
-                                          </td>
-                                        ) : (
-                                          <td className="text-center">
-                                            {order.rider_id ? `FP_${order.rider_vendor_id}_` : order.rider_merchant_id ? `M${order.r_merchant_id}_R` : "DKT_"}
-                                            {order.rider_id}
-                                          </td>
-                                        )
-                                      } */}
+                                    
                                     <TableCell className="text-center ">
                                       {
                                         order.rider_vendor_id === null && order.rider_merchant_id === null && order.mapped_with === null ? (
@@ -3828,6 +6056,14 @@ function OrderDetails() {
                                               ? "At Central Hub"
                                               : "At Vendor Hub"}
                                           </p>
+                                        )
+                                      }
+
+                                      {
+                                        order.mapped_with === null && (
+                                          <>
+                                           -
+                                          </>
                                         )
                                       }
 
@@ -4040,20 +6276,36 @@ function OrderDetails() {
 
                                             className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer"
                                           >
-                                            Not Assigned
+                                            Not Assignedd
                                           </span>
                                         </>
-                                      ) : order.status === "pending pickup" ||
+                                      ) : (order.status === "pending pickup" ||
                                         order.status === "in transit" ||
                                         order.status === "picked" ||
-                                        order.status === "undelivered assigned" ? (
+                                        order.status === "undelivered assigned") ? (
                                         <>
                                           {!(
                                             isOpenIndividualAssignmnet === order.id
                                           ) ? (
-                                            order.mapped_with !== null ? (
+                                            order.mapped_with !== null || order.rider_id == null  ? (
                                               <span
+                                                 onClick={() => {
+                                                  if(order.rider_preference === "self"){
+                                                    return
+                                                  }
+                                                  if (order.status === "in transit") {
+                                                    return;
+                                                  }
+                                                  if (order.tpc_awb_number !== null) {
+                                                    return
+                                                  }
+                                                  if(order.rider_id == null){
+                                                    return
+                                                  }
 
+                                                  setIsOpenIndividualAssignmnet(order.id);
+
+                                                }}
                                                 className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer"
                                               >
                                                 Not Assigned
@@ -4061,6 +6313,9 @@ function OrderDetails() {
                                             ) : (
                                               <span
                                                 onClick={() => {
+                                                  if(order.rider_preference === "self"){
+                                                    return
+                                                  }
                                                   if (order.status === "in transit") {
                                                     return;
                                                   }
@@ -4179,7 +6434,7 @@ function OrderDetails() {
 
                                             <span
                                               onClick={() => {
-                                                if (order.tpc_awb_number !== null) {
+                                                if (order.tpc_awb_number !== null ) {
                                                   return
                                                 }
                                                 fetchVendor(order.id);
@@ -4253,7 +6508,7 @@ function OrderDetails() {
                                           {!(
                                             isOpenIndividualAssignmnetMap === order.id
                                           ) ? (
-                                            order.mapped_with !== null ? (
+                                            order.mapped_with !== null  ? (
                                               <span
                                                 onClick={() => {
                                                   if (order.status === "out for delivery" || order.status === 'undelivered assigned') {
@@ -4266,7 +6521,103 @@ function OrderDetails() {
                                               >
                                                 Mapped
                                               </span>
-                                            ) : (
+                                            ) : order.mapped_with == null ? (
+                                              <>
+                                              
+                                                <AlertDialog>
+                                              <AlertDialogTrigger asChild>
+                                                <Button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    const order_ids = [
+                                                      order.id
+                                                     ];
+
+                                                    setFetchBulkAssignmentVendor(true);
+                                                    fetchVendor(order_ids);
+                                                  }}
+className="cursor-pointer rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-600 transition-colors hover:bg-green-200"                                                  >
+                                                  Map Vendor
+                                                </Button>
+                                              </AlertDialogTrigger>
+
+                                              <AlertDialogContent className="!max-w-md overflow-hidden rounded-md border border-gray-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+                                                {/* HEADER */}
+                                                <AlertDialogHeader className="border-b border-gray-100 px-5 py-4 text-left dark:border-neutral-800">
+                                                  <AlertDialogTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                                                    Map Orders to Vendor
+                                                  </AlertDialogTitle>
+
+                                                  <AlertDialogDescription className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
+                                                    
+                                                  </AlertDialogDescription>
+                                                </AlertDialogHeader>
+
+                                                {/* BODY */}
+                                                <div className="px-5 py-5">
+                                                  <label className="mb-2 block text-xs font-semibold text-gray-700 dark:text-neutral-300">
+                                                    Select Vendor
+                                                  </label>
+
+                                                  <select
+                                                    value={assignmentState}
+                                                    onChange={(e) => setAssignmentState(e.target.value)}
+                                                    className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-blue-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:ring-blue-500/10"
+                                                  >
+                                                    <option value="">Select Vendor</option>
+
+                                                    {vendor?.map((vendorItem) => (
+                                                      <option
+                                                        key={vendorItem.vendor_id}
+                                                        value={vendorItem.vendor_id}
+                                                      >
+                                                        {vendorItem.vendor_id} : {vendorItem.vendor_name}
+                                                      </option>
+                                                    ))}
+                                                  </select>
+
+                                                  {fetchBulkAssignmentVendor && vendor?.length === 0 && (
+                                                    <p className="mt-2 text-xs text-gray-500 dark:text-neutral-400">
+                                                      Loading available vendors...
+                                                    </p>
+                                                  )}
+                                                </div>
+
+                                                {/* FOOTER */}
+                                                <AlertDialogFooter className="border-t border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+                                                  <AlertDialogCancel className=" cursor-pointer rounded-md">
+                                                    Cancel
+                                                  </AlertDialogCancel>
+
+                                                  <Button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                      if (!assignmentState) {
+                                                        toast.warn("Please select a vendor");
+                                                        return;
+                                                      }
+
+                                                      const order_ids = [order.id];
+
+                                                      await assignVendor(
+                                                        order_ids,
+                                                        assignmentState
+                                                      );
+
+                                                      setSelectedBulkOrders([]);
+                                                      setBulkOrderWeight(0);
+                                                      setFetchBulkAssignmentVendor(false);
+                                                      setAssignmentState("");
+                                                    }}
+                                                    className=" cursor-pointer rounded-md bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-[#0339b5]"
+                                                  >
+                                                    Map Vendors
+                                                  </Button>
+                                                </AlertDialogFooter>
+                                              </AlertDialogContent>
+                                            </AlertDialog>
+                                              </>
+                                            ): (
                                               <>
                                                 <span
 
@@ -4639,9 +6990,7 @@ function OrderDetails() {
                                                         <option value="cancelled">
                                                           Cancelled
                                                         </option>
-                                                        <option value="lost">
-                                                          Lost
-                                                        </option>
+                                                        
                                                       </>
                                                     )}
                                                     {order.status === "picked" && (
@@ -4649,9 +6998,7 @@ function OrderDetails() {
                                                         <option value="in transit">
                                                           In Transit
                                                         </option>
-                                                        <option value="lost">
-                                                          Lost
-                                                        </option>
+                                                      
                                                       </>
                                                     )}
                                                     {order.status === "undelivered" && (
@@ -4673,9 +7020,7 @@ function OrderDetails() {
                                                           <option value="cancelled">
                                                             Cancelled
                                                           </option>
-                                                          <option value="lost">
-                                                            Lost
-                                                          </option>
+                                                         
                                                         </>
                                                       )}
                                                     {order.status ===
@@ -4714,7 +7059,7 @@ function OrderDetails() {
                                                         </>
                                                       )}
                                                     {order.status ===
-                                                      "undelivered assigned" && (
+                                                      "undelivered assigned"   && (
                                                         <>
                                                           <option value="out for delivery">
                                                             Mark Out For Delivery
@@ -4903,7 +7248,7 @@ function OrderDetails() {
                                                             <Button
                                                               variant="outline"
 
-                                                              className="text-sm font-medium rounded-sm border py-0.5 bg-[#0446DB] hover:text-[#FFF] text-white border-[#0446DB]  hover:bg-[#0446DB] inline-block cursor-pointer"
+                                                              className="text-sm font-medium rounded-sm border  bg-[#0446DB] hover:text-[#FFF] text-white border-[#0446DB]  hover:bg-[#0446DB] inline-block cursor-pointer"
                                                             >
                                                               <span>
                                                                 Select Rider
@@ -4972,17 +7317,7 @@ function OrderDetails() {
                                                     )
                                                   }
 
-                                                  {/* {
-                                                  assignmentState || ( assignmentState != 'ndr' && assignmentState != "undelivered assigned") && (
-
-                                                      <button
-                                                        type="submit"
-                                                        className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
-                                                      >
-                                                        Update
-                                                      </button>
-                                                    )
-                                                  } */}
+                                                 
                                                   {assignmentState &&
                                                     assignmentState !== "ndr" &&
                                                     assignmentState !== "in transit" &&
@@ -5012,6 +7347,9 @@ function OrderDetails() {
 
                                                 <span
                                                   onClick={() => {
+                                                    if(order.rider_preference === "self"){
+                                                      return
+                                                    }
                                                     if (order.status == 'in transit') {
                                                       setEditingStatusId(order.id)
                                                       return
@@ -5029,16 +7367,18 @@ function OrderDetails() {
                                                       order.mapped_with &&
                                                       (order.pickup_stage === null || order.pickup_stage === "at_vendor")
                                                     ) {
-
-
+                                                      
+                                                      
                                                       const vendor_ids = [order?.mapped_with]
                                                       fetchRider(vendor_ids)
                                                       setEditingStatusId(order.id)
                                                       return
                                                     }
                                                     if (order.status === 'pending pickup' && order.tpc_awb_number !== null) {
+                                                    
+                                                     
                                                       return
-
+                                                      
                                                     }
                                                     if (selectedStatus === 'rto in transit') {
 
@@ -5046,12 +7386,12 @@ function OrderDetails() {
                                                       return
                                                     }
                                                     if (order.tpc_awb_number !== null) {
-
+                                                      
                                                       return
                                                     }
                                                     if (order.rider_preference === 'daakit') {
                                                       if (order.mapped_with !== null) {
-
+                                                        
                                                         return
                                                       } else if (order.status === 'booked') {
                                                         setEditingStatusId(order.id)
@@ -5066,7 +7406,6 @@ function OrderDetails() {
                                                   {order.status === "rto in transit"
                                                     ? `RTO In Transit`
                                                     : toCapitalizeEachWord(order.status)}
-
                                                 </span>
                                               </>
 
@@ -5122,7 +7461,6 @@ function OrderDetails() {
 
           </div>
 
-
           {totalPages > 1 && (
             <div className="flex justify-between items-center py-2 px-3">
               <div className="text-sm text-gray-600">
@@ -5173,6 +7511,10 @@ function OrderDetails() {
 
 
       </div>
+        </>
+      )
+    }
+
 
     </>
   );

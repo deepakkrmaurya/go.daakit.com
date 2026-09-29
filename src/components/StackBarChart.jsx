@@ -1,58 +1,5 @@
-// import { BarChart } from '@mui/x-charts/BarChart';
-
-// const COLORS = ["#687FE5", "#FFA673", "#03A6A1", "#FF2DD1", "#D9A299", "#FDFFB8"];
-
-// function StackBarChart({ data }) {
-
-//   const labels = data?.map((item) => item.delivery_city);
-
-//   const series = [
-//     {
-//       label: "Orders",
-//       data: data.map((item) => Number(item.count)),
-//       color: "#0446DB"
-//     }
-//   ];
-
-//   return (
-//     <div className=''>
-//       <BarChart
-//         series={series}
-//         xAxis={[
-//           {
-//             scaleType: "band",
-//             data: labels,
-//             tickLabelStyle: { fontSize: 12, fill: "#374151" }
-//           }
-//         ]}
-//         barLabel={({ value }) =>
-//           value <= 0 ? null : (
-//             <tspan style={{ fontWeight: "bold", fill: "#1f2937" }}>
-//               {value}
-//             </tspan>
-//           )
-//         }
-//         height={350}
-//         grid={{ horizontal: true }}
-//         legend={{
-//           direction: "row",
-//           position: { vertical: "top", horizontal: "middle" }
-//         }}
-//       />
-//     </div>
-//   );
-// }
-
-
-// export default StackBarChart;
-
-
-
-
-
 
 import { BarChart } from "@mui/x-charts/BarChart";
-
 function StackBarChart({ data = [] }) {
   const labels = data.map((item) => item.delivery_city);
 

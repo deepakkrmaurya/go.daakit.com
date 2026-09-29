@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Loader from "../Loader";
-
 import { TbFileInfo } from "react-icons/tb";
-import { FaRegFileImage } from "react-icons/fa6";
 import { toast } from "react-toastify";
-import InspectController from "../../Helper/InspectController";
-import axiosInstance from "../../Helper/axiosInstance";
 import {
   Table,
   TableBody,
@@ -18,7 +13,6 @@ import {
 import { Loader2 } from "lucide-react";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontendURL = import.meta.env.VITE_FRONTEND_URL;
-
 function VendorStats() {
   const [vendorsData, setVendorsData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -178,15 +172,34 @@ function VendorStats() {
       return
     }
   }
+
+  const [loadingPage, setLoadingPage] = useState(true);
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoadingPage(false);
+  }, 2000);
+
+  return () => clearTimeout(timer);
+}, []);
   return (
     <>
 
+    {
+      loadingPage ?(
+         <div className=" w-full h-[90vh] flex justify-center items-center">
+                  <div>
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                    <p className="mt-2"> Loading Vendor Details...</p>
+                  </div>
+                </div>
+      ):(
       <div className="bg-gray-100 dark:bg-gray-900 min-h-screen w-full">
         {/* Heading Strip */}
-        <div className=" bg-[#0446DB] dark:bg-gray-900  py-6 px-6 shadow-md  ">
+        <div className=" dark:bg-gray-900  py-3 px-6  ">
           <div className="flex flex-wrap items-center justify-between">
             {/* Heading */}
-            <h1 className="text-2xl text-white">Vendor Details</h1>
+            <h1 className="text-2xl font-bold dark:text-white">Vendor Details</h1>
           </div>
         </div>
 
@@ -269,25 +282,7 @@ function VendorStats() {
                             </span>
                           </TableCell>
 
-                          {/* Verification Status */}
-                          {/* <td className="px-4 py-4">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${vendor.is_verified
-                              ? "bg-green-100 text-green-800 border border-green-200"
-                              : "bg-red-100 text-red-800 border border-red-200"
-                              }`}>
-                              {vendor.is_verified ? (
-                                <>
-                                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                  Verified
-                                </>
-                              ) : (
-                                <>
-                                  <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                                  Not Verified
-                                </>
-                              )}
-                            </span>
-                          </td> */}
+                          
 
                           {/* Status Toggle */}
                           <TableCell className="px-4 py-4">
@@ -394,7 +389,7 @@ function VendorStats() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden m-4 border border-gray-200">
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#0446DB] to-[rgb(95,87,202)] p-6">
+              <div className="bg-[#0446DB] p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-white/20 rounded-xl">
@@ -1033,6 +1028,10 @@ function VendorStats() {
         )}
 
       </div>
+
+      )
+    }
+
 
     </>
   );

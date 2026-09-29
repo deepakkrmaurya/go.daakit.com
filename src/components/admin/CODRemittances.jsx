@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Loader from "../Loader";
 
 import { FaFilter, FaRegCopy } from "react-icons/fa";
 import { CiCircleCheck } from "react-icons/ci";
@@ -16,14 +15,14 @@ import {
 import {
   Drawer,
   DrawerContent,
-
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
-import { Button } from "@/components/ui/button"
-import { Loader2 } from "lucide-react";
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Download, Filter, Landmark, Loader2, Upload } from "lucide-react";
+import { Link } from "react-router-dom";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 
@@ -91,14 +90,20 @@ function CODRemittances() {
         return {
           ...prev,
           startDate: value,
-          endDate: prev.endDate && value && prev.endDate < value ? value : prev.endDate,
+          endDate:
+            prev.endDate && value && prev.endDate < value
+              ? value
+              : prev.endDate,
         };
       }
 
       if (name === "endDate") {
         return {
           ...prev,
-          startDate: prev.startDate && value && prev.startDate > value ? value : prev.startDate,
+          startDate:
+            prev.startDate && value && prev.startDate > value
+              ? value
+              : prev.startDate,
           endDate: value,
         };
       }
@@ -160,27 +165,29 @@ function CODRemittances() {
       setData(res.data?.data || []);
       setTotalPages(Math.max(1, res.data.pagination?.totalPages));
       setPendingAmount(
-        indianFormat(Number(res.data?.overallStatusSummary?.pending))
+        indianFormat(Number(res.data?.overallStatusSummary?.pending)),
       );
       setInitiatedAmount(
-        indianFormat(Number(res.data?.overallStatusSummary?.initiated))
+        indianFormat(Number(res.data?.overallStatusSummary?.initiated)),
       );
       setAdjustedAmount(
-        indianFormat(Number(res.data?.overallStatusSummary?.adjusted))
+        indianFormat(Number(res.data?.overallStatusSummary?.adjusted)),
       );
       setReceivedAmount(
-        indianFormat(Number(res.data?.overallStatusSummary?.received))
+        indianFormat(Number(res.data?.overallStatusSummary?.received)),
       );
       setTotalAmount(
         indianFormat(
           Number(res.data?.overallStatusSummary?.received) +
-          Number(res.data?.overallStatusSummary?.initiated) +
-          Number(res.data?.overallStatusSummary?.pending) +
-          Number(res.data?.overallStatusSummary?.adjusted)
-        )
+            Number(res.data?.overallStatusSummary?.initiated) +
+            Number(res.data?.overallStatusSummary?.pending) +
+            Number(res.data?.overallStatusSummary?.adjusted),
+        ),
       );
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Failed to fetch data:");
+      toast.error(
+        err.response?.data?.message || err.message || "Failed to fetch data:",
+      );
     } finally {
       setLoading(false);
     }
@@ -219,13 +226,17 @@ function CODRemittances() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       fetchData();
       setEditItem(null);
       setFormData({ orderId: "", remarks: "", receivedBy: "" });
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Error while updating remittance");
+      toast.error(
+        err.response?.data?.message ||
+          err.message ||
+          "Error while updating remittance",
+      );
     } finally {
       setLoading(false);
     }
@@ -245,13 +256,15 @@ function CODRemittances() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
-      console.log(res.data)
+      console.log(res.data);
       toast.success("File uploaded successfully");
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Failed to upload file");
+      toast.error(
+        err.response?.data?.message || err.message || "Failed to upload file",
+      );
     } finally {
       setLoading(false);
     }
@@ -284,7 +297,11 @@ function CODRemittances() {
       link.click();
       link.remove();
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Error in exporting CSV file");
+      toast.error(
+        err.response?.data?.message ||
+          err.message ||
+          "Error in exporting CSV file",
+      );
     } finally {
       setLoading(false);
     }
@@ -292,13 +309,15 @@ function CODRemittances() {
   const SampleCSV = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${baseURL}/api/admin/downloadCODRemittanceSample`, {
-
-        responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+      const res = await axios.get(
+        `${baseURL}/api/admin/downloadCODRemittanceSample`,
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         },
-      });
+      );
 
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
@@ -308,84 +327,163 @@ function CODRemittances() {
       link.click();
       link.remove();
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Error in exporting CSV file");
+      toast.error(
+        err.response?.data?.message ||
+          err.message ||
+          "Error in exporting CSV file",
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const [loadingPage, setLoadingPage] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingPage(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <>
+      {loadingPage ? (
+        <>
+          <div className=" w-full h-[90vh] flex justify-center items-center">
+            <div>
+              <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+              <p className="mt-2"> Loading COD Remittances Details...</p>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen w-full">
+          {/* Right Sidebar for filters */}
 
-      <div className="bg-gray-100 dark:bg-gray-900 min-h-screen w-full">
-        {/* Right Sidebar for filters */}
-
-
-        {/* Heading */}
-        <div className="mb-0 bg-[#0446DB] dark:bg-gray-900 py-[24px] shadow-md md:h-20 px-[24px]">
-          <div className="flex flex-wrap items-center justify-between">
-            {/* Heading */}
-            <h1 className="text-2xl text-white">COD Remittances</h1>
-            <div className="flex flex-wrap items-end gap-4 text-white">
-              <div className="text-white">
-                <label className="pb-2.5 mx-2">Bulk Action</label>
-                <input
-                  type="file"
-                  name="bulk_remittance"
-                  onChange={handleChange}
-                  accept=".csv"
-                  className="bg-white text-[#0446DB] font-medium rounded-lg shadow hover:bg-indigo-100 transition cursor-pointer file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[#0446DB] file:bg-white file:hover:bg-indigo-100"
-                />
-              </div>
-              <button
-                onClick={SampleCSV}
-                className="bg-white text-[#0446DB] font-medium px-5 py-2 rounded-lg shadow hover:bg-indigo-100 transition"
-              >
-                Sample CSV
-              </button>
-              <button
-                onClick={exportCSV}
-                className="bg-white text-[#0446DB] font-medium px-5 py-2 rounded-lg shadow hover:bg-indigo-100 transition"
-              >
-                Export
-              </button>
-              {/* <button
-                onClick={() => setIsFilterOpen(true)}
-                className="bg-white text-[#0446DB] font-medium px-5 py-2 rounded-lg shadow hover:bg-indigo-100 transition"
-              >
-                Filter
-              </button> */}
-
-              <Drawer direction="right"
-              open={isFilterOpen}
-  onOpenChange={setIsFilterOpen}
-              
-              >
-                <DrawerTrigger asChild>
-                  <Button variant="outline"
-                    className="bg-white text-[#0446DB] font-medium px-5 py-5 rounded-lg shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
+          {/* Heading */}
+          <div className="mb-0  dark:bg-gray-900 py-2 md:h-20 px-[24px]">
+            <div className="flex flex-wrap items-center justify-between">
+              {/* Heading */}
+              <h1 className="text-2xl font-bold dark:text-white">
+                COD Remittances
+              </h1>
+              <div className="flex flex-wrap items-end gap-4 text-white">
+                <Button
+                  asChild
+                  className="
+      flex h-10 cursor-pointer items-center gap-2
+      rounded-md border border-blue-100
+      bg-white px-4 text-sm font-medium
+      text-[#0446DB] shadow-sm
+      transition-all
+      hover:bg-blue-50 hover:shadow-md
+      dark:border-gray-700 dark:bg-gray-800
+      dark:text-blue-400 dark:hover:bg-gray-700
+    "
+                >
+                  <Link
+                    to="/admin/vendor-remittances"
+                    className="flex items-center gap-2"
                   >
-                    <FaFilter className="text-sm" />
-                    <span>Filter</span>
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent>
-                  <DrawerHeader>
-                    <DrawerTitle>Filter</DrawerTitle>
+                    <Landmark size={17} />
+                    Vendor Remittances
+                  </Link>
+                </Button>
+                <label
+                  className="
+      flex h-10 cursor-pointer items-center gap-2
+      rounded-md border border-blue-100
+      bg-white px-4 text-sm font-medium
+      text-[#0446DB] shadow-sm
+      transition-all
+      hover:bg-blue-50 hover:shadow-md
+      dark:border-gray-700 dark:bg-gray-800
+      dark:text-blue-400 dark:hover:bg-gray-700
+    "
+                >
+                  <Upload size={17} />
 
-                  </DrawerHeader>
-                  <div className="p-4">
-                    <form onSubmit={(e) => {
-                      e.preventDefault()
-                      applyFilters()
-                      setIsFilterOpen(false);
+                  <span>Upload CSV</span>
 
-                    }}
-                      className="flex-col  w-full  items-end gap-4"
+                  <input
+                    type="file"
+                    name="bulk_remittance"
+                    onChange={handleChange}
+                    accept=".csv"
+                    className="hidden"
+                  />
+                </label>
+                <Button
+                  onClick={SampleCSV}
+                  className="
+      flex h-10 items-center gap-2 rounded-md
+      border border-blue-100 bg-white px-4
+      font-medium text-[#0446DB] shadow-sm
+      transition-all
+      hover:bg-blue-50 hover:text-[#0446DB]
+      hover:shadow-md
+      dark:border-gray-700 dark:bg-gray-800
+      dark:text-blue-400 dark:hover:bg-gray-700
+    "
+                >
+                  <Download size={17} />
+                  Sample CSV
+                </Button>
+                <Button
+                  onClick={exportCSV}
+                  className="
+      flex h-10 items-center gap-2 rounded-md
+      border border-blue-100 bg-white px-4
+      font-medium text-[#0446DB] shadow-sm
+      transition-all
+      hover:bg-blue-50 hover:text-[#0446DB]
+      hover:shadow-md
+      dark:border-gray-700 dark:bg-gray-800
+      dark:text-blue-400 dark:hover:bg-gray-700
+    "
+                >
+                  <Download size={17} />
+                  Export
+                </Button>
+
+                <Drawer
+                  direction="right"
+                  open={isFilterOpen}
+                  onOpenChange={setIsFilterOpen}
+                >
+                  <DrawerTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="
+          flex h-10 items-center gap-2 rounded-md
+          border border-blue-100 bg-white px-4
+          font-medium text-[#0446DB] shadow-sm
+          transition-all
+          hover:bg-blue-50 hover:text-[#0446DB]
+          hover:shadow-md
+          dark:border-gray-700 dark:bg-gray-800
+          dark:text-blue-400 dark:hover:bg-gray-700
+        "
                     >
-
-                      
-                        
+                      <Filter size={17} />
+                      <span>Filter</span>
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <DrawerHeader>
+                      <DrawerTitle>Filter</DrawerTitle>
+                    </DrawerHeader>
+                    <div className="p-4">
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          applyFilters();
+                          setIsFilterOpen(false);
+                        }}
+                        className="flex-col  w-full  items-end gap-4"
+                      >
                         <div className="p-4">
                           <div className="flex flex-wrap items-end gap-4">
                             {/* Start Date */}
@@ -397,7 +495,12 @@ function CODRemittances() {
                                 type="date"
                                 value={advanceFilters.startDate}
                                 max={advanceFilters.endDate || undefined}
-                                onChange={(e) => updateAdvanceFilter("startDate", e.target.value)}
+                                onChange={(e) =>
+                                  updateAdvanceFilter(
+                                    "startDate",
+                                    e.target.value,
+                                  )
+                                }
                                 onClick={openDatePicker}
                                 onFocus={openDatePicker}
                                 className="border flex w-full  px-3 py-2 rounded-md text-sm cursor-pointer bg-white text-gray-900 dark:bg-gray-900 dark:text-white"
@@ -413,7 +516,9 @@ function CODRemittances() {
                                 type="date"
                                 value={advanceFilters.endDate}
                                 min={advanceFilters.startDate || undefined}
-                                onChange={(e) => updateAdvanceFilter("endDate", e.target.value)}
+                                onChange={(e) =>
+                                  updateAdvanceFilter("endDate", e.target.value)
+                                }
                                 onClick={openDatePicker}
                                 onFocus={openDatePicker}
                                 className="border flex w-full px-3 py-2 rounded-md text-sm cursor-pointer bg-white text-gray-900 dark:bg-gray-900 dark:text-white"
@@ -428,7 +533,12 @@ function CODRemittances() {
                               <input
                                 type="text"
                                 value={advanceFilters.order_id}
-                                onChange={(e) => updateAdvanceFilter("order_id", e.target.value)}
+                                onChange={(e) =>
+                                  updateAdvanceFilter(
+                                    "order_id",
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder="Enter Id(s)"
                                 className="border w-full px-3 py-2 rounded-md text-sm"
                               />
@@ -442,7 +552,12 @@ function CODRemittances() {
                               <input
                                 type="text"
                                 value={advanceFilters.awbNumber}
-                                onChange={(e) => updateAdvanceFilter("awbNumber", e.target.value)}
+                                onChange={(e) =>
+                                  updateAdvanceFilter(
+                                    "awbNumber",
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder="Enter AWB Number(s)"
                                 className="border px-3 w-full py-2 rounded-md text-sm"
                               />
@@ -456,7 +571,12 @@ function CODRemittances() {
                               <input
                                 type="number"
                                 value={advanceFilters.rider_id}
-                                onChange={(e) => updateAdvanceFilter("rider_id", e.target.value)}
+                                onChange={(e) =>
+                                  updateAdvanceFilter(
+                                    "rider_id",
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder="Integer Only"
                                 className="border px-3 w-full py-2 rounded-md text-sm"
                               />
@@ -470,7 +590,12 @@ function CODRemittances() {
                               <input
                                 type="number"
                                 value={advanceFilters.vendor_id}
-                                onChange={(e) => updateAdvanceFilter("vendor_id", e.target.value)}
+                                onChange={(e) =>
+                                  updateAdvanceFilter(
+                                    "vendor_id",
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder="Integer Only"
                                 className="border px-3 w-full py-2 rounded-md text-sm"
                               />
@@ -495,75 +620,86 @@ function CODRemittances() {
                             </div>
                           </div>
                         </div>
-                      
-
-
-
-
-                    </form>
-                  </div>
-                  <DrawerFooter>
-                    <Button onClick={() => setIsFilterOpen(false)} variant="outline">Cancel</Button>
-                  </DrawerFooter>
-                </DrawerContent>
-              </Drawer>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-1 z-10 bg-white dark:bg-gray-900 rounded-md">
-
-          <div className="w-full  justify-center bg-white  rounded shadow-2xl  dark:bg-gray-900   left-0 px-4 z-40   ">
-            <div className="relative ">
-              <div className=" flex md:justify-center  overflow-x-auto  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2">
-                <div className="flex gap-2 min-w-max px-8 mt-3">
-                  {filters.map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => {
-                        setSelectedFilter(filter);
-                        setPage(1);
-                      }}
-                      className={`px-4 py-2 rounded-md border transition font-medium mt-0 ${selectedFilter === filter
-                        ? "bg-[#0446DB] text-white"
-                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                        }`}
-                    >
-                      {filter}(
-                      {filter === "All"
-                        ? `${totalAmount}`
-                        : filter === "Pending"
-                          ? `${pendingAmount}`
-                          : filter === "Initiated"
-                            ? `${initiatedAmount}`
-                            : filter === "Adjusted"
-                              ? `${adjustedAmount}`
-                              : filter === "Received"
-                                ? `${receivedAmount}`
-                                : filter}
-                      )
-                    </button>
-                  ))}
-                </div>
+                      </form>
+                    </div>
+                    <DrawerFooter>
+                      <Button
+                        onClick={() => setIsFilterOpen(false)}
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                    </DrawerFooter>
+                  </DrawerContent>
+                </Drawer>
               </div>
             </div>
           </div>
-          {/* Table */}
-          <div className="overflow-x-auto bg-white dark:bg-gray-900">
-            <Table>
-              <TableHeader >
-                <TableRow>
-                  <TableHead className="px-6 py-3 text-left">RIDER ID</TableHead>
-                  <TableHead className="px-6 py-3 text-left">ORDER ID</TableHead>
-                  <TableHead className="px-6 py-3 text-left">AMOUNT</TableHead>
-                  <TableHead className="px-6 py-3 text-left">RECEIVED BY</TableHead>
-                  <TableHead className="px-6 py-3 text-left">REMARKS</TableHead>
-                  <TableHead className="px-6 py-3 text-left">STATUS</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {
-                  loading ? (
+
+          <div className="mx-1 z-10 bg-white dark:bg-gray-900 rounded-md">
+            <div className="w-full  justify-center bg-white  rounded shadow-2xl  dark:bg-gray-900   left-0 px-4 z-40   ">
+              <div className="relative ">
+                <div className=" flex md:justify-center  overflow-x-auto  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2">
+                  <div className="flex gap-2 min-w-max px-8 mt-3">
+                    {filters.map((filter) => (
+                      <Button
+                        key={filter}
+                        onClick={() => {
+                          setSelectedFilter(filter);
+                          setPage(1);
+                        }}
+                        className={`px-4 py-2 rounded-full border transition font-medium mt-0 ${
+                          selectedFilter === filter
+                            ? "bg-[#0446DB] text-white"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                        }`}
+                      >
+                        {filter}(
+                        {filter === "All"
+                          ? `${totalAmount}`
+                          : filter === "Pending"
+                            ? `${pendingAmount}`
+                            : filter === "Initiated"
+                              ? `${initiatedAmount}`
+                              : filter === "Adjusted"
+                                ? `${adjustedAmount}`
+                                : filter === "Received"
+                                  ? `${receivedAmount}`
+                                  : filter}
+                        )
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Table */}
+            <div className="overflow-x-auto bg-white dark:bg-gray-900">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="px-6 py-3 text-left">
+                      RIDER ID
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-left">
+                      ORDER ID
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-left">
+                      AMOUNT
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-left">
+                      RECEIVED BY
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-left">
+                      REMARKS
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-left">
+                      STATUS
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
                     <>
                       <TableRow>
                         <TableCell colSpan={10} className="text-center py-10">
@@ -581,11 +717,15 @@ function CODRemittances() {
                       </TableRow>
                     </>
                   ) : (
-
                     data.map((d, index) => {
                       return (
-                        <TableRow key={index} >
-                          <TableCell className="px-6 py-4 dark:text-white">{d.vendor_id ? `FP${d.vendor_id}_${d.rider_id}` : `DKT_${d.rider_id}`}{ }</TableCell>
+                        <TableRow key={index}>
+                          <TableCell className="px-6 py-4 dark:text-white">
+                            {d.vendor_id
+                              ? `FP_${d.vendor_id}_${d.rider_id}`
+                              : `DKT_${d.rider_id}`}
+                            {}
+                          </TableCell>
 
                           <TableCell className="px-6 py-4">
                             <p className="text-l text-gray-800 flex items-center">
@@ -615,15 +755,18 @@ function CODRemittances() {
                               </button>
                             </p>
                             <p className="text-s text-gray-500 dark:text-white">
-                              {new Date(d.submitted_at).toLocaleString("en-IN", {
-                                timeZone: "Asia/Kolkata",
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              })}
+                              {new Date(d.submitted_at).toLocaleString(
+                                "en-IN",
+                                {
+                                  timeZone: "Asia/Kolkata",
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                },
+                              )}
                             </p>
 
                             <p className="text-s text-gray-400 dark:text-white">
@@ -638,7 +781,7 @@ function CODRemittances() {
                                 className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
                                 onClick={() => {
                                   navigator.clipboard.writeText(
-                                    d.merchant_order_id
+                                    d.merchant_order_id,
                                   );
                                   setCopySuccess(d.merchant_order_id);
                                   setTimeout(() => {
@@ -654,9 +797,15 @@ function CODRemittances() {
                               </button>
                             </p>
                           </TableCell>
-                          <TableCell className="px-6 py-4 dark:text-white">{d.amount}</TableCell>
-                          <TableCell className="px-6 py-4 dark:text-white">{d.received_by || "-"}</TableCell>
-                          <TableCell className="px-6 py-4 whitespace-nowrap dark:text-white">{d.remarks || "NA"}</TableCell>
+                          <TableCell className="px-6 py-4 dark:text-white">
+                            {d.amount}
+                          </TableCell>
+                          <TableCell className="px-6 py-4 dark:text-white">
+                            {d.received_by || "-"}
+                          </TableCell>
+                          <TableCell className="px-6 py-4 whitespace-nowrap dark:text-white">
+                            {d.remarks || "NA"}
+                          </TableCell>
                           <TableCell className="px-6 py-4">
                             {d.status === "received" ? (
                               <span className="text-green-800 bg-green-100 hover:bg-green-200 font-medium px-3 py-1 rounded-full">
@@ -687,129 +836,125 @@ function CODRemittances() {
                                     </span>
                                   )}
                                 </>
-
                               </button>
                             )}
-
-
                           </TableCell>
                         </TableRow>
-                      )
+                      );
                     })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
 
-                  )
+            {/* Pagination */}
+            <div className="mt-6 flex justify-center items-center gap-4">
+              <Button
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                disabled={page === 1}
+                className={`px-4 py-2 rounded-sm text-sm font-medium ${
+                  page === 1
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#0446DB] text-white hover:bg-indigo-800"
+                }`}
+              >
+                Previous
+              </Button>
+              <span className="text-gray-700">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                onClick={() =>
+                  setPage((prev) => Math.min(prev + 1, totalPages))
                 }
-
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Pagination */}
-          <div className="mt-6 flex justify-center items-center gap-4">
-            <button
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${page === 1
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[#0446DB] text-white hover:bg-indigo-800"
+                disabled={page === totalPages}
+                className={`px-4 py-2 rounded-sm text-sm font-medium ${
+                  page === totalPages
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#0446DB] text-white hover:bg-indigo-800"
                 }`}
-            >
-              Previous
-            </button>
-            <span className="text-gray-700">
-              Page {page} of {totalPages}
-            </span>
-            <button
-              onClick={() =>
-                setPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={page === totalPages}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${page === totalPages
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[#0446DB] text-white hover:bg-indigo-800"
-                }`}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-
-        {/* Modal */}
-        {editItem && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(46,46,46,0.5)]">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
-              {/* Modal Header */}
-              <div className="bg-[#0446DB] px-6 py-4">
-                <h2 className="text-xl font-semibold text-white">
-                  Update Remittance
-                </h2>
-              </div>
-
-              {/* Modal Form */}
-              <form onSubmit={handleSubmit} className="px-6 py-6 space-y-5">
-                {/* Order ID */}
-                <div>
-                  <label className="block text-sm text-gray-700 font-medium mb-1">
-                    Order ID
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.orderId}
-                    readOnly
-                    className="w-full px-4 py-2 border border-gray-300 bg-gray-100 rounded-lg"
-                  />
-                </div>
-
-                {/* Remarks */}
-                <div>
-                  <label className="block text-sm text-gray-700 font-medium mb-1">
-                    Remarks
-                  </label>
-                  <textarea
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    value={formData.remarks}
-                    onChange={(e) =>
-                      setFormData({ ...formData, remarks: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-
-                {/* New Status */}
-                <div>
-                  <label className="block text-sm text-gray-700 font-medium mb-1">
-                    New Status
-                  </label>
-                  <input
-                    type="text"
-                    value="Received"
-                    readOnly
-                    className="w-full px-4 py-2 border border-gray-300 bg-green-100 text-green-500 rounded-lg"
-                  />
-                </div>
-
-                {/* Buttons */}
-                <div className="flex justify-end space-x-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditItem(null)}
-                    className="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2 rounded-lg bg-[#0446DB] text-white hover:bg-indigo-800 transition"
-                  >
-                    Submit
-                  </button>
-                </div>
-              </form>
+              >
+                Next
+              </Button>
             </div>
           </div>
-        )}
-      </div>
 
+          {/* Modal */}
+          {editItem && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(46,46,46,0.5)]">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+                {/* Modal Header */}
+                <div className="bg-[#0446DB] px-6 py-4">
+                  <h2 className="text-xl font-semibold text-white">
+                    Update Remittance
+                  </h2>
+                </div>
+
+                {/* Modal Form */}
+                <form onSubmit={handleSubmit} className="px-6 py-6 space-y-5">
+                  {/* Order ID */}
+                  <div>
+                    <label className="block text-sm text-gray-700 font-medium mb-1">
+                      Order ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.orderId}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 bg-gray-100 rounded-sm"
+                    />
+                  </div>
+
+                  {/* Remarks */}
+                  <div>
+                    <label className="block text-sm text-gray-700 font-medium mb-1">
+                      Remarks
+                    </label>
+                    <textarea
+                      className="w-full px-4 py-2 border border-gray-300 rounded-sm"
+                      value={formData.remarks}
+                      onChange={(e) =>
+                        setFormData({ ...formData, remarks: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  {/* New Status */}
+                  <div>
+                    <label className="block text-sm text-gray-700 font-medium mb-1">
+                      New Status
+                    </label>
+                    <input
+                      type="text"
+                      value="Received"
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 bg-green-100 text-green-500 rounded-sm"
+                    />
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex justify-end space-x-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditItem(null)}
+                      className="px-5 py-2 rounded-sm bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 rounded-sm bg-[#0446DB] text-white hover:bg-indigo-800 transition"
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }

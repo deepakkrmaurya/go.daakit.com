@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "motion/react";
-
+import { NavLink } from "react-router-dom";
 interface Links {
   label: string;
   href: string;
@@ -112,10 +112,10 @@ export const SidebarLink = ({
 }) => {
   const { open, animate } = useSidebar();
   return (
-    <a
-      href={link.href}
+    <NavLink
+      to={link.href}
       className={cn(
-        "flex items-center justify-start gap-2  group/sidebar py-2",
+        "flex items-center justify-start gap-2  group/sidebar py-2 pl-3",
         className
       )}
       {...props}
@@ -130,6 +130,6 @@ export const SidebarLink = ({
       >
         {link.label}
       </motion.span>
-    </a>
+    </NavLink>
   );
 };

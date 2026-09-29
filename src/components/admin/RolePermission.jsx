@@ -371,13 +371,13 @@ const RolePermissionManager = () => {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="bg-[#0446DB] shadow-lg p-4 sm:p-6">
+            <div className=" p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
                     {/* Left Side */}
                     <div className="flex items-center gap-2">
-                        <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-                        <h2 className="text-lg sm:text-xl font-semibold text-white">
+                    
+                        <h2 className="text-lg sm:text-xl font-semibold dar:text-white">
                             Role & Permission Management
                         </h2>
                     </div>

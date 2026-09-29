@@ -356,17 +356,40 @@ function NewMappingOrders() {
     setLastOneMonth()
   },[])
 
+  const [loadingPage, setLoadingPage] = useState(true);
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoadingPage(false);
+  }, 2000);
+
+  return () => clearTimeout(timer);
+}, []);
+
 
 
   return (
-    <div className=" ">
-      <div className="sticky top-0 left-0  z-10 bg-[#0446DB] dark:border-b dark:border-[#0446DB] dark:bg-gray-900 py-4 md:py-6 shadow-md ">
+    <>
+    
+    {
+      loadingPage ? (
+         <div className=" w-full h-[90vh] flex justify-center items-center">
+                  <div>
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                    <p className="mt-2"> Loading Order Details...</p>
+                  </div>
+                </div>
+      ):(
+        <>
+        
+    <div className="bg-[#f5f8fb] h-screen">
+      <div className=" left-0  z-10  dark:bg-neutral-900 py-4 md:py-6  ">
         <div className="  mx-auto px-8  ">
           {/* Mobile Layout */}
           <div className="  flex flex-col space-y-4">
             {/* Top Row: Heading and Buttons */}
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-white">New Mapped Orders</h1>
+              <h1 className="text-xl font-bold dark:text-white">New Mapped Orders</h1>
 
               <div className="flex items-center gap-2">
                 <Drawer direction="right" open={isFilterOpen} onOpenChange={setIsFilterOpen}>
@@ -500,7 +523,7 @@ function NewMappingOrders() {
                       <DrawerFooter>
                         <Button
                           type="submit"
-                          className='bg-[#564ec1]'
+                          className='bg-[#0446DB]'
 
                         >
                           Apply Filters
@@ -711,6 +734,10 @@ function NewMappingOrders() {
         </div>
       )}
     </div>
+        </>
+      )
+    }
+    </>
   );
 }
 

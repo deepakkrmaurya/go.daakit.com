@@ -1,7 +1,6 @@
 
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import Loader from "../Loader";
 import { toast } from "react-toastify";
 import {
   CalendarDays,
@@ -150,20 +149,13 @@ export default function OrderHistory() {
 
   return (
     <>
-      {loading ? (
-        <div className=" w-full h-[90vh] flex justify-center items-center">
-          <div>
-            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-          <p className="mt-2">Loading Order History...</p>
-          </div>
-        </div>
-      ) : (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      
+        <div className="min-h-screen bg-[#f5f8fb]">
           {/* Header */}
-          <div className="py-3 px-8 bg-[#0446DB]">
+          <div className="py-3 px-8 ">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-                <Package className="w-8 h-8" />
+              <h1 className="text-3xl font-bold dark:text-white flex items-center gap-2">
+              
                 Order History
               </h1>
 
@@ -172,7 +164,7 @@ export default function OrderHistory() {
           </div>
 
           {/* Search Card */}
-          <div className="bg-gray-50 flex justify-center rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
+          <div className="bg-gray-50 flex justify-center rounded-sm p-6 mb-8 border border-gray-200">
             <div className="flex flex-col w-[50%] md:flex-row gap-4 items-end">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
@@ -185,13 +177,13 @@ export default function OrderHistory() {
                     required
                     value={orderId}
                     onChange={(e) => setOrderId(e.target.value)}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                     placeholder=" DKTGO-2794323100"
                     onKeyPress={(e) => e.key === 'Enter' && getHistory()}
                   />
                   <button
                     onClick={getHistorys}
-                    className="bg-[#0446DB] whitespace-nowrap text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-purple-700 active:scale-[0.98] transition-all duration-200 font-medium flex items-center gap-2"
+                    className="bg-[#0446DB] whitespace-nowrap text-white px-6 py-3 rounded-sm shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-purple-700 active:scale-[0.98] transition-all duration-200 font-medium flex items-center gap-2"
                   >
                     <Truck className="w-5 h-5" />
                     Get History
@@ -206,7 +198,7 @@ export default function OrderHistory() {
               {/* Order Summary Card */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Order Info Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 lg:col-span-2">
+                <div className="bg-white rounded-sm shadow-lg p-6 border border-gray-200 lg:col-span-2">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                       <FileText className="w-5 h-5" />
@@ -221,8 +213,8 @@ export default function OrderHistory() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-indigo-50 rounded-lg">
-                          <Hash className="w-5 h-5 text-indigo-600" />
+                        <div className="p-2 bg-indigo-50 rounded-sm">
+                          <Hash className="w-5 h-5 text-[#0446DB]" />
                         </div>
                         <div>
                           <p className="text-sm text-gray-500">Order ID</p>
@@ -231,7 +223,7 @@ export default function OrderHistory() {
                       </div>
 
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-blue-50 rounded-lg">
+                        <div className="p-2 bg-blue-50 rounded-sm">
                           <Package className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
@@ -241,7 +233,7 @@ export default function OrderHistory() {
                       </div>
 
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-green-50 rounded-lg">
+                        <div className="p-2 bg-green-50 rounded-sm">
                           <FaRupeeSign className="w-5 h-5 text-green-600" />
                         </div>
                         <div>
@@ -258,7 +250,7 @@ export default function OrderHistory() {
 
                     <div className="space-y-4">
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-red-50 rounded-lg">
+                        <div className="p-2 bg-red-50 rounded-sm">
                           <User className="w-5 h-5 text-red-600" />
                         </div>
                         <div>
@@ -268,7 +260,7 @@ export default function OrderHistory() {
                       </div>
 
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-yellow-50 rounded-lg">
+                        <div className="p-2 bg-yellow-50 rounded-sm">
                           <Phone className="w-5 h-5 text-yellow-600" />
                         </div>
                         <div>
@@ -278,7 +270,7 @@ export default function OrderHistory() {
                       </div>
 
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-purple-50 rounded-lg">
+                        <div className="p-2 bg-purple-50 rounded-sm">
                           <CalendarDays className="w-5 h-5 text-purple-600" />
                         </div>
                         <div>
@@ -292,7 +284,7 @@ export default function OrderHistory() {
                   {/* Address Section */}
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <div className="flex items-start gap-3">
-                      <div className="p-2 bg-orange-50 rounded-lg">
+                      <div className="p-2 bg-orange-50 rounded-sm">
                         <MapPin className="w-5 h-5 text-orange-600" />
                       </div>
                       <div className="flex-1">
@@ -305,7 +297,7 @@ export default function OrderHistory() {
                   </div>
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <div className="flex items-start gap-3">
-                      <div className="p-2 bg-green-50 rounded-lg">
+                      <div className="p-2 bg-green-50 rounded-sm">
                         <MapPin className="w-5 h-5 text-green-600" />
                       </div>
                       <div className="flex-1">
@@ -319,7 +311,7 @@ export default function OrderHistory() {
                 </div>
 
                 {/* Quick Stats Card */}
-                <div className="bg-[#0446DB] rounded-2xl shadow-lg p-6 text-white">
+                <div className="bg-[#0446DB] rounded-sm shadow-lg p-6 text-white">
                   <h3 className="text-lg font-semibold mb-6">Quick Stats</h3>
 
                   <div className="space-y-5">
@@ -358,12 +350,12 @@ export default function OrderHistory() {
               </div>
 
               {/* Tabs Navigation */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200">
+              <div className="bg-white rounded-sm shadow-lg border border-gray-200">
                 <div className="border-b border-gray-200">
                   <nav className="flex overflow-x-scroll space-x-8 px-6">
                     <button
                       onClick={() => setActiveTab("tracking")}
-                      className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "tracking" ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+                      className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "tracking" ? "border-indigo-600 text-[#0446DB]" : "border-transparent text-gray-500 hover:text-gray-700"}`}
                     >
                       <span className="flex whitespace-nowrap items-center gap-2">
                         <RefreshCw className="w-4 h-4" />
@@ -372,7 +364,7 @@ export default function OrderHistory() {
                     </button>
                     <button
                       onClick={() => setActiveTab("items")}
-                      className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "items" ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+                      className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "items" ? "border-indigo-600 text-[#0446DB]" : "border-transparent text-gray-500 hover:text-gray-700"}`}
                     >
                       <span className="flex whitespace-nowrap items-center gap-2">
                         <Box className="w-4 h-4" />
@@ -381,7 +373,7 @@ export default function OrderHistory() {
                     </button>
                     <button
                       onClick={() => setActiveTab("ndr")}
-                      className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "ndr" ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+                      className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "ndr" ? "border-indigo-600 text-[#0446DB]" : "border-transparent text-gray-500 hover:text-gray-700"}`}
                     >
                       <span className="flex whitespace-nowrap items-center gap-2">
                         <AlertCircle className="w-4 h-4" />
@@ -390,7 +382,7 @@ export default function OrderHistory() {
                     </button>
                     <button
                       onClick={() => setActiveTab("assignment")}
-                      className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "assignment" ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+                      className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "assignment" ? "border-indigo-600 text-[#0446DB]" : "border-transparent text-gray-500 hover:text-gray-700"}`}
                     >
                       <span className="flex whitespace-nowrap items-center gap-2">
                         <UserCheck className="w-4 h-4" />
@@ -401,7 +393,7 @@ export default function OrderHistory() {
                       history?.cod_remittance.length > 0 && (
                         <button
                           onClick={() => setActiveTab("cod_remittance")}
-                          className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "cod_remittance" ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+                          className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "cod_remittance" ? "border-indigo-600 text-[#0446DB]" : "border-transparent text-gray-500 hover:text-gray-700"}`}
                         >
                           <span className="flex whitespace-nowrap items-center gap-2">
                             <IndianRupee className="w-4 h-4" />
@@ -432,7 +424,7 @@ export default function OrderHistory() {
                               </div>
 
                               {/* Content */}
-                              <div className="flex-1 bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                              <div className="flex-1 bg-white rounded-sm border border-gray-200 p-5 shadow-sm">
                                 <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                                   <div className="flex items-center gap-3">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(his.status)} flex items-center gap-1`}>
@@ -486,7 +478,7 @@ export default function OrderHistory() {
                   {activeTab === "items" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {history.items?.map((item) => (
-                        <div key={item.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-indigo-300 transition-colors">
+                        <div key={item.id} className="bg-gray-50 rounded-sm p-4 border border-gray-200 hover:border-indigo-300 transition-colors">
                           <div className="flex items-start justify-between mb-3">
                             <h4 className="font-semibold text-gray-900 line-clamp-1">{item.product_name}</h4>
                             <span className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-medium">
@@ -525,7 +517,7 @@ export default function OrderHistory() {
                   {activeTab === "ndr" && (
                     <div className="space-y-4">
                       {history.ndr_history?.map((ndr) => (
-                        <div key={ndr.id} className="bg-red-50 border border-red-200 rounded-xl p-5">
+                        <div key={ndr.id} className="bg-red-50 border border-red-200 rounded-sm p-5">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
                               <AlertCircle className="w-5 h-5 text-red-600" />
@@ -542,7 +534,7 @@ export default function OrderHistory() {
                             {history.ndr_actions
                               ?.filter(action => action.ndr_id === ndr.id)
                               .map((action) => (
-                                <div key={action.id} className="bg-white rounded-lg p-3 border border-red-100">
+                                <div key={action.id} className="bg-white rounded-sm p-3 border border-red-100">
 
                                   <div className="flex items-center justify-between mb-2">
                                     <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
@@ -573,7 +565,7 @@ export default function OrderHistory() {
                   {activeTab === "assignment" && (
                     <div className="space-y-4">
                       {history.rider_assignments?.length > 0 && (
-                        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                        <div className="bg-white rounded-sm shadow-lg p-6 border border-gray-200">
                           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                             <Truck className="w-5 h-5" />
                             Rider Assignment
@@ -581,10 +573,10 @@ export default function OrderHistory() {
 
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {history.rider_assignments.map((assignment) => (
-                              <div key={assignment.id} className="bg-gray-50 rounded-xl p-5">
+                              <div key={assignment.id} className="bg-gray-50 rounded-sm p-5">
                                 <div className="flex items-center gap-3 mb-4">
-                                  <div className="p-2 bg-indigo-50 rounded-lg">
-                                    <User className="w-6 h-6 text-indigo-600" />
+                                  <div className="p-2 bg-indigo-50 rounded-sm">
+                                    <User className="w-6 h-6 text-[#0446DB]" />
                                   </div>
                                   <div>
                                     <h4 className="font-bold text-gray-900">{assignment.rider_name}</h4>
@@ -621,52 +613,7 @@ export default function OrderHistory() {
                   )}
                   {activeTab === "cod_remittance" && (
                     <div className="space-y-4">
-                      {/* {history.rider_assignments?.length > 0 && (
-                        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                            <Truck className="w-5 h-5" />
-                            cod_remittance
-                          </h3>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {history.cod_remittance.map((r) => (
-                              <div key={r.id} className="bg-gray-50 rounded-xl p-5">
-                                <div className="flex items-center gap-3 mb-4">
-                                  <div className="p-2 bg-indigo-50 rounded-lg">
-                                    <User className="w-6 h-6 text-indigo-600" />
-                                  </div>
-                                  <div>
-                                    <h4 className="font-bold text-gray-900">{r.rider_id}</h4>
-                                    <p className="text-sm text-gray-600">{r.amount}</p>
-                                  </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Assigned On:</span>
-                                    <span className="font-medium">
-                                      {r.status}
-                                    </span>
-                                    <span className="font-medium">
-                                      {r.received_by}
-                                    </span>
-                                    <span className="font-medium">
-                                      {r.utr_number}
-                                    </span>
-                                    <span className="font-medium">
-                                      {r.remarks}
-                                    </span>
-                                    <span className="font-medium">
-                                      {r.submitted_at}
-                                    </span>
-                                  </div>
-                        
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )} */}
+                      
                       {activeTab === "cod_remittance" && (
                         <div className="space-y-6">
                           {/* COD Remittance Header with Stats */}
@@ -675,7 +622,7 @@ export default function OrderHistory() {
 
 
                           {/* COD Remittance Table */}
-                          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                          <div className="bg-white rounded-sm shadow-lg border border-gray-200 overflow-hidden">
                             <div className="overflow-x-auto">
                               <table className="w-full">
                                 <thead>
@@ -695,7 +642,7 @@ export default function OrderHistory() {
                                         <div className="space-y-1">
                                           <div className="flex items-center gap-2">
                                             <div className="p-1.5 bg-indigo-50 rounded">
-                                              <CreditCard className="w-4 h-4 text-indigo-600" />
+                                              <CreditCard className="w-4 h-4 text-[#0446DB]" />
                                             </div>
                                             <div>
                                               <p className="font-medium text-gray-900">Transaction #{remit.id}</p>
@@ -806,8 +753,8 @@ export default function OrderHistory() {
           {!history && !loading && (
             <div className="text-center py-20">
               <div className="max-w-md mx-auto">
-                <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Package className="w-12 h-12 text-indigo-400" />
+                <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-sm flex items-center justify-center mx-auto mb-6">
+                  <Package className="w-12 h-12 text-[#0446DB]" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Track Your Order</h3>
                 <p className="text-gray-600 mb-8">
@@ -828,7 +775,7 @@ export default function OrderHistory() {
             </div>
           )}
         </div>
-      )}
+ 
     </>
   );
 }

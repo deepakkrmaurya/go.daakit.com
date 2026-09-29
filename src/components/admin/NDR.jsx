@@ -356,20 +356,42 @@ function NDR() {
     }
   };
 
+  const [loadingPage, setLoadingPage] = useState(true);
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoadingPage(false);
+  }, 2000);
+
+  return () => clearTimeout(timer);
+}, []);
+
   return (
     <>
 
-      <div className="bg-gray-100  dark:bg-gray-900 min-h-screen w-full">
+    {
+      loadingPage ?(
+        <>
+         <div className=" w-full h-[90vh] flex justify-center items-center">
+                  <div>
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                    <p className="mt-2"> Loading NDR Details...</p>
+                  </div>
+                </div>
+        </>
+      ):(
+
+      <div className="bg-[#f5f8fb]  dark:bg-neutral-900 min-h-screen w-full">
         {/* Right Sidebar for filters */}
 
 
         {/* Heading */}
-        <div className="w-full bg-[#0446DB] dark:bg-gray-900 shadow-md px-4 sm:px-6 md:px-8 py-4 md:py-6">
+        <div className="w-full  dark:bg-  px-4 sm:px-6 md:px-8 py-4 md:py-6">
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
             {/* Title */}
-            <h1 className="text-xl sm:text-2xl font-semibold text-white text-left">
+            <h1 className="text-xl sm:text-2xl font-semibold dark:text-white text-left">
               NDR
             </h1>
 
@@ -406,18 +428,18 @@ function NDR() {
 
             {/* Buttons */}
             <div className="flex  justify-center md:justify-end gap-3">
-              <button
+              <Button
                 onClick={exportCSV}
-                className="bg-white text-[#0446DB] font-medium px-4  rounded-lg shadow hover:bg-indigo-100 transition w-full sm:w-auto"
+                className="bg-white text-[#0446DB] font-medium px-4  rounded-sm shadow hover:bg-indigo-100 transition w-full sm:w-auto"
               >
                 Export
-              </button>
+              </Button>
 
 
               <Drawer direction="right" open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                 <DrawerTrigger asChild>
                   <Button variant="outline"
-                    className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-lg shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
+                    className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
                   >
                     <FaFilter className="text-sm" />
                     <span>Filter</span>
@@ -513,25 +535,11 @@ function NDR() {
 
 
         <div className="mx-1 z-10 bg-white dark:bg-gray-800 rounded-md">
-          <div className="w-full  bg-white dark:border dark:border-[#0446DB] rounded shadow-2xl  dark:bg-gray-900   left-0 px-4 z-40   ">
+          <div className="w-full  bg-white  dark:bg-neutral-800  left-0 px-4 z-40   ">
             <div className="relative flex justify-center ">
               <div className=" flex  overflow-x-auto scrollbar-hide scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2">
                 <div className="flex gap-2 min-w-max px-8 mt-0">
-                  {/* {filters.map((filter) => (
-                      <button
-                        key={filter[0]}
-                        onClick={() => {
-                          setSelectedFilter(filter[1]);
-                          setPage(1);
-                        }}
-                        className={`px-4 py-2 whitespace-nowrap rounded-md border transition font-medium mt-5 ${selectedFilter === filter[1]
-                          ? "bg-[#0446DB] text-white"
-                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                          }`}
-                      >
-                        {filter[0]}
-                      </button>
-                    ))} */}
+                 
 
                   {filters.map((filter) => (
                     <Button
@@ -541,7 +549,7 @@ function NDR() {
                         setPage(1);
                       }}
                       className={`px-5 py-2.5 rounded-full my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${selectedFilter === filter[1]
-                        ? "bg-[#0446DB] text-white shadow-lg shadow-purple-200 border-transparent"
+                        ? "bg-[#0446DB] text-white "
                         : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
                         }`}
                     >
@@ -560,7 +568,7 @@ function NDR() {
 
 
           {(selectedNdrIds.length > 0 && selectedFilter === "actionable") && (
-            <div className="mx-2 mb-3 mt-4 rounded-lg border border-blue-100 bg-blue-50 p-3 dark:border-gray-700 dark:bg-gray-800">
+            <div className="mx-2 mb-3 mt-4 rounded-sm border border-blue-100 bg-blue-50 p-3 dark:border-gray-700 dark:bg-gray-800">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="text-sm font-medium whitespace-normal text-gray-700 dark:text-white">
                   {selectedNdrIds.length} selected
@@ -747,23 +755,7 @@ function NDR() {
 
 
 
-                    {/* {
-                      bulkRemarks == "other" && (
-                        <div>
-                          <label className="text-xs font-medium dark:text-white">Other</label>
-                          <input
-                            type="text"
-                            value={bulkOtherRemarks}
-                            onChange={(e) => setBulkOtherRemarks(e.target.value)}
-                            placeholder="Enter Other Remarks"
-                            className="mt-0 text-xs w-full border border-gray-300 rounded-md
-                       px-2 py-2 mb-0 focus:ring-2 dark:text-white dark:bg-gray-800 focus:ring-indigo-400 focus:outline-none"
-                          />
-
-                        </div>
-                      )
-                    } */}
-
+                   
                     <div className=" flex-col mt-6">
                       <label className="text-xs font-medium dark:text-white mt-2"></label>
                       <div className=" flex gap-2">
@@ -803,9 +795,9 @@ function NDR() {
           )}
 
           {/* Table */}
-          <div className="overflow-x-auto bg-white dark:bg-gray-900 rounded-xl shadow">
+          <div className="overflow-x-auto bg-white dark:bg-neutral-900">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-100 dark:bg-gray-900 text-gray-600 font-semibold">
+              <thead className="bg-gray-100 dark:bg-neutral-900 text-gray-600 font-semibold">
                 <tr>
                   {selectedFilter === "actionable" && (
                     <th className="px-6 py-3 text-left whitespace-nowrap">
@@ -966,7 +958,7 @@ function NDR() {
                           </td>
 
                           {/* Remark/Reason */}
-                          <td className="px-6 py-4 dark:text-white">{d.vendor_id ? `FP${d.vendor_id}_${d.rider_id}` : `DKT_${d.rider_id}`}</td>
+                          <td className="px-6 py-4 dark:text-white">{d.vendor_id ? `FP_${d.vendor_id}_${d.rider_id}` : `DKT_${d.rider_id}`}</td>
 
                           {/* Remark/Reason */}
                           <td className="px-6 py-4 dark:text-white">{d.reason || "NA"}</td>
@@ -1389,7 +1381,7 @@ function NDR() {
                                         <>
                                           <div
                                             key={item.action_id}
-                                            className="border rounded-lg p-4 bg-gray-50"
+                                            className="border rounded-sm p-4 bg-gray-50"
                                           >
                                             <div className="text-sm font-medium text-gray-800 mb-1">
                                               {item.action_taken === 'change_address' ? <span className=" font-semibold text-gray-900" >Change Address</span> : item.action_taken === 'change_phone' ? <span className=" font-semibold text-gray-900" >Change Phone Number</span> : item.action_taken === 'reattempt' ? < span className=" font-semibold text-gray-900" >Reattempt</span> : < span className=" font-semibold text-gray-900" >{item.action_taken}</span>
@@ -1509,7 +1501,7 @@ function NDR() {
           </div>
 
           {/* Pagination */}
-          <div className=" py-3 flex justify-center items-center gap-4">
+          <div className=" py-3 flex justify-center dark:bg-neutral-900 items-center gap-4">
             <Button
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page === 1}
@@ -1538,6 +1530,9 @@ function NDR() {
           </div>
         </div>
       </div >
+      )
+    }
+
 
     </>
   );

@@ -23,9 +23,9 @@ export function DropdownMenuDemo({ profile, decoded, handleLogout, UserRoles }) 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 p-1 rounded-full bg-gray-100 transition cursor-pointer">
+        <button className="flex items-center gap-2 p-1 rounded-sm bg-gray-100 dark:bg-neutral-800 transition cursor-pointer">
           {profile?.profile_image ? (
-            <img src={`${baseURL}/${profile.profile_image}`} alt="avatar" className="w-8 h-8 rounded-full" />
+            <img src={`${baseURL}${profile.profile_image}`} alt="avatar" className="w-8 h-8 rounded-full" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
               <User className="h-5 w-5" />
@@ -34,19 +34,19 @@ export function DropdownMenuDemo({ profile, decoded, handleLogout, UserRoles }) 
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-56 bg-white/90 backdrop-blur-lg border border-gray-200 rounded-xl shadow-xl  animate-fade-in-down" align="start">
+      <DropdownMenuContent className="w-56 bg-white/90 dark:bg-neutral-800 backdrop-blur-lg border border-gray-200 rounded-sm shadow-sm  animate-fade-in-down" align="start">
         <DropdownMenuSeparator />
         <DropdownMenuItem className="p-1">
           <div className="flex items-center gap-2">
             {profile?.profile_image ? (
-              <img src={`${baseURL}/${profile.profile_image}`} alt="avatar" className="w-8 h-8 rounded-full" />
+              <img src={`${baseURL}${profile.profile_image}`} alt="avatar" className="w-8 h-8 rounded-full" />
             ) : (
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
                 <User className="h-5 w-5" />
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-800">{profile?.name || "User"}</span>
+              <span className="text-sm font-medium text-gray-800 dark:text-white">{profile?.name || "User"}</span>
               <span className="text-xs text-gray-500">{decoded?.email}</span>
             </div>
           </div>
@@ -63,14 +63,16 @@ export function DropdownMenuDemo({ profile, decoded, handleLogout, UserRoles }) 
                     Wallet :  {parseInt(profile?.wallet_balance)}
 
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
                     <Link
                       to="/techbased_merchant/profile"
                     >
+                  <DropdownMenuItem 
+                   
+                  >
                       Profile
+                  </DropdownMenuItem>
                     </Link>
 
-                  </DropdownMenuItem>
                 </>
               ) : decoded?.type === "vendor" ? (
                 <>

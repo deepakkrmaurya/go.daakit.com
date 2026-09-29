@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Loader from "../Loader.jsx";
 import { toast } from "react-toastify";
+import { Loader2 } from "lucide-react";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -31,7 +32,11 @@ export default function MerchantRemittances() {
       });
       setAllMerchants(res.data.merchants);
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Error fetching merchants");
+      toast.error(
+        err.response?.data?.message ||
+          err.message ||
+          "Error fetching merchants",
+      );
     } finally {
       setLoading(false);
     }
@@ -53,25 +58,26 @@ export default function MerchantRemittances() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
 
       setStats(res.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Error while fetching the merchant's stat");
+      toast.error(
+        err.response?.data?.message ||
+          err.message ||
+          "Error while fetching the merchant's stat",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-
-
   useEffect(() => {
-    if(filterUpdate){
-
-      getMerchantStats()
+    if (filterUpdate) {
+      getMerchantStats();
     }
-  }, [filterUpdate])
+  }, [filterUpdate]);
 
   const handleChange = async (e) => {
     setLoading(true);
@@ -87,27 +93,32 @@ export default function MerchantRemittances() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       toast.success("File uploaded successfully");
       getMerchants();
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Error while uploading file to take action on bulk orders");
+      toast.error(
+        err.response?.data?.message ||
+          err.message ||
+          "Error while uploading file to take action on bulk orders",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-
   const downloadMerchantRemittanceSampleFile = async () => {
     try {
-      const res = await axios.get(`${baseURL}/api/admin/downloadMerchantRemittanceSampleFile`, {
-
-        responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+      const res = await axios.get(
+        `${baseURL}/api/admin/downloadMerchantRemittanceSampleFile`,
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         },
-      });
+      );
 
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
@@ -116,14 +127,10 @@ export default function MerchantRemittances() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (error) {
-
-    }
-  }
-
+    } catch (error) {}
+  };
 
   // advance filter
-
 
   function toCapitalizeEachWord(str) {
     return str
@@ -154,7 +161,7 @@ export default function MerchantRemittances() {
 
   const openPopUp = (remmitance) => {
     setPopupData(remmitance);
-  }
+  };
 
   const closePopUp = () => {
     setPopupData(null);
@@ -164,33 +171,48 @@ export default function MerchantRemittances() {
     getMerchants();
   }, []);
 
+  const [loadingPage, setLoadingPage] = useState(true);
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoadingPage(false);
+  }, 2000);
+
+  return () => clearTimeout(timer);
+}, []);
+
   return (
     <>
-      {loading ? (
-        <Loader />
+      {loadingPage ? (
+        <div className=" w-full h-[90vh] flex justify-center items-center">
+          <div>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+            <p className="mt-2"> Loading Merchant Remittances Details...</p>
+          </div>
+        </div>
       ) : (
         <div className="bg-gray-100 dark:bg-gray-900 min-h-screen">
           {/* Top Heading Stripe */}
-          <div className="mb-0  bg-[#0446DB] dark:bg-gray-900 py-[24px] shadow-md  px-[24px]">
+          <div className="mb-0  dark:bg-gray-900 py-[24px]   px-[24px]">
             <div className="flex flex-wrap items-center justify-between">
               {/* Heading */}
-              <h1 className="text-2xl text-white">Merchant Remittances</h1>
-              <div >
+              <h1 className="text-2xl dark:text-white">Merchant Remittances</h1>
+              <div>
                 <button
                   onClick={() => downloadMerchantRemittanceSampleFile()}
-                  className={`bg-white text-[#0446DB] font-medium px-5 py-2 rounded-lg shadow hover:bg-indigo-100 transition mr-2`}
+                  className={`bg-white text-[#0446DB] font-medium px-5 py-2 rounded-sm shadow hover:bg-indigo-100 transition mr-2`}
                 >
                   Sample CSV
                 </button>
-
               </div>
             </div>
           </div>
 
           {/* filter right side */}
           <div
-            className={`fixed top-0 rounded-tl-4xl right-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isFilterOpen ? "translate-x-0" : "translate-x-full"
-              }`}
+            className={`fixed top-0 rounded-tl-4xl right-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+              isFilterOpen ? "translate-x-0" : "translate-x-full"
+            }`}
           >
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-xl font-semibold">Advance Filters</h2>
@@ -205,7 +227,10 @@ export default function MerchantRemittances() {
               </button>
             </div>
             <div className="p-4">
-              <form onSubmit={e => e.preventDefault()} className="flex flex-wrap items-end gap-4">
+              <form
+                onSubmit={(e) => e.preventDefault()}
+                className="flex flex-wrap items-end gap-4"
+              >
                 {/* Start Date */}
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">
@@ -294,27 +319,28 @@ export default function MerchantRemittances() {
               <div className="flex flex-wrap justify-center gap-2 mb-6">
                 <button
                   onClick={() => setSelectedStatus("history")}
-                  className={`mt-4 px-6 py-2 rounded-md border transition font-medium shadow-sm ${selectedStatus === "history"
-                    ? "bg-[#0446DB] text-white"
-                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
-                    }`}
+                  className={`mt-4 px-6 py-2 rounded-md border transition font-medium shadow-sm ${
+                    selectedStatus === "history"
+                      ? "bg-[#0446DB] text-white"
+                      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
+                  }`}
                 >
                   Remittance History
                 </button>
                 <button
                   onClick={() => setSelectedStatus("upload")}
-                  className={`mt-4 px-6 py-2 rounded-md border transition font-medium shadow-sm ${selectedStatus === "upload"
-                    ? "bg-[#0446DB] text-white"
-                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
-                    }`}
+                  className={`mt-4 px-6 py-2 rounded-md border transition font-medium shadow-sm ${
+                    selectedStatus === "upload"
+                      ? "bg-[#0446DB] text-white"
+                      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
+                  }`}
                 >
                   Upload Remittance
                 </button>
-
               </div>
 
               {selectedStatus === "upload" && (
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md border border-gray-200 space-y-4">
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-sm shadow-md border border-gray-200 space-y-4">
                   <label className="block text-gray-700 dark:text-white font-semibold">
                     Remittance File
                   </label>
@@ -323,7 +349,7 @@ export default function MerchantRemittances() {
                     name="bulk_remittance"
                     onChange={handleChange}
                     accept=".csv"
-                    className="block w-full text-sm dark:text-white text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-white file:bg-[#0446DB] file:hover:bg-indigo-600 cursor-pointer"
+                    className="block w-full text-sm dark:text-white text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-white file:bg-[#0446DB] file:hover:bg-indigo-600 cursor-pointer"
                   />
                 </div>
               )}
@@ -331,7 +357,7 @@ export default function MerchantRemittances() {
               {selectedStatus === "history" && (
                 <>
                   <div>
-                    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md border border-gray-200 mb-2">
+                    <div className="bg-white dark:bg-gray-900 p-6 rounded-sm shadow-md border border-gray-200 mb-2">
                       {allMerchants?.length > 0 ? (
                         <div>
                           <label className="block dark:text-white text-gray-700 font-semibold mb-1">
@@ -341,7 +367,7 @@ export default function MerchantRemittances() {
                             required
                             value={merchant}
                             onChange={(e) => getMerchantStats(e.target.value)}
-                            className="w-full px-4 dark:text-white py-2 dark:bg-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-4 dark:text-white py-2 dark:bg-gray-800 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           >
                             <option value="" disabled>
                               Select Merchant
@@ -359,9 +385,9 @@ export default function MerchantRemittances() {
                     </div>
 
                     {merchant && (
-                      <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md border border-gray-200">
+                      <div className="bg-white dark:bg-gray-900 p-6 rounded-sm shadow-md border border-gray-200">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100">
+                          <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-sm shadow-sm border border-gray-100">
                             <span className="text-gray-600 font-medium">
                               Total COD
                             </span>
@@ -369,20 +395,26 @@ export default function MerchantRemittances() {
                               ₹{Number(stats?.total_cod).toLocaleString()}
                             </span>
                           </div>
-                          <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100">
+                          <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-sm shadow-sm border border-gray-100">
                             <span className="text-gray-600 font-medium">
                               Remaining
                             </span>
                             <span className="text-xl font-bold text-yellow-600">
-                              ₹{Number(stats?.remaining_cod_amount).toLocaleString()}
+                              ₹
+                              {Number(
+                                stats?.remaining_cod_amount,
+                              ).toLocaleString()}
                             </span>
                           </div>
-                          <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100">
+                          <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-sm shadow-sm border border-gray-100">
                             <span className="text-gray-600 font-medium">
                               Paid
                             </span>
                             <span className="text-xl font-bold text-green-600">
-                              ₹{Number(stats?.total_paid_remittance_amount).toLocaleString()}
+                              ₹
+                              {Number(
+                                stats?.total_paid_remittance_amount,
+                              ).toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -400,7 +432,7 @@ export default function MerchantRemittances() {
                   </div>
 
                   {stats?.remittance_records.length > 0 && (
-                    <div className="overflow-x-auto mt-1 rounded-xl shadow-md border border-gray-200">
+                    <div className="overflow-x-auto mt-1 rounded-sm shadow-md border border-gray-200">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-[#0446DB] text-white">
                           <tr>
@@ -452,7 +484,8 @@ export default function MerchantRemittances() {
                                 {remittance.convenience_fee}
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-800">
-                                {remittance.awb_number.split(',').length === 1 ? (
+                                {remittance.awb_number.split(",").length ===
+                                1 ? (
                                   <>{remittance.awb_number}</>
                                 ) : (
                                   <>
@@ -460,7 +493,7 @@ export default function MerchantRemittances() {
                                       onClick={() => openPopUp(remittance)}
                                       className="hover:cursor-pointer"
                                     >
-                                      {`${remittance.awb_number.split(',')[0]}...`}
+                                      {`${remittance.awb_number.split(",")[0]}...`}
                                     </button>
                                   </>
                                 )}
@@ -470,14 +503,15 @@ export default function MerchantRemittances() {
                                 {remittance.utr_number}
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-800">
-                                {new Date(
-                                  remittance.created_at
-                                ).toLocaleString("en-IN", {
-                                  timeZone: "Asia/Kolkata",
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                })}
+                                {new Date(remittance.created_at).toLocaleString(
+                                  "en-IN",
+                                  {
+                                    timeZone: "Asia/Kolkata",
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  },
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -494,7 +528,7 @@ export default function MerchantRemittances() {
       {/* 👇 Popup Modal */}
       {popupData && (
         <div className="fixed inset-0 bg-[rgba(46,46,46,0.5)] flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96 max-h-[70vh] overflow-y-auto">
+          <div className="bg-white p-6 rounded-sm shadow-lg w-96 max-h-[70vh] overflow-y-auto">
             <h2 className="text-lg font-semibold mb-4">AWB Numbers</h2>
             <ul className="list-disc pl-5 space-y-1">
               {popupData.awb_numbers.split(",").map((awb, idx) => (
