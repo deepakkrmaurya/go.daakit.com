@@ -1620,7 +1620,7 @@ const getNavLinks = () => {
         { label: "Riders", href: "/techbased_merchant/rider/stats", icon: <TbMotorbike className="h-4 w-4" /> },
         // { label: "Rider Performance", href: "/techbased_merchant/rider/shipment/tracking", icon: <TbChartBar  className="h-4 w-4" /> },
         { label: "Live Location", href: "/techbased_merchant/rider/live_location", icon: <FaMapMarkedAlt className="h-4 w-4" /> },
-        { label: "COD Collection", href: "/techbased_merchant/cod_emittances", icon: <LuReceiptIndianRupee className="h-4 w-4" /> },
+        { label: "COD Collection", href: "/techbased_merchant/cod_remittances", icon: <LuReceiptIndianRupee className="h-4 w-4" /> },
         { label: "Rate Card", href: "/techbased_merchant/rider_rate/list", icon: <LuReceiptIndianRupee className="h-4 w-4" /> },
       ]},
 

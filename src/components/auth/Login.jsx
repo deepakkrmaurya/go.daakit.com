@@ -22,10 +22,10 @@ import {
 // ASSETS
 // ======================================================
 
-import DaakitGoLogo from "../assets/DaakitGo-Logo.jpg";
+import DaakitGoLogo from "@/assets/DaakitGo-Logo.jpg";
 
 // Same image used in the reference left-side design
-import LoginIllustration from "../assets/image.png";
+import LoginIllustration from "@/assets/image.png";
 
 // ======================================================
 // ENV

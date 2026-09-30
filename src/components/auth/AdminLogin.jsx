@@ -88,7 +88,7 @@ function AdminLogin() {
     </p>
 
     {/* Features */}
-    <div className="mt-7 flex flex-wrap gap-3">
+    {/* <div className="mt-7 flex flex-wrap gap-3">
       <div className="rounded-lg border border-white/15 bg-white/10 px-4 py-2.5 backdrop-blur-sm">
         <p className="text-sm font-bold text-white">
           Smart Fulfillment
@@ -115,7 +115,7 @@ function AdminLogin() {
           Connected Logistics
         </p>
       </div>
-    </div>
+    </div> */}
   </div>
 
   {/* Existing Image */}

@@ -25,7 +25,7 @@ export function DropdownMenuDemo({ profile, decoded, handleLogout, UserRoles }) 
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 p-1 rounded-sm bg-gray-100 dark:bg-neutral-800 transition cursor-pointer">
           {profile?.profile_image ? (
-            <img src={`${baseURL}${profile.profile_image}`} alt="avatar" className="w-8 h-8 rounded-full" />
+            <img src={`${baseURL}/${profile.profile_image}`} alt="avatar" className="w-8 h-8 rounded-full" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
               <User className="h-5 w-5" />
@@ -39,7 +39,7 @@ export function DropdownMenuDemo({ profile, decoded, handleLogout, UserRoles }) 
         <DropdownMenuItem className="p-1">
           <div className="flex items-center gap-2">
             {profile?.profile_image ? (
-              <img src={`${baseURL}${profile.profile_image}`} alt="avatar" className="w-8 h-8 rounded-full" />
+              <img src={`${baseURL}/${profile.profile_image}`} alt="avatar" className="w-8 h-8 rounded-full" />
             ) : (
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
                 <User className="h-5 w-5" />

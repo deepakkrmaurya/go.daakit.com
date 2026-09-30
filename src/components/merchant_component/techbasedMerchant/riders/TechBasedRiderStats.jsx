@@ -546,30 +546,13 @@ const options = City.getCitiesOfCountry("IN").map((city) => ({
     setLoading(true);
 
     try {
-
-      await axios.put(
-
-        `${baseURL}/api/vendor/changeRiderPassword/${newPassword.id}`,
-
+      const res = await AxiosInstance.post(`/api/tech-merchant/changeRiderPassword/${newPassword.id}`,
         {
-
           password: newPassword.password,
-
           confirmPassword: newPassword.confirmPassword,
-
-        },
-
-        {
-
-          headers: {
-
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-
-          },
-
-        },
-
-      );
+        }
+      )
+      
 
       setChangePasswordPopup(null);
 
@@ -620,7 +603,7 @@ const options = City.getCitiesOfCountry("IN").map((city) => ({
       response.headers["content-type"] ||
       "application/octet-stream";
 
-    c
+    
 
     // Agar backend JSON error blob ke andar bhej raha hai
     if (contentType.includes("application/json")) {

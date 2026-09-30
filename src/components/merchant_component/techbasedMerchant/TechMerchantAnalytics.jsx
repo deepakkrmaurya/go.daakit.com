@@ -575,7 +575,7 @@ const TechMerchantAnalytics = () => {
 };
 
 const ChartCard = ({ title, children, live = false }) => (
-  <div className="rounded-sm border border-gray-100 bg-white p-6 transition-all duration-300 dark:border-neutral-800 dark:bg-neutral-900">
+  <div className="rounded-sm border border-gray-100 bg-white p-1 transition-all duration-300 dark:border-neutral-800 dark:bg-neutral-900">
     <div className="mb-4 flex items-center justify-between">
       <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
         {title}

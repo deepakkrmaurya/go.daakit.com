@@ -390,7 +390,15 @@ const Profile = () => {
         formData.append("cheque_image", profile.cheque_image);
       }
      
-      const res = await AxiosInstance.put('/api/tech-merchant/updateMerchantInfo',formData)
+     const res = await AxiosInstance.put(
+  "/api/tech-merchant/updateMerchantInfo",
+  formData,
+  {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  }
+);
 
       setProfile(res?.data?.data || editForm);
       setEditForm(res?.data?.data || editForm);
@@ -2367,7 +2375,7 @@ const Profile = () => {
                       <img
                         src={
                           profilePreview ||
-                          `${baseURL}${currentData.profile_image}`
+                          `${baseURL}/${currentData.profile_image}`
                         }
                         alt="Profile"
                         className="h-20 w-20 rounded-2xl object-cover shadow-sm"
@@ -2474,6 +2482,9 @@ const Profile = () => {
 
                   {chequePreview || currentData.cheque_image ? (
                     <div className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-4 sm:flex-row sm:items-center dark:border-neutral-800 dark:bg-neutral-950">
+                      {
+                        console.log(currentData)
+                      }
                       <img
                         src={
                           chequePreview ||
@@ -2494,7 +2505,7 @@ const Profile = () => {
 
                         {currentData.cheque_image && !chequePreview && (
                           <a
-                            href={`${baseURL}${currentData.cheque_image}`}
+                            href={`${baseURL}/${currentData.cheque_image}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#0446DB] hover:underline dark:text-blue-400"
@@ -2527,7 +2538,7 @@ const Profile = () => {
   const profileImageSrc =
     profilePreview ||
     (profile?.profile_image
-      ? `${baseURL}${profile.profile_image}`
+      ? `${baseURL}/${profile.profile_image}`
       : null);
 
   return (
@@ -2737,7 +2748,7 @@ const Profile = () => {
           <StatCard
             icon={ClipboardDocumentListIcon}
             label="Merchant ID"
-            value={`M_0${profile?.id || "-"}`}
+            value={`M_${profile?.id || "-"}`}
             subtitle="Merchant identifier"
             tone="orange"
           />

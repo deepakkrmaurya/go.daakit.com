@@ -1,13 +1,3 @@
-// import React from 'react'
-
-// const Unauthorized = () => {
-//   return (
-//     <div>Unauthorized</div>
-//   )
-// }
-
-// export default Unauthorized
-
 
 import { Link } from "react-router";
 
@@ -41,7 +31,7 @@ function Unauthorized() {
         </div>
         {/* <!-- Footer --> */}
         <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
-          &copy; {new Date().getFullYear()} - Daakit-GO
+          &copy; {new Date().getFullYear()} - DAAKitGO
         </p>
       </div>
     </>
