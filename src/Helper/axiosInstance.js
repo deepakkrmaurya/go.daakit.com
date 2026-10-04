@@ -42,6 +42,7 @@ const handleLogout = () => {
 const AxiosInstance = axios.create({
   baseURL: baseURL,
   timeout: 30000,
+  withCredentials:true
 });
 
 // Request Interceptor

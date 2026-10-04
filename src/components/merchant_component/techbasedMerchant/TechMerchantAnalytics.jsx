@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import Piechart from "../../Piechart";
 import CityOrdersChart from "../../CityOrdersChart";
-import axiosInstance from "../../../Helper/axiosInstance";
+import axiosInstance from "@/Helper/axiosInstance";
 
 const baseURL = import.meta.env.VITE_FRONTEND_URL;
 
@@ -363,7 +363,7 @@ const TechMerchantAnalytics = () => {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="text-center lg:text-left">
               <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white lg:text-4xl">
-                Analytics Dashboard
+                Dashboard
               </h1>
               <p className="text-base text-gray-500 dark:text-indigo-100 lg:text-lg">
                 Real-time insights and performance metrics
@@ -466,29 +466,43 @@ const TechMerchantAnalytics = () => {
         <div className="mb-6 flex items-center justify-between border-b border-gray-200 dark:border-neutral-800">
           <div className="flex items-center gap-1">
             {[
-              { key: "all", label: "All Orders" },
-              { key: "self", label: "Self" },
-              { key: "daakit", label: "Daakit" },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setAnalyticsTab(tab.key)}
-                className={`relative px-4 py-3 text-sm font-semibold transition ${
-                  analyticsTab === tab.key
-                    ? "text-[#0446DB] dark:text-blue-300"
-                    : "text-gray-500 hover:text-gray-800 dark:text-neutral-400 dark:hover:text-white"
-                }`}
-              >
-                {tab.label}
-                {analyticsTab === tab.key && (
-                  <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#0446DB]" />
-                )}
-              </button>
-            ))}
+  {
+    key: "all",
+    label: "All Orders",
+    title: "All Orders",
+  },
+  {
+    key: "self",
+    label: "BYOB",
+    title: "Bring Your Own Biker",
+  },
+  {
+    key: "daakit",
+    label: "DDN",
+    title: "Daakit Delivery Network",
+  },
+].map((tab) => (
+  <button
+    key={tab.key}
+    type="button"
+    title={tab.title}
+    onClick={() => setAnalyticsTab(tab.key)}
+    className={`relative px-4 py-3 text-sm font-semibold uppercase transition ${
+      analyticsTab === tab.key
+        ? "text-[#0446DB] dark:text-blue-300"
+        : "text-gray-500 hover:text-gray-800 dark:text-neutral-400 dark:hover:text-white"
+    }`}
+  >
+    {tab.label}
+
+    {analyticsTab === tab.key && (
+      <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#0446DB]" />
+    )}
+  </button>
+))}
           </div>
           <span className="hidden text-xs text-gray-500 dark:text-neutral-400 sm:block">
-            Showing {analyticsTab === "all" ? "combined" : analyticsTab} analytics
+            Showing {analyticsTab === "all" ? "combined" : analyticsTab=='self'?"BYOB":"DDN"} analytics
           </span>
         </div>
 
@@ -545,8 +559,8 @@ const TechMerchantAnalytics = () => {
           </ChartCard>
         </div>
 
-        <div className="mt-6 rounded-sm border border-gray-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 rounded-sm border border-gray-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+          {/* <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                 City Wise Order Distribution
@@ -558,7 +572,7 @@ const TechMerchantAnalytics = () => {
             <div className="text-sm text-gray-500 dark:text-neutral-400">
               Total Cities: {dashboardData?.city_distribution?.length || 0}
             </div>
-          </div>
+          </div> */}
 
           <CityOrdersChart cityWiseOrders={cityChartData} />
         </div>
@@ -575,7 +589,7 @@ const TechMerchantAnalytics = () => {
 };
 
 const ChartCard = ({ title, children, live = false }) => (
-  <div className="rounded-sm border border-gray-100 bg-white p-1 transition-all duration-300 dark:border-neutral-800 dark:bg-neutral-900">
+  <div className="rounded-sm border border-gray-200 bg-white p-4 transition-all duration-300 dark:border-neutral-800 dark:bg-neutral-900">
     <div className="mb-4 flex items-center justify-between">
       <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
         {title}
@@ -587,7 +601,7 @@ const ChartCard = ({ title, children, live = false }) => (
         </span>
       )}
     </div>
-    <div className="min-h-[250px]">{children}</div>
+    <div className="min-h-[230px]">{children}</div>
   </div>
 );
 

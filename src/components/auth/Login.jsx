@@ -46,7 +46,7 @@ function Login() {
 
   const [captchaToken, setCaptchaToken] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [flag, setFlag] = useState("vendor");
+  const [flag, setFlag] = useState("merchant");
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -168,7 +168,10 @@ function Login() {
 
       const res = await axios.post(
         `${baseURL}/api/vendor/vendorLogin`,
-        formData,
+        {
+          ...formData,
+          captcha_key:captchaToken
+        },
         {
           headers: {
             "Content-Type": "application/json",
@@ -241,7 +244,10 @@ function Login() {
 
       const res = await axios.post(
         `${baseURL}/api/merchant/merchantLogin`,
-        formData,
+        {
+          ...formData,
+           captcha_key:captchaToken
+        },
         {
           headers: {
             "Content-Type": "application/json",
@@ -591,6 +597,7 @@ function Login() {
 
               <div className="mb-6">
                 <div className="relative flex w-full rounded-xl bg-gray-100 p-1.5 shadow-inner">
+                  {/* SLIDING BACKGROUND */}
                   <div
                     className="
                       absolute
@@ -608,48 +615,16 @@ function Login() {
                     "
                     style={{
                       transform:
-                        flag === "vendor"
+                        flag === "merchant"
                           ? "translateX(0%)"
                           : "translateX(100%)",
                     }}
                   />
 
+                  {/* MERCHANT - FIRST */}
                   <button
                     type="button"
-                    onClick={() =>
-                      handleFlagChange("vendor")
-                    }
-                    className={`
-                      relative
-                      z-10
-                      flex
-                      h-11
-                      flex-1
-                      cursor-pointer
-                      items-center
-                      justify-center
-                      gap-2
-                      rounded-lg
-                      text-sm
-                      font-semibold
-                      transition
-                      ${
-                        flag === "vendor"
-                          ? "text-[#0446DB]"
-                          : "text-gray-500 hover:text-gray-800"
-                      }
-                    `}
-                  >
-                    <Truck className="h-4 w-4" />
-
-                    Fleet Partner
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleFlagChange("merchant")
-                    }
+                    onClick={() => handleFlagChange("merchant")}
                     className={`
                       relative
                       z-10
@@ -672,8 +647,36 @@ function Login() {
                     `}
                   >
                     <Store className="h-4 w-4" />
-
                     Merchant
+                  </button>
+
+                  {/* FLEET PARTNER - SECOND */}
+                  <button
+                    type="button"
+                    onClick={() => handleFlagChange("vendor")}
+                    className={`
+                      relative
+                      z-10
+                      flex
+                      h-11
+                      flex-1
+                      cursor-pointer
+                      items-center
+                      justify-center
+                      gap-2
+                      rounded-lg
+                      text-sm
+                      font-semibold
+                      transition
+                      ${
+                        flag === "vendor"
+                          ? "text-[#0446DB]"
+                          : "text-gray-500 hover:text-gray-800"
+                      }
+                    `}
+                  >
+                    <Truck className="h-4 w-4" />
+                    Fleet Partner
                   </button>
                 </div>
               </div>

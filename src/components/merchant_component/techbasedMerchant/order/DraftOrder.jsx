@@ -24,129 +24,13 @@ import { Link, useNavigate } from "react-router-dom";
 
 import toast from "react-hot-toast";
 
-import AxiosInstance from "../../../../Helper/axiosInstance";
+import AxiosInstance from "@/Helper/axiosInstance";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
 const merchantFrontAPI = `${String(baseURL || "").replace(/\/$/, "")}/api/tech-merchant`;
 
-const apiRequest = async (path, options = {}) => {
-  const token =
-    localStorage.getItem("merchantToken") || localStorage.getItem("token");
 
-  const response = await fetch(`${merchantFrontAPI}${path}`, {
-    ...options,
-
-    headers: {
-      "Content-Type": "application/json",
-
-      ...(token ? { "x-auth-token": token } : {}),
-
-      ...(options.headers || {}),
-    },
-  });
-
-  const text = await response.text();
-
-  let result = {};
-
-  try {
-    result = text ? JSON.parse(text) : {};
-  } catch {
-    result = {
-      message: text || "Invalid server response",
-    };
-  }
-
-  if (!response.ok || result.success === false) {
-    console.error("API Error Response:", {
-      url: `${merchantFrontAPI}${path}`,
-
-      status: response.status,
-
-      message: result.message,
-
-      error: result.error,
-
-      completeResponse: result,
-    });
-
-    const error = new Error(
-      result.message || `Request failed (${response.status})`,
-    );
-
-    error.status = response.status;
-
-    error.payload = result;
-
-    throw error;
-  }
-
-  return result;
-};
-
-const mapDraft = (draft) => {
-  const fulfillmentStatus = String(
-    draft.fulfillment_status || "unfulfilled",
-  ).toUpperCase();
-
-  return {
-    id: draft.id,
-
-    orderNo: draft.orderno || "—",
-
-    internalNo: draft.merchant_order_id || `DRAFT-${draft.id}`,
-
-    awb: draft.awb_number || "—",
-
-    receiver: draft.delivery_contact_name || "—",
-
-    phone: draft.delivery_phone || "—",
-
-    city: draft.delivery_city || "—",
-
-    weight: draft.total_weight ? `${draft.total_weight} gm` : "—",
-
-    carrier: "—",
-
-    cod:
-      Number(draft.collectable_amount) > 0
-        ? `₹${Number(draft.collectable_amount).toLocaleString("en-IN")}`
-        : "—",
-
-    type:
-      String(draft.order_type || "prepaid").toUpperCase() === "COD"
-        ? "COD"
-        : "Prepaid",
-
-    status:
-      fulfillmentStatus === "UNFULFILLED"
-        ? "DRAFT"
-        : fulfillmentStatus === "FULFILLED"
-          ? "FULFILLED"
-          : fulfillmentStatus,
-
-    fulfillmentStatus,
-
-    route: `${draft.pickup_city || "—"} → ${draft.delivery_city || "—"}`,
-
-    amount: `₹${Number(draft.total_amount || 0).toLocaleString("en-IN")}`,
-
-    orderSpecific: draft.order_specific || "—",
-
-    error: draft.error_message || "—",
-
-    created: draft.created_at
-      ? new Date(draft.created_at).toLocaleDateString("en-IN", {
-          day: "2-digit",
-
-          month: "short",
-        })
-      : "—",
-
-    raw: draft,
-  };
-};
 
 const tabs = ["All", "unfulfilled", "process", "fulfilled", "cancelled"];
 
@@ -172,9 +56,7 @@ const statusStyles = {
   cancelled: "bg-red-100 text-red-600",
 };
 
-function normalizeStatus(status) {
-  return status.toUpperCase();
-}
+
 
 function StatusBadge({ status }) {
   return (
@@ -428,11 +310,7 @@ export default function TeachDraftsList() {
     // =========================================================
 
     if (shipmentMode === "bulk") {
-      console.log("Creating bulk shipment:", {
-        order_specific: shipmentSpecific,
-        rider_preference: shipmentPreference,
-        selectedIds,
-      });
+      
 
       const results = await Promise.all(
         selectedIds.map((draftId) =>
@@ -447,7 +325,6 @@ export default function TeachDraftsList() {
         ),
       );
 
-      console.log("Bulk AWB Results:", results);
 
       toast.success(
         `${results.length} shipment${
@@ -470,15 +347,7 @@ export default function TeachDraftsList() {
       return results;
     }
 
-    // =========================================================
-    // SINGLE SHIPMENT
-    // =========================================================
-      
-    console.log("Creating single shipment:", {
-      order_specific: shipmentSpecific,
-      rider_preference: shipmentPreference,
-      draft_id: shipmentOrder.id,
-    });
+   
 
     const response = await AxiosInstance.post(
       "/api/tech-merchant/getAwbForDraft",
@@ -491,7 +360,7 @@ export default function TeachDraftsList() {
 
     
 
-    console.log("Get AWB Response:", response?.data);
+  
 
     toast.success(
       response?.data?.message || "AWB generated successfully",
@@ -508,15 +377,11 @@ export default function TeachDraftsList() {
 
     return response?.data;
   } catch (error) {
-    console.error("Get AWB Error:", error);
+  
 
     const errorData = error?.response?.data;
 
-    console.error("API Error:", {
-      status: error?.response?.status,
-      message: errorData?.message,
-      error: errorData?.error,
-    });
+    
 
     setShipmentError({
       message:
@@ -610,11 +475,7 @@ export default function TeachDraftsList() {
     const contentType =
       res.headers?.["content-type"] || "";
 
-    console.log("Export Content-Type:", contentType);
-    console.log(
-      "Content-Disposition:",
-      res.headers?.["content-disposition"]
-    );
+  
 
     // Backend ne JSON error return kiya
     if (contentType.includes("application/json")) {
@@ -1281,7 +1142,7 @@ export default function TeachDraftsList() {
     
                     {/* Merchant Order */}
     
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-800/70 dark:bg-neutral-800/70">
+                    {/* <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-neutral-700 dark:bg-neutral-800/70 dark:bg-neutral-800/70">
                       <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
                         Merchant Order ID
                       </p>
@@ -1289,7 +1150,7 @@ export default function TeachDraftsList() {
                       <p className="mt-2 break-all text-sm font-semibold text-slate-900 dark:text-neutral-100">
                         {viewingOrder?.draft?.merchant_order_id || "—"}
                       </p>
-                    </div>
+                    </div> */}
     
                     {/* Payment */}
     
@@ -1643,13 +1504,7 @@ export default function TeachDraftsList() {
                               Qty
                             </th>
     
-                            <th className="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-neutral-300">
-                              Weight
-                            </th>
-    
-                            <th className="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-neutral-300">
-                              Dimensions
-                            </th>
+                           
                           </tr>
                         </thead>
     
@@ -1679,15 +1534,7 @@ export default function TeachDraftsList() {
                                   {item?.product_quantity ?? "—"}
                                 </td>
     
-                                <td className="px-4 py-3 text-sm text-slate-600 dark:text-neutral-300">
-                                  {item?.product_weight
-                                    ? `${item.product_weight} gm`
-                                    : "—"}
-                                </td>
-    
-                                <td className="px-4 py-3 text-sm text-slate-600 dark:text-neutral-300">
-                                  {item?.dimensions || "—"}
-                                </td>
+                                
                               </tr>
                             ))
                           ) : (

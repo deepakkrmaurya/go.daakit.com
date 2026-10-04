@@ -1,501 +1,18 @@
-// import { useState, useEffect } from "react";
-// import axios from "axios";
-// import Loader from "../../Loader";
-
-// import { FaFileDownload, FaFilter } from "react-icons/fa";
-// import { toast } from "react-toastify";
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "@/components/ui/table";
-// import {
-//   Drawer,
-//   DrawerContent,
-
-//   DrawerFooter,
-//   DrawerHeader,
-//   DrawerTitle,
-//   DrawerTrigger,
-// } from "@/components/ui/drawer"
-// import { Button } from "@/components/ui/button"
-// import { Loader2 } from "lucide-react";
-// import AxiosInstance from "../../../Helper/axiosInstance";
-// const baseURL = import.meta.env.VITE_BASE_URL;
-
-// function RemittanceStatusVendor() {
-//    const [selectedStatus, setSelectedStatus] = useState("All");
-//   const [loading, setLoading] = useState(false);
-//   const [data, setData] = useState([]);
-//   const [vendorCodSummary, setVendorCodSummary] = useState();
-//   const [page, setPage] = useState(1);
-//   const [limit, setLimit] = useState(20);
-//   const [totalPages, setTotalPages] = useState(1);
-
-//   const [isFilterOpen, setIsFilterOpen] = useState(false);
-//   const [advanceFilters, setAdvanceFilters] = useState({
-//     startDate: "",
-//     endDate: "",
-//     vendor_id: "",
-//   });
-//   const [filterUpdate, setFilterUpdate] = useState(false);
-
-//   //Set Default Date Range of one month from today
-//   const resetAdvanceFilters = async () => {
-//     const today = new Date();
-//     const oneMonthAgo = new Date();
-//     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-//     setAdvanceFilters({
-//       endDate: today.toISOString().split("T")[0],
-//       startDate: oneMonthAgo.toISOString().split("T")[0],
-//       vendor_id: "",
-//     });
-//   };
-
-
-//   function toCapitalizeEachWord(str) {
-//     return str
-//       .split(" ")
-//       .map((word) => {
-//         if (!word) return "";
-//         return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-//       })
-//       .join(" ");
-//   }
-
-//   const openDatePicker = (event) => {
-//     try {
-//       event.currentTarget.showPicker?.();
-//     } catch {
-//       // Some browsers block programmatic picker opening; normal focus still works.
-//     }
-//   };
-
-//   const updateAdvanceFilter = (name, value) => {
-//     setAdvanceFilters((prev) => {
-//       if (name === "startDate") {
-//         return {
-//           ...prev,
-//           startDate: value,
-//           endDate: prev.endDate && value && prev.endDate < value ? value : prev.endDate,
-//         };
-//       }
-
-//       if (name === "endDate") {
-//         return {
-//           ...prev,
-//           startDate: prev.startDate && value && prev.startDate > value ? value : prev.startDate,
-//           endDate: value,
-//         };
-//       }
-
-//       return { ...prev, [name]: value };
-//     });
-//   };
-
-//   const applyFilters = () => {
-//     if (
-//       advanceFilters.startDate &&
-//       advanceFilters.endDate &&
-//       advanceFilters.startDate > advanceFilters.endDate
-//     ) {
-//       toast.error("Start date cannot be after end date.");
-//       return;
-//     }
-
-//     setPage(1);
-//     setFilterUpdate(true);
-//     setIsFilterOpen(false);
-//   };
-
-//   const resetFilters = () => {
-//     resetAdvanceFilters();
-//     setPage(1);
-//     setFilterUpdate(true);
-//     setIsFilterOpen(false);
-//   };
-
-//   const indianFormat = (num) => {
-//     const temp = num.toLocaleString("en-IN", {
-//       style: "currency",
-//       currency: "INR",
-//     });
-//     return temp;
-//   };
-
-//   useEffect(() => {
-//     resetAdvanceFilters();
-//   }, []);
-
-//   // Fetch data from API
-//   const fetchData = async () => {
-//     setLoading(true);
-//     try {
-
-//       const res = await AxiosInstance.get('/api/admin/fetchVendorSubmittedRecords',{
-//         params: {
-//             page,
-//             limit,
-//             start_date: advanceFilters.startDate,
-//             end_date: advanceFilters.endDate,
-//             vendor_id: advanceFilters.vendor_id,
-//           }
-//       })
-      
-//       setVendorCodSummary(res?.data?.vendorCodSummary)
-//       setData(res?.data?.data || []);
-//       setTotalPages(Math.max(1, res.data.totalPages));
-//     } catch (err) {
-//       toast.error(err.response?.data?.message || err.message || "Failed to fetch data:");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-
-//  const codStatusTabs = [
-//   { key: "total", label: "All" },
-//   { key: "pending", label: "Pending" },
-//   { key: "initiated", label: "Initiated" },
-//   { key: "received", label: "Received" },
-//   { key: "adjusted", label: "Adjusted" },
-// ];
-
-// const codSummary = vendorCodSummary?.[0] || {};
-
-//   useEffect(() => {
-//     fetchData();
-//   }, [page]);
-
-//   useEffect(() => {
-//     if (filterUpdate) {
-//       fetchData();
-//       setFilterUpdate(false);
-//     }
-//   }, [filterUpdate]);
-  
-
-//   const [loadingPage, setLoadingPage] = useState(true);
-
-// useEffect(() => {
-//   const timer = setTimeout(() => {
-//     setLoadingPage(false);
-//   }, 2000);
-
-//   return () => clearTimeout(timer);
-// }, []);
-
-
-//   return (
-//     <>
-//        {
-//         loadingPage ?(
-//            <div className=" w-full h-[90vh] flex justify-center items-center">
-//                   <div>
-//                     <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-//                     <p className="mt-2"> Loading Vendor Remittance Details...</p>
-//                   </div>
-//                 </div>
-//         ):(
-
-//       <div className="bg-gray-100 dark:bg-gray-900 min-h-screen w-full">
-//         {/* Right Sidebar for filters */}
-        
-
-//         {/* Heading */}
-//         <div className="mb-0  dark:bg-gray-900 py-2">
-//           <div className="flex flex-wrap items-center justify-between">
-//             {/* Heading */}
-//             <h1 className="text-2xl font-semibold dark:text-white">Vendor Remittance Record</h1>
-//             <div className="flex flex-wrap items-end gap-4 text-white">
-//               <Drawer direction="right"
-//              open={isFilterOpen}
-//   onOpenChange={setIsFilterOpen}
-//               >
-//                 <DrawerTrigger asChild>
-//                   <Button variant="outline"
-//                     className="bg-white bg-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow  transition flex items-center gap-2"
-//                   >
-//                     <FaFilter className="text-sm" />
-//                     <span>Filter</span>
-//                   </Button>
-//                 </DrawerTrigger>
-//                 <DrawerContent>
-//                   <DrawerHeader>
-//                     <DrawerTitle>Filter</DrawerTitle>
-
-//                   </DrawerHeader>
-//                   <div className="p-4">
-//                     <form onSubmit={(e) => {
-//                       e.preventDefault()
-//                       applyFilters()
-//                       setIsFilterOpen(false)
-
-//                     }}
-//                       className="flex-col  w-full  items-end gap-4"
-//                     >
-//                       <div className="flex flex-wrap items-end gap-4">
-//                         {/* Start Date */}
-//                         <div className=" w-full">
-//                           <label className="block text-xs dark:text-white text-gray-600 mb-1">
-//                             Start Date
-//                           </label>
-//                           <input
-//                             type="date"
-//                             value={advanceFilters.startDate}
-//                             max={advanceFilters.endDate || undefined}
-//                             onChange={(e) => updateAdvanceFilter("startDate", e.target.value)}
-//                             onClick={openDatePicker}
-//                             onFocus={openDatePicker}
-//                             className="border flex w-full px-3 py-1 cursor-pointer bg-white text-gray-900 dark:bg-gray-900 dark:text-white rounded-md text-sm"
-//                           />
-//                         </div>
-
-//                         {/* End Date */}
-//                         <div className=" w-full">
-//                           <label className="block text-xs dark:text-white text-gray-600 mb-1">
-//                             End Date
-//                           </label>
-//                           <input
-//                             type="date"
-//                             value={advanceFilters.endDate}
-//                             min={advanceFilters.startDate || undefined}
-//                             onChange={(e) => updateAdvanceFilter("endDate", e.target.value)}
-//                             onClick={openDatePicker}
-//                             onFocus={openDatePicker}
-//                             className="border flex w-full px-3 py-1 cursor-pointer bg-white text-gray-900 dark:bg-gray-900 dark:text-white rounded-md text-sm"
-//                           />
-//                         </div>
-
-//                         {/* Order ID */}
-//                         <div className=" w-full">
-//                           <label className="block dark:text-white text-xs text-gray-600 mb-1">
-//                             Vendor ID
-//                           </label>
-//                           <input
-//                             type="number"
-//                             value={advanceFilters.vendor_id}
-//                             onChange={(e) => updateAdvanceFilter("vendor_id", e.target.value)}
-//                             placeholder="Only Integer Value"
-//                             className="border w-full dark:text-white px-3 py-2 rounded-md text-sm"
-//                           />
-//                         </div>
-
-//                         {/* Update Button */}
-//                         <div className=" w-full ">
-//                           <Button
-//                             type="submit"
-//                             onClick={applyFilters}
-//                             className="bg-[#0446DB] w-full text-white px-4 py-2 rounded-md hover:bg-indigo-800 transition text-sm mx-2"
-//                           >
-//                             Filter
-//                           </Button>
-//                           <Button
-//                             type="button"
-//                             onClick={resetFilters}
-//                             className="bg-[#0446DB] w-full text-white px-4 py-2 rounded-md hover:bg-indigo-800 transition text-sm mx-2"
-//                           >
-//                             Reset
-//                           </Button>
-//                         </div>
-//                       </div>
-
-//                     </form>
-//                   </div>
-//                   <DrawerFooter>
-//                     <Button onClick={() => setIsFilterOpen(false)} variant="outline">Cancel</Button>
-//                   </DrawerFooter>
-//                 </DrawerContent>
-//               </Drawer>
-//             </div>
-//           </div>
-//         </div>
-
-//           <div className="w-full  bg-white   dark:bg-neutral-800   left-0 px-4 z-40   ">
-//                       <div className="relative flex justify-center ">
-//                         <div className=" flex  overflow-x-auto  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2">
-//                           <div className="flex gap-2 min-w-max px-8 mt-3">
-//                             <div className="flex flex-wrap items-center gap-2">
-//   {codStatusTabs.map((item) => {
-//     const summary = codSummary?.[item.key] || {
-//       count: 0,
-//       amount: 0,
-//     };
-
-//     const isActive = selectedStatus === item.key;
-
-//     return (
-//       <Button
-//         key={item.key}
-//         onClick={() => {
-//           setSelectedStatus(item.key);
-//         }}
-//         className={`
-//           my-2 flex items-center gap-2 rounded-full border px-5 py-2.5
-//           text-sm font-medium tracking-wide transition-all duration-300
-//           ${
-//             isActive
-//               ? "border-[#0446DB] bg-[#0446DB] text-white shadow-sm"
-//               : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:shadow-md hover:scale-[1.02] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-//           }
-//         `}
-//       >
-//         <span>{item.label}</span>
-//         <span
-//           className={`
-//             text-xs
-//             ${
-//               isActive
-//                 ? "text-blue-100"
-//                 : "text-gray-400 dark:text-gray-500"
-//             }
-//           `}
-//         >
-//           ₹{Number(summary.amount || 0).toLocaleString("en-IN")}
-//         </span>
-//       </Button>
-//     );
-//   })}
-// </div>
-//                           </div>
-//                         </div>
-          
-          
-//                       </div>
-//                     </div>
-
-          
-
-//         <div className="mx-1 z-10 bg-white dark:bg-gray-900 rounded-md">
-//           {/* Table */}
-//           <div className="max-w-full p-4  relative z-10 overflow-x-auto bg-white dark:bg-gray-900 rounded-xl shadow">
-//             <Table>
-//               <TableHeader >
-//                 <TableRow>
-//                   <TableHead className="px-6 py-3 text-left">VENDOR ID</TableHead>
-//                   <TableHead className="px-6 py-3 text-left">AWB NUMBER</TableHead>
-//                   <TableHead className="px-6 py-3 text-left">AMOUNT</TableHead>
-//                   <TableHead className="px-6 py-3 text-left">UPLOAD DATE</TableHead>
-//                   <TableHead className="px-6 py-3 text-left">UTR NUMBER</TableHead>
-//                   <TableHead className="px-6 py-3 text-left">CSV FILE</TableHead>
-//                 </TableRow>
-//               </TableHeader>
-//               <TableBody>
-//                 {
-//                   loading ? (
-//                     <>
-//                       <TableRow>
-//                         <TableCell colSpan={10} className="text-center py-10">
-//                           <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-//                           <p className="mt-2">Loading orders...</p>
-//                         </TableCell>
-//                       </TableRow>
-//                     </>
-//                   ) : data.length == 0 ? (
-//                     <>
-//                       <TableRow>
-//                         <TableCell colSpan={10} className="text-center py-10">
-//                           No found
-//                         </TableCell>
-//                       </TableRow>
-//                     </>
-//                   ) : (
-//                     data.map((d, index) => {
-//                       console.log(d)
-//                       return (
-//                         <TableRow key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-//                           <TableCell className="px-6 py-4 dark:text-white">FP_{d.vendor_id}</TableCell>
-//                           <TableCell className="px-6 py-4 dark:text-white">{d.awb_numbers.map((awb)=>{
-//                             return (
-//                               <span>
-//                                 <span>{awb}</span> <br />
-//                               </span>
-//                             )
-//                           })}</TableCell>
-//                           <TableCell className="px-6 py-4 dark:text-white">{indianFormat(Number(d.amount))}</TableCell>
-//                           <TableCell className="px-6 py-4 dark:text-white">
-//                             {new Date(d.created_at).toLocaleString("en-IN", {
-//                               timeZone: "Asia/Kolkata",
-//                               day: "2-digit",
-//                               month: "2-digit",
-//                               year: "numeric",
-//                               hour: "2-digit",
-//                               minute: "2-digit",
-//                               hour12: true,
-//                             })}
-//                           </TableCell>
-//                           <TableCell className="px-6 py-4 dark:text-white">{d.utr_number}</TableCell>
-//                           <TableCell className="px-6 py-4">
-//                             <a
-//                               href={`${baseURL}/${d.file_url}`}
-//                               target="_blank"
-//                               rel="noopener noreferrer"
-//                               className="text-[#0446Db] hover:underline"
-//                             >
-//                               <FaFileDownload className="inline text-xl" />
-//                             </a>
-//                           </TableCell>
-//                         </TableRow>
-//                       );
-//                     })
-//                   )
-//                 }
-
-//               </TableBody>
-//             </Table>
-//           </div>
-
-//           {/* Pagination */}
-//           <div className="py-2 flex justify-end items-center gap-4">
-//             <Button
-//               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-//               disabled={page === 1}
-//               className={`px-4 py-2 rounded-sm text-sm font-medium ${page === 1
-//                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-//                 : "bg-[#0446DB] text-white hover:bg-indigo-800"
-//                 }`}
-//             >
-//               Previous
-//             </Button>
-//             <span className="text-gray-700">
-//               Page {page} of {totalPages}
-//             </span>
-//             <Button
-//               onClick={() =>
-//                 setPage((prev) => Math.min(prev + 1, totalPages))
-//               }
-//               disabled={page === totalPages}
-//               className={`px-4 py-2 rounded-sm text-sm font-medium ${page === totalPages
-//                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-//                 : "bg-[#0446DB] text-white hover:bg-indigo-800"
-//                 }`}
-//             >
-//               Next
-//             </Button>
-//           </div>
-//         </div>
-//       </div>
-//         )
-//        }
-
-
-//     </>
-//   );
-// }
-
-// export default RemittanceStatusVendor;
-
-
-
 
 import { useState, useEffect } from "react";
 import { FaFileDownload, FaFilter } from "react-icons/fa";
 import { toast } from "react-toastify";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import {
   Table,
   TableBody,
@@ -525,12 +42,17 @@ import {
   Clock3,
   CheckCircle2,
   RefreshCcw,
+  LockKeyhole,
+  EyeOff,
+  Eye,
 } from "lucide-react";
 
 import AxiosInstance from "../../../Helper/axiosInstance";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
-
+const PAGE_PASSWORD = "DaakitFinance@30092026#0212";
+const PAGE_UNLOCK_KEY = "vendor_remittance_unlocked_at";
+const PAGE_UNLOCK_TIME = 5 * 60 * 1000;
 function RemittanceStatusVendor() {
   // =========================================================
   // STATES
@@ -561,6 +83,57 @@ function RemittanceStatusVendor() {
     vendor_id: "",
     awb_number:""
   });
+
+
+  // lock
+  const [isPageUnlocked, setIsPageUnlocked] = useState(false);
+  const [pagePassword, setPagePassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [showPagePassword, setShowPagePassword] = useState(false);
+  
+  useEffect(() => {
+    const checkPageLock = () => {
+      const unlockedAt = Number(
+        sessionStorage.getItem(PAGE_UNLOCK_KEY) || 0
+      );
+  
+      const isValid =
+        unlockedAt > 0 &&
+        Date.now() - unlockedAt < PAGE_UNLOCK_TIME;
+  
+      if (isValid) {
+        setIsPageUnlocked(true);
+      } else {
+        sessionStorage.removeItem(PAGE_UNLOCK_KEY);
+        setIsPageUnlocked(false);
+      }
+    };
+  
+    checkPageLock();
+  
+    const interval = setInterval(checkPageLock, 1000);
+  
+    return () => clearInterval(interval);
+  }, []);
+  
+  const handlePageUnlock = (e) => {
+    e.preventDefault();
+  
+    if (pagePassword !== PAGE_PASSWORD) {
+      setPasswordError("Incorrect password. Please try again.");
+      return;
+    }
+  
+    sessionStorage.setItem(
+      PAGE_UNLOCK_KEY,
+      String(Date.now())
+    );
+  
+    setIsPageUnlocked(true);
+    setPagePassword("");
+    setPasswordError("");
+  };
+  // lock
 
   // =========================================================
   // STATUS TABS
@@ -616,7 +189,7 @@ function RemittanceStatusVendor() {
           limit:1000
         }
        })
-       console.log(res.data?.data)
+       
        setVendorList(res?.data?.data)
     } catch (error) {
       
@@ -776,20 +349,8 @@ function RemittanceStatusVendor() {
         }
       );
 
-      console.log(
-        "Vendor Remittance Response:",
-        res?.data
-      );
-
-      console.log(
-        "Vendor COD Summary:",
-        res?.data?.vendorCodSummary
-      );
-
-      console.log(
-        "Remittance Data:",
-        res?.data?.data
-      );
+      
+      
 
       setVendorCodSummary(
         res?.data?.vendorCodSummary || []
@@ -804,10 +365,8 @@ function RemittanceStatusVendor() {
         )
       );
     } catch (err) {
-      console.error(
-        "Fetch Vendor Remittance Error:",
-        err
-      );
+      
+      
 
       toast.error(
         err?.response?.data?.message ||
@@ -928,8 +487,102 @@ function RemittanceStatusVendor() {
   // =========================================================
 
   return (
+    <>
+    
     <div className="min-h-screen w-full bg-gray-100 dark:bg-gray-900">
+        <AlertDialog open={!isPageUnlocked}>
+        <AlertDialogContent
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          overlayClassName="left-0 md:left-64"
+          className="
+            left-1/2
+            w-[calc(100%-32px)]
+            max-w-[400px]
+            -translate-x-1/2
+            rounded-sm
+            border border-gray-200
+            bg-white
+            p-0
+            shadow-xl
 
+            md:left-[calc(50%+8rem)]
+
+            dark:border-gray-700
+            dark:bg-gray-900
+          "
+        >
+          <div className="p-6">
+            <AlertDialogHeader className="flex flex-col items-center text-center">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+                <LockKeyhole className="h-5 w-5" />
+              </div>
+
+              <AlertDialogTitle className="text-center text-xl font-semibold text-gray-900 dark:text-white">
+                Verify Access
+              </AlertDialogTitle>
+
+              <AlertDialogDescription className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
+                Enter your password to access Vendor Remittances
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <form onSubmit={handlePageUnlock} className="mt-6">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Password
+              </label>
+
+              <div className="relative">
+                <input
+                  type={showPagePassword ? "text" : "password"}
+                  value={pagePassword}
+                  onChange={(e) => {
+                    setPagePassword(e.target.value);
+                    setPasswordError("");
+                  }}
+                  autoFocus
+                  autoComplete="off"
+                  placeholder="Enter access password"
+                  className={`h-11 w-full rounded-sm border bg-white px-3 pr-11 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 dark:bg-gray-800 dark:text-white ${
+                    passwordError
+                      ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
+                      : "border-gray-300 focus:border-[#0446DB] focus:ring-2 focus:ring-blue-500/10 dark:border-gray-700"
+                  }`}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPagePassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-700 dark:hover:text-gray-200"
+                >
+                  {showPagePassword ? (
+                    <EyeOff className="h-[18px] w-[18px]" />
+                  ) : (
+                    <Eye className="h-[18px] w-[18px]" />
+                  )}
+                </button>
+              </div>
+
+              {passwordError && (
+                <p className="mt-2 text-xs font-medium text-red-500">
+                  {passwordError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={!pagePassword.trim()}
+                className="mt-5 h-11 w-full rounded-sm bg-[#0446DB] text-sm font-medium text-white transition-colors hover:bg-[#0339b5] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Continue
+              </button>
+
+              <p className="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
+                Access expires automatically after 5 minutes
+              </p>
+            </form>
+          </div>
+        </AlertDialogContent>
+        </AlertDialog>
       {/* =====================================================
           HEADER
       ====================================================== */}
@@ -1875,6 +1528,7 @@ function RemittanceStatusVendor() {
       </div>
 
     </div>
+    </>
   );
 }
 

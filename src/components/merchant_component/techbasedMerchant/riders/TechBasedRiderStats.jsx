@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-import axios from "axios";
-
 import Select from "react-select";
 
 import { Country, State, City } from "country-state-city";
@@ -41,7 +39,7 @@ import {
   Download
 } from "lucide-react";
 
-import AxiosInstance from "../../../../Helper/axiosInstance";
+import AxiosInstance from "@/Helper/axiosInstance";
 import { Link } from "react-router-dom";
 
 const baseURL = import.meta.env.VITE_BASE_URL;

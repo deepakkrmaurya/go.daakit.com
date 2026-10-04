@@ -45,6 +45,7 @@ function AdminLogin() {
       const res = await axiosInstance.post(`${baseURL}/api/admin/login`, {
         email: formData.email.trim(),
         password: formData.password,
+        captcha_key:captchaToken
       });
       const token = res?.data?.token;
       if (!token) return toast.error(res?.data?.message || "Login failed");

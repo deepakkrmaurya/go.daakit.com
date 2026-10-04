@@ -1,24 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+
 import Select from "react-select";
-import { Country, State, City }  from 'country-state-city';
+import {  City }  from 'country-state-city';
 import { TbFileInfo } from "react-icons/tb";
 import {
-  FaSearch,
+
   FaFilter,
   FaDownload,
-  FaTimes,
   FaCopy,
   FaCheck,
   FaBox,
   FaMapMarkerAlt,
-  FaCalendarAlt,
-  FaWeightHanging,
-  FaRulerCombined,
   FaShippingFast,
   FaTasks,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,25 +58,12 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Loader2 } from "lucide-react";
-import AxiosInstance from "../../../../Helper/axiosInstance";
+import AxiosInstance from "@/Helper/axiosInstance";
 
-const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 
-const TECH_MERCHANT_API = `${String(baseURL || "").replace(/\/$/, "")}/api/tech-merchant`;
 
-const getAuthConfig = () => {
-  const token =
-    localStorage.getItem("merchantToken") || localStorage.getItem("token");
 
-  return {
-    headers: {
-      ...(token
-        ? { Authorization: `Bearer ${token}`, "x-auth-token": token }
-        : {}),
-    },
-  };
-};
 
 const options = City.getCitiesOfCountry("IN").map((city) => ({
   value: city.name,
@@ -110,16 +93,35 @@ function TechMerchantOrderDetails() {
   const [selectedBulkOrders, setSelectedBulkOrders] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [total, setTotal] = useState(0);
-  const [advanceFilters, setAdvanceFilters] = useState({
-    startDate: "",
-    endDate: "",
-    order_id: "",
-    awbNumber: "",
-    city: "",
-    state: "",
-    pincode: "",
-    order_specific: "",
-  });
+ 
+ const getDefaultDateRange = () => {
+  const today = new Date();
+  const oneMonthAgo = new Date();
+
+  oneMonthAgo.setMonth(today.getMonth() - 1);
+
+  const formatDate = (date) => {
+    return date.toISOString().split("T")[0];
+  };
+
+  return {
+    startDate: formatDate(oneMonthAgo),
+    endDate: formatDate(today),
+  };
+};
+
+ const defaultDateRange = getDefaultDateRange();
+const [advanceFilters, setAdvanceFilters] = useState({
+  startDate: defaultDateRange.startDate,
+  endDate: defaultDateRange.endDate,
+  order_id: "",
+  awbNumber: "",
+  city: "",
+  state: "",
+  pincode: "",
+  order_specific: "",
+  rider_preference: "",
+});
   const [remarks, setremarks] = useState("");
   const [filterUpdate, setFilterUpdate] = useState(false);
   const statusScrollRef = useRef(null);
@@ -143,6 +145,7 @@ function TechMerchantOrderDetails() {
         city: advanceFilters.city || undefined,
         pincode: advanceFilters.pincode || undefined,
         order_specific: advanceFilters.order_specific || undefined,
+        rider_preference: advanceFilters.rider_preference || undefined,
       };
 
       Object.keys(params).forEach((key) => {
@@ -193,6 +196,7 @@ function TechMerchantOrderDetails() {
     }
   };
 
+
   const assignOrderToRider = async (orderId, riderId) => {
     try {
       setAssigningOrderId(orderId);
@@ -230,39 +234,7 @@ function TechMerchantOrderDetails() {
     }
   };
 
-  const assignBulkOrdersToRider = async (orderIds, riderId) => {
-    try {
-      if (!Array.isArray(orderIds) || !orderIds.length) {
-        toast.error("Select at least one order");
-        return;
-      }
-
-      const response = await axios.post(
-        `${TECH_MERCHANT_API}/assignOrderToRider`,
-        {
-          order_ids: orderIds.map(Number),
-          rider_id: Number(riderId),
-        },
-        getAuthConfig(),
-      );
-
-      if (response?.data?.success) {
-        toast.success(
-          response?.data?.message || "Orders successfully assigned to rider",
-        );
-        setSelectedBulkOrders([]);
-        await fetchOrders();
-      }
-    } catch (error) {
-      console.error("bulk assign error:", error?.response?.data || error);
-
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to assign orders to rider",
-      );
-    }
-  };
+  
 
   function toCapitalizeEachWord(str) {
     return str
@@ -379,6 +351,7 @@ function TechMerchantOrderDetails() {
       state: "",
       pincode: "",
       order_specific: "",
+      rider_preference:""
     });
   };
 
@@ -403,13 +376,16 @@ function TechMerchantOrderDetails() {
     selectedBulkOrders?.forEach((order) => {
       awbs.push(order.awb_number);
     });
-    try {
-      const res = await axios.post(`${baseURL}/api/label/generatelabel`, {
-        awbs: awbs,
-      });
 
-      if (res.data.pdf_link) {
-        window.open(res.data.pdf_link, "_blank");
+    try {
+      const res = await AxiosInstance.post(`/api/label/generatelabel`,{
+         awbs: awbs,
+      })
+       
+      
+
+      if (res?.data?.pdf_link) {
+        window.open(res?.data?.pdf_link, "_blank");
         toast.success("Shipping label(s) generated successfully");
       }
     } catch (err) {
@@ -545,20 +521,20 @@ function TechMerchantOrderDetails() {
   };
 
   const changeStatus = async ({
-    id, newStatus,remark
+    id, newStatus,remarks
   }) => {
 
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        `${TECH_MERCHANT_API}/updateOrderStatus/${id}`,
+
+      const res = await AxiosInstance.post(`/api/tech-merchant/updateOrderStatus/${id}`,
         {
           status: newStatus,
           remarks: remarks?.trim() || "",
         },
-        getAuthConfig(),
-      );
+      )
+      
 
       if (res?.data?.success !== false) {
         toast.success(
@@ -593,15 +569,15 @@ function TechMerchantOrderDetails() {
       setOrderDetailsLoading(true);
       setOrderDetailsData(null);
 
-      const res = await axios.get(
-        `${TECH_MERCHANT_API}/getOrderDetailsByMerchant`,
+       const res = await AxiosInstance.get(`/api/tech-merchant/getOrderDetailsByMerchant`,
         {
-          ...getAuthConfig(),
           params: {
             awb_number: awbNumber,
           },
-        },
-      );
+        }
+       )
+
+      
 
       if (res?.data?.success) {
         const details = {
@@ -637,7 +613,7 @@ function TechMerchantOrderDetails() {
     }
   };
 
-  const updateOrderByMerchant = async ({ status, order_ids }) => {
+  const updateOrderByMerchant = async ({ status, order_ids,remarks }) => {
   setLoading(true);
 
   try {
@@ -648,6 +624,7 @@ function TechMerchantOrderDetails() {
           `/api/tech-merchant/updateOrderStatus/${id}`,
           {
             status: status,
+            remarks:remarks
           }
         )
       )
@@ -860,6 +837,25 @@ function TechMerchantOrderDetails() {
                       <option value="HLD">HLD</option>
                       <option value="SDD">Same Day Delivery</option>
                       <option value="NDD">Next Day Delivery</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-200 mb-1">
+                      Rider Preference
+                    </label>
+                    <select
+                      value={advanceFilters.rider_preference}
+                      onChange={(e) => {
+                        setAdvanceFilters((prev) => ({
+                          ...prev,
+                          rider_preference: e.target.value,
+                        }));
+                      }}
+                      className="w-full border border-gray-300 px-3 py-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#0446DB] focus:border-transparent transition-all duration-300 text-sm"
+                    >
+                      <option value=""> Select Rider Preference</option>
+                      <option value="self">BYOB</option>
+                      <option value="daakit">DDN</option>
                     </select>
                   </div>
 
@@ -1811,7 +1807,7 @@ function TechMerchantOrderDetails() {
                                   : "border-[#0446DB] text-[#0446DB] dark:border-blue-400 dark:text-blue-400"
                               }`}
                             >
-                              {order?.rider_preference === "self" ? "Self" : "Daakit"}
+                              {order?.rider_preference === "self" ? "BYOB" : "DDN"}
                             </span>
                                   </div>
                                   
@@ -2440,9 +2436,9 @@ function TechMerchantOrderDetails() {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-
-                const newStatus = status;
-
+                
+                const newStatus = statu;
+               
                 if (!newStatus) {
                   toast.error("Please select status");
                   return;
@@ -2802,7 +2798,7 @@ function TechMerchantOrderDetails() {
                 await changeStatus({
                   id: order.id,
                   newStatus: newStatus,
-                  remark: remark,
+                  remarks: remark,
                 });
 
                 setEditingStatusId(null);
@@ -2943,7 +2939,7 @@ function TechMerchantOrderDetails() {
 
                   <p className="mt-2 text-left text-xs leading-5 text-neutral-500 dark:text-neutral-400">
                     Select the reason why this order is being
-                    cancelled.
+                    cancelled.v
                   </p>
                 </div>
 

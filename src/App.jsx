@@ -141,6 +141,9 @@ import AddShopifyDetails from "./components/merchant_component/merchant/channel/
 import RidrShipmentTracking from "./components/merchant_component/techbasedMerchant/riders/riderOrderTracking";
 import TechInsurance from "./components/merchant_component/techbasedMerchant/insurance/Techinsurance";
 import DcUserLogin from "./components/auth/DcLogin";
+import DevAnalytics from "./components/admin/dev/DevAnalytics";
+import DistributionCenterOnboarding from "./components/admin/dc/DistributionCenterOnboarding";
+import DistributionCenterListing from "./components/admin/dc/DistributionCenterListing";
 
 
 const getLocalPermissions = () => {
@@ -278,6 +281,15 @@ function App() {
         { path: "bookOrders", element: <Suspense fallback={<LoadingFallback />}><BookOrders /></Suspense> },
         { path: "orderNewMappings", element: <Suspense fallback={<LoadingFallback />}><NewMappingOrders /></Suspense> },
         { path: "billingandinvoices", element: <Suspense fallback={<LoadingFallback />}><BillingAndInvoices /></Suspense> },
+        { path: "dev/analytics", element: <Suspense fallback={<LoadingFallback />}><DevAnalytics /></Suspense> },
+
+
+        { path: "onboarding/distribution-center", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterOnboarding /></Suspense> },
+        { path: "dc/list", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterListing /></Suspense> },
+
+
+        
+
         { index: true, element: <Navigate to="analytics" /> },
       ],
     },
@@ -489,7 +501,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      {/* <InspectController /> */}
+      <InspectController />
 
       <RouterProvider router={appRouter}>
         <ScrollToTop />

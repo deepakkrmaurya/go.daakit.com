@@ -585,39 +585,81 @@ const RegistrationPage = () => {
   ================================= */
 
   const LeftPanel = () => (
-    <aside
-      className="relative hidden h-screen w-[51%] flex-col overflow-hidden rounded-tr-[58px] px-10 py-12 lg:flex xl:px-12"
-      style={{
-        background:
-          "radial-gradient(circle at 100% 0%, rgba(232,225,160,.78) 0%, rgba(141,170,198,.58) 27%, rgba(4,70,219,0) 54%), linear-gradient(135deg, #0647d9 0%, #245acb 100%)",
-      }}
-    >
-      <div className="pointer-events-none absolute -right-36 -top-36 h-96 w-96 rounded-full bg-white/[0.05]" />
+  <aside
+    className="relative hidden h-screen w-[51%] overflow-hidden lg:flex"
+    style={{
+      background:
+        "linear-gradient(145deg, #0338B8 0%, #0446DB 48%, #1D62E8 100%)",
+    }}
+  >
+    {/* Background effects */}
+    <div className="pointer-events-none absolute -right-28 -top-28 h-[360px] w-[360px] rounded-full bg-white/[0.07] blur-2xl" />
 
-      <div className="pointer-events-none absolute -bottom-44 -left-44 h-[420px] w-[420px] rounded-full bg-black/[0.04]" />
+    <div className="pointer-events-none absolute -bottom-40 -left-40 h-[420px] w-[420px] rounded-full bg-blue-950/20 blur-2xl" />
 
-      <div className="relative z-10 flex h-full flex-col">
-        <div className="mt-2">
-          <h1 className="text-[clamp(2.5rem,3.4vw,4rem)] font-extrabold leading-[1.05] tracking-tight text-white">
-            Start Your Shipping <br />
-            Journey.
-          </h1>
+    <div className="pointer-events-none absolute right-[8%] top-[20%] h-[220px] w-[220px] rounded-full bg-cyan-300/[0.08] blur-3xl" />
 
-          <p className="mt-4 text-[clamp(1rem,1.3vw,1.35rem)] font-semibold text-white/95">
-            Join thousands of businesses trusting DAAKitGo
-          </p>
-        </div>
+    {/* Main Content */}
+    <div className="relative z-10 flex h-full w-full flex-col px-10 py-10 xl:px-14 xl:py-12">
+      
+      {/* Heading */}
+      <div className=" max-w-[620px]">
+       
 
-        <div className="mt-auto flex min-h-0 flex-1 items-end justify-center pt-6">
-          <img
-            src={SignUpImage}
-            alt="DaakitGo platform"
-            className="max-h-[47vh] w-[92%] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,.10)]"
-          />
+        <h1 className="text-[clamp(2.4rem,3.3vw,3.8rem)] font-extrabold leading-[1.07] tracking-[-0.035em] text-white">
+          Ship smarter.
+          <br />
+          Deliver faster.
+          <br />
+          <span className="text-blue-100">
+            Grow without limits.
+          </span>
+        </h1>
+
+        <p className="mt-5 max-w-[520px] text-[15px] font-medium leading-7 text-blue-100/90 xl:text-base">
+          Everything your business needs to manage orders,
+          riders and deliveries from one powerful platform.
+        </p>
+
+        {/* Features */}
+        
+      </div>
+
+      {/* Product Image */}
+      <div className="relative mt-auto flex min-h-0 flex-1 items-end justify-center pt-6">
+        {/* Image glow */}
+        <div className="pointer-events-none absolute bottom-[5%] left-1/2 h-[180px] w-[70%] -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
+
+        <img
+          src={SignUpImage}
+          alt="DaakitGo shipping platform"
+          className="
+            relative z-10
+            max-h-[42vh]
+            w-[92%]
+            object-contain
+            drop-shadow-[0_24px_35px_rgba(0,0,0,0.18)]
+          "
+        />
+      </div>
+
+      {/* Bottom trust text */}
+      <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
+        <p className="text-[11px] font-medium text-blue-100/70">
+          Built for modern delivery businesses
+        </p>
+
+        <div className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-green-300" />
+
+          <span className="text-[11px] font-semibold text-white/80">
+            Secure & Reliable
+          </span>
         </div>
       </div>
-    </aside>
-  );
+    </div>
+  </aside>
+);
 
   /* ================================
      DETAILS STEP
@@ -730,9 +772,9 @@ const RegistrationPage = () => {
                  focus:ring-blue-50
                  cursor-pointer"
             >
-              <option value="">Select Tech Based</option>
-              <option value="1">Tech Based</option>
-              <option value="0">Not Tech Based</option>
+              <option value="">Select Delivery Model</option>
+              <option value="1">BYOB-Bring Your Own Biker</option>
+              <option value="0">DDN-Daakit Delivery Network</option>
             </select>
 
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">

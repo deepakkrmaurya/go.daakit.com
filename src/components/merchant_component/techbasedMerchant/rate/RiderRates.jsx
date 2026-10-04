@@ -1,4 +1,4 @@
-import axios from "axios";
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Plus,
@@ -18,7 +18,7 @@ import toast from "react-hot-toast";
 import AxiosInstance from "@/Helper/axiosInstance";
 import GlassSurface from "../../../UiComponents/GlassSurface";
 
-const baseURL = import.meta.env.VITE_BASE_URL;
+
 
 const RiderRates = () => {
   const [rates, setRates] = useState([]);
@@ -606,7 +606,7 @@ const RiderRates = () => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <h1 className="text-xl font-bold tracking-tight sm:text-2xl dark:text-white">
-                Rider Rate Management
+                Rider Card Management
               </h1>
               <p className="mt-1 text-xs text-gray-500 sm:text-sm dark:text-neutral-400">
                 Manage and monitor your rider rates and delivery charges

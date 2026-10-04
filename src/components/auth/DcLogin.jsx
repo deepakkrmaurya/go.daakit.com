@@ -11,7 +11,7 @@ import DaakitMap from "../../assets/daakitmap.png";
 import Warehouse1 from "../../assets/fulfillmenthype_warehouse.png";
 import Warehouse2 from "../../assets/warehouse5.png";
 
-import axiosInstance from "../../Helper/axiosInstance";
+
 import { UserRoles } from "@/utils/UserRole";
 
 import {
@@ -24,6 +24,7 @@ import {
   FiMapPin,
   FiActivity,
 } from "react-icons/fi";
+import AxiosInstance from "../../Helper/axiosInstance";
 
 const slider = [
   {
@@ -51,7 +52,7 @@ function DcUserLogin() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
   });
 
@@ -120,26 +121,21 @@ function DcUserLogin() {
     e.preventDefault();
 
     try {
-      const res = await axiosInstance.post(
-        `${baseURL}/api/user/login`,
-        formData,
+      const res = await AxiosInstance.post(
+        `/api/dc/login`,
+        {
+          ...formData,
+          captcha_key:captchaToken
+        },
       );
 
       const token = res.data.token;
-
+        console.log(res)
+        return
       if (token) {
         localStorage.setItem("token", token);
 
-        localStorage.setItem(
-          "userType",
-          res?.data?.userType,
-        );
-
-        if (UserRoles.includes(res?.data?.userType)) {
-          getUserPermissions();
-          return;
-        }
-
+        localStorage.setItem("userType",res?.data?.userType,);
         navigate("/user/analytics");
 
         toast.success("Login successful");
@@ -367,11 +363,11 @@ function DcUserLogin() {
                     </span>
 
                     <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
+                      type="text"
+                      name="username"
+                      value={formData.username}
                       onChange={handleChange}
-                      autoComplete="email"
+                      autoComplete="username"
                       required
                       placeholder="name@company.com"
                       className="h-[52px] w-full rounded-sm border border-[#D0D5DD] bg-[#F8F9FB] pl-12 pr-4 text-sm text-[#101828] outline-none transition placeholder:text-[#98A2B3] hover:border-[#B8C0CC] focus:border-[#0446DB] focus:bg-white focus:ring-4 focus:ring-blue-50"
@@ -474,7 +470,7 @@ function DcUserLogin() {
                 <button
                   type="submit"
                   disabled={
-                    !formData.email ||
+                    !formData.username ||
                     !formData.password ||
                     !captchaToken
                   }

@@ -354,7 +354,7 @@ const staticSubscriptionPlans = [
           <div className="overflow-hidden rounded-sm border border-gray-200/80 bg-white shadow-[0_20px_70px_-35px_rgba(15,23,42,0.25)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none">
             {/* Tabs */}
             <div className="flex flex-col gap-4 border-b border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-neutral-800">
-              <div className="inline-flex w-full rounded-sm bg-gray-100 p-1 sm:w-auto dark:bg-neutral-800">
+              {/* <div className="inline-flex w-full rounded-sm bg-gray-100 p-1 sm:w-auto dark:bg-neutral-800">
                 <button
                   type="button"
                   onClick={() => setActiveTab("recharge")}
@@ -382,7 +382,178 @@ const staticSubscriptionPlans = [
                     Subscription
                   </button>
                 )}
-              </div>
+              </div> */}
+
+              <div className="w-full sm:w-auto">
+  <div
+    className="
+      inline-flex w-full items-center gap-1
+      rounded-[18px]
+      border border-slate-200/80
+      bg-[#F1F4F8]
+      p-[6px]
+      shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)]
+      sm:w-auto
+
+      dark:border-neutral-700/70
+      dark:bg-neutral-800
+    "
+  >
+    {/* ==============================
+        WALLET RECHARGE
+    ============================== */}
+
+    <button
+      type="button"
+      onClick={() => setActiveTab("recharge")}
+      className={`
+        group flex flex-1 items-center justify-center
+        gap-3 rounded-[14px]
+        px-5 py-3
+        text-sm font-semibold
+        transition-all duration-200
+        sm:min-w-[190px]
+
+        ${
+          activeTab === "recharge"
+            ? `
+              bg-white
+              text-[#0969F9]
+              shadow-[0_3px_10px_rgba(15,23,42,0.10)]
+              ring-1 ring-black/[0.03]
+
+              dark:bg-neutral-700
+              dark:text-blue-400
+              dark:ring-white/[0.05]
+            `
+            : `
+              text-slate-500
+              hover:bg-white/50
+              hover:text-slate-800
+
+              dark:text-neutral-400
+              dark:hover:bg-neutral-700/50
+              dark:hover:text-white
+            `
+        }
+      `}
+    >
+      <span
+        className={`
+          flex h-8 w-8 shrink-0
+          items-center justify-center
+          rounded-[9px]
+          transition-all duration-200
+
+          ${
+            activeTab === "recharge"
+              ? `
+                bg-[#E8F1FF]
+                text-[#0969F9]
+
+                dark:bg-blue-500/15
+                dark:text-blue-400
+              `
+              : `
+                bg-slate-200/70
+                text-slate-500
+
+                dark:bg-neutral-700
+                dark:text-neutral-400
+              `
+          }
+        `}
+      >
+        <WalletIcon
+          className="h-[17px] w-[17px]"
+          strokeWidth={2}
+        />
+      </span>
+
+      <span className="whitespace-nowrap">
+        Wallet Recharge
+      </span>
+    </button>
+
+    {/* ==============================
+        SUBSCRIPTION
+    ============================== */}
+
+    {isTechBased && (
+      <button
+        type="button"
+        onClick={() => setActiveTab("subscription")}
+        className={`
+          group flex flex-1 items-center justify-center
+          gap-3 rounded-[14px]
+          px-5 py-3
+          text-sm font-semibold
+          transition-all duration-200
+          sm:min-w-[190px]
+
+          ${
+            activeTab === "subscription"
+              ? `
+                bg-white
+                text-[#0969F9]
+                shadow-[0_3px_10px_rgba(15,23,42,0.10)]
+                ring-1 ring-black/[0.03]
+
+                dark:bg-neutral-700
+                dark:text-blue-400
+                dark:ring-white/[0.05]
+              `
+              : `
+                text-slate-500
+                hover:bg-white/50
+                hover:text-slate-800
+
+                dark:text-neutral-400
+                dark:hover:bg-neutral-700/50
+                dark:hover:text-white
+              `
+          }
+        `}
+      >
+        <span
+          className={`
+            flex h-8 w-8 shrink-0
+            items-center justify-center
+            rounded-[9px]
+            transition-all duration-200
+
+            ${
+              activeTab === "subscription"
+                ? `
+                  bg-[#E8F1FF]
+                  text-[#0969F9]
+
+                  dark:bg-blue-500/15
+                  dark:text-blue-400
+                `
+                : `
+                  bg-slate-200/70
+                  text-slate-500
+
+                  dark:bg-neutral-700
+                  dark:text-neutral-400
+                `
+            }
+          `}
+        >
+          <CrownIcon
+            className="h-[17px] w-[17px]"
+            strokeWidth={2}
+          />
+        </span>
+
+        <span className="whitespace-nowrap">
+          Subscription
+        </span>
+      </button>
+    )}
+  </div>
+</div>
 
               <div className="hidden items-center gap-2 text-xs font-medium text-gray-400 sm:flex dark:text-neutral-500">
                 <LockIcon />

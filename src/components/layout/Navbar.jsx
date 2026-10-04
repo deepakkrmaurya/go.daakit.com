@@ -30,7 +30,7 @@ import {
 
 import { useEffect, useState, useRef } from "react";
 
-import { FaBolt, FaUser, FaUserPlus, FaUserShield } from "react-icons/fa";
+import { FaBolt, FaStore, FaUser, FaUserPlus, FaUserShield, FaWarehouse } from "react-icons/fa";
 
 import DaakitIcon from "@/assets/logo-1.png";
 
@@ -1513,11 +1513,18 @@ const getNavLinks = () => {
       { label: "Merchant", href: "/admin/merchant-details", icon: <MdOutlineBusinessCenter className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
       { label: "Coupon", href: "/admin/coupon", icon: <RiCoupon2Fill className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
       { label: "Pricing", href: "/admin/pricing", icon: <ImPriceTag className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-
+      {
+        label: "DC",
+        href: "#",
+        icon: <FaUserPlus className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
+        subItems: [
+          
+          {label: "DC List",href: "/admin/dc/list",icon: <FaWarehouse className="h-4 w-4" />,},
+        ],
+      },
       { label: "Finance", href: "#", icon: <FaIndianRupeeSign className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
         { label: "Billing & Invoices", href: "/admin/billingandinvoices", icon: <BillingIcon /> },
         { label: "COD Remittances", href: "/admin/cod-remittances", icon: <LuReceiptIndianRupee className="h-4 w-4" /> },
-        // { label: "Vendor Remittances", href: "/admin/vendor-remittances", icon: <FaHandshake className="h-4 w-4" /> },
         { label: "Merchant Remittances", href: "/admin/merchant-remittances", icon: <FaUserTie className="h-4 w-4" /> },
       ]},
       { label: "Coupon & Subscription", href: "#", icon: <MdCardMembership className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
@@ -1669,7 +1676,7 @@ const getNavLinks = () => {
 
   };
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
 
     try {
 
@@ -1678,25 +1685,26 @@ const getNavLinks = () => {
       if (role === "vendor") {
 
         clearStorageAndRedirect();
-
+         await AxiosInstance.post(`/api/vendor/vendorLogout`)
         navigate("/login");
 
       } else if (role === "admin") {
 
         clearStorageAndRedirect();
+        await AxiosInstance.post(`/api/admin/logout`)
 
         navigate("/login/admin");
 
       } else if (UserRoles.includes(role)) {
 
         clearStorageAndRedirect();
-
+         await AxiosInstance.post(`/api/user/logout`)
         navigate("/login/user");
 
       } else {
 
         clearStorageAndRedirect();
-
+           await AxiosInstance.post(`/api/merchant/merchantLogout`)
         navigate("/login");
 
       }

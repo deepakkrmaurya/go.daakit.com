@@ -122,7 +122,10 @@ function UserLogin() {
     try {
       const res = await axiosInstance.post(
         `${baseURL}/api/user/login`,
-        formData,
+        {
+          ...formData,
+          captcha_key:captchaToken
+        }
       );
 
       const token = res.data.token;

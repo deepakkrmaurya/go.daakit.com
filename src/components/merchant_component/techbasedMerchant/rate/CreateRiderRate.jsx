@@ -9,7 +9,7 @@ import {
   Zap,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import AxiosInstance from "../../../../Helper/axiosInstance";
+import AxiosInstance from "@/Helper/axiosInstance";
 
 export default function CreateRiderRate() {
   const [riders, setRiders] = useState([]);

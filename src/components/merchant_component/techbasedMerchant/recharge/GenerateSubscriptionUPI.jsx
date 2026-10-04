@@ -50,7 +50,7 @@ function GenerateSubscriptionUPI({ plan_id, amount, plane,isLight}) {
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className={`mt-7 flex h-[31px] w-full items-center justify-center rounded-[7px] border text-[12px] font-bold transition ${
+                className={` flex  w-full items-center justify-center rounded-[7px] border text-[12px] font-bold transition ${
                   isLight
                     ? "border-neutral-600 bg-[#191919] text-white hover:bg-black"
                     : "border-neutral-300 bg-white text-black hover:bg-neutral-100"
@@ -64,11 +64,7 @@ function GenerateSubscriptionUPI({ plan_id, amount, plane,isLight}) {
               </button>
            
 
-            {error && (
-                <p className="text-red-600 mt-2 text-sm">
-                    {error}
-                </p>
-            )}
+            
         </div>
     );
 

@@ -11,6 +11,7 @@ import { TbTruckReturn } from "react-icons/tb";
 import CityOrdersChart from "../CityOrdersChart";
 import BottomScrollCounter from "../ui/OdometerCounter";
 import { Loader2 } from "lucide-react";
+import AxiosInstance from "../../Helper/axiosInstance";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -85,15 +86,10 @@ export default function Analytics() {
   const getAnalytics = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        `${baseURL}/api/admin/getOrderAndRemittanceStats`,
-        {
-          params: advanceFilters,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const res =await AxiosInstance.get(`/api/admin/getOrderAndRemittanceStats`,{
+        params: advanceFilters,
+      })
+      
       setCustomStartDate(advanceFilters.start_date);
       setCustomEndDate(advanceFilters.end_date);
       setAnalytics(res.data.data);
