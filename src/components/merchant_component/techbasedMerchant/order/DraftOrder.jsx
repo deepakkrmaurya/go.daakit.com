@@ -1710,9 +1710,9 @@ export default function TeachDraftsList() {
                   >
                     <option value="">Select rider preference</option>
     
-                    <option value="self">Self</option>
+                    <option value="self">BYOB</option>
     
-                    <option value="daakit">Daakit</option>
+                    <option value="daakit">DDN</option>
                   </select>
                 </label>
     

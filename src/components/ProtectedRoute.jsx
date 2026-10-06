@@ -14,17 +14,14 @@ const ProtectedRoute = ({ children, allowedRoles = [], requiredPermission,permis
   }
   try {
     const decoded = jwtDecode(token);
-    const userRole = decoded.usertype || decoded.type || decoded.userType;
-
+    const userRole = decoded.usertype || decoded.type || decoded.userType || decoded?.user_type;
+    console.log("User Role:", userRole);
    
     if (!allowedRoles.includes(userRole)) {
       return <Navigate to="/unauthorized" replace />;
     }
 
-    // ❌ Permission check
-    // if (requiredPermission && !permissions.includes(requiredPermission)) {
-    //   return <Navigate to="/unauthorized" replace />;
-    // }
+   
 
     return children;
   } catch (err) {

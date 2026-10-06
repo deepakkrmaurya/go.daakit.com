@@ -17,7 +17,7 @@ const handleLogout = () => {
     const token = localStorage.getItem("token");
     const decoded = jwtDecode(token);
     const role = decoded.usertype || decoded.type || decoded.userType;
-
+    
     if (role === "vendor") {
       clearStorageAndRedirect()  
     } else if (role === "admin") {
@@ -68,7 +68,7 @@ AxiosInstance.interceptors.response.use(
 
     // Token Expired / Unauthorized
     if (error?.response?.status === 401) {
-
+       return
       // Remove Token
       localStorage.removeItem("token");
 

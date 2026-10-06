@@ -1,4 +1,3 @@
-import "../../styles/blink.css";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -10,7 +9,6 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import { Button } from "@/components/ui/button"
-import Loader from "../Loader";
 import { Label } from "@/components/ui/label";
 import {
   Drawer,
@@ -60,16 +58,10 @@ import { CiCircleCheck } from "react-icons/ci";
 import { toast } from "react-toastify";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import AxiosInstance from "../../Helper/axiosInstance";
+import AxiosInstance from "@/Helper/axiosInstance";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 
-const options = [
-  { value: "Bangalore", label: "Bangalore" },
-  { value: "Delhi", label: "Delhi" },
-  { value: "Gurugram", label: "Gurugram" },
-  { value: "Noida", label: "Noida" },
-];
 
 function OrderDetails() {
   const [newStatus,setNewStatus]=useState('')
@@ -99,6 +91,7 @@ function OrderDetails() {
   const [fetchBulkAssignmentRider, setFetchBulkAssignmentRider] = useState(false);
   const [fetchBulkAssignmentVendor, setFetchBulkAssignmentVendor] = useState(false);
   const [canceledBulkOrder, setcanceledBulkOrder] = useState(false);
+  const [dcBulkOrder, setDcBulkOrder] = useState(false);
   const [bulkOrderWeight, setBulkOrderWeight] = useState(0);
   const [editingStatusId, setEditingStatusId] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -235,6 +228,7 @@ function OrderDetails() {
       pickup_state: "",
       pickup_pincode: "",
     });
+    setDcBulkOrder(false);
   };
   function toCapitalizeEachWord(str) {
     return str
@@ -338,7 +332,7 @@ function OrderDetails() {
     "rto delivered",
   ];
   const [selectedStatus, setSelectedStatus] = useState("All");
-  const [selectedLiveStatus, setSelectedLiveStatus] = useState("All");
+ const [dcList, setDcList] = useState([])
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -379,6 +373,16 @@ function OrderDetails() {
     }
   };
 
+  const fetchDcList = async ()=>{
+    try {
+      const getDcList = await AxiosInstance.get(`/api/dc/list`);
+      console.log("getDcList",getDcList?.data?.data)
+      setDcList(getDcList?.data?.data || [])
+    } catch (error) {
+      setDcList([])
+    }
+  }
+
   const handleUpdateDeliveryDetails = async (data) => {
     try {
 
@@ -417,8 +421,20 @@ function OrderDetails() {
        toast.error(error?.response?.data?.message)
     }
   }
+  
 
-
+  const assignOrdersToDc = async ({ order_ids, dc_id }) => {
+    try {
+        const res = await AxiosInstance.post(`/api/dc/admin/assignOrders`, {
+            order_ids,
+            dc_id
+        });
+        toast.success(res?.data?.message);
+        clearAllState()
+    } catch (error) {
+        toast.error(error?.response?.data?.message);
+    }
+  }
 
 
 
@@ -1028,6 +1044,7 @@ function OrderDetails() {
   }, []);
 
   useEffect(() => {
+    fetchDcList()
     fetchOrders();
     setSelectedBulkOrders([]);
     setBulkOrderWeight(0);
@@ -1929,6 +1946,145 @@ useEffect(() => {
                                                 )}
                                               </div>
                                             </div>
+
+                                            {/* map dc  */}
+                                            <div className="overflow-hidden rounded-sm border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+  {/* Header */}
+  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-800/40">
+    <div>
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+        Assign Orders to DC
+      </h3>
+
+      <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+        Assign all selected orders to a distribution center.
+      </p>
+    </div>
+
+    {/* Optional badge */}
+    <div className="hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 sm:block dark:bg-blue-500/10 dark:text-blue-400">
+      Bulk Action
+    </div>
+  </div>
+
+  {/* Content */}
+  <div className="p-5">
+    {!dcBulkOrder ? (
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-700 dark:text-neutral-200">
+            Select a distribution center
+          </p>
+
+          <p className="mt-1 text-xs text-gray-500 dark:text-neutral-500">
+            Choose a DC to map the selected orders.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setDcBulkOrder(true)}
+          className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0446DB] px-5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
+        >
+          Assign to DC
+        </button>
+      </div>
+    ) : (
+      <form
+        className="space-y-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+
+          const dcId = Number(
+            e.currentTarget.elements.dc_id.value
+          );
+
+
+
+          if (!dcId) {
+            toast.error("Please select a DC");
+            return;
+          }
+
+          const orderIds = selectedBulkOrders.map((order) => order.id);
+
+          
+          await assignOrdersToDc({
+            order_ids: orderIds,
+            dc_id: dcId,
+          });
+
+          
+        }}
+      >
+        {/* DC Select */}
+        <div>
+          <label
+            htmlFor="dc_id"
+            className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-neutral-300"
+          >
+            Distribution Center
+          </label>
+
+          <div className="relative">
+            <select
+              id="dc_id"
+              name="dc_id"
+              defaultValue=""
+              className="h-11 w-full cursor-pointer appearance-none rounded-lg border border-gray-300 bg-white px-3 pr-10 text-sm text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:border-blue-500"
+            >
+              <option value="" disabled>
+                Select a distribution center
+              </option>
+
+              {dcList?.map((dc) => (
+                <option key={dc.id} value={dc.id}>
+                  {dc?.dc_code} : {dc?.dc_name}
+                </option>
+              ))}
+            </select>
+
+            {/* Custom arrow */}
+            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+              <svg
+                className="h-4 w-4 text-gray-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Info */}
+        
+
+        {/* Actions */}
+        <div className="flex flex-col-reverse gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end dark:border-neutral-800">
+          <button
+            type="button"
+            onClick={() => setDcBulkOrder(false)}
+            className="h-10 cursor-pointer rounded-sm border border-gray-300 bg-white px-5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-6 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
+          >
+            Assign Orders
+          </button>
+        </div>
+      </form>
+    )}
+  </div>
+</div>
 
                                             {/* ============================================
                                                 VENDOR ASSIGNMENT
@@ -4679,6 +4835,14 @@ useEffect(() => {
         </option>
           )
         }
+        {
+          selectedBulkOrders[0].mapped_dc_id!==null && (
+
+        <option value="Cancel DC Mapped">
+          Cancel DC Mapping
+        </option>
+          )
+        }
 
         
       </select>
@@ -4801,7 +4965,7 @@ useEffect(() => {
               toast.warn("Select new status");
               return;
             }
-
+  
             if (
               bulkStatusState === "Cancel Assignment"
             ) {
@@ -4818,6 +4982,16 @@ useEffect(() => {
                   cancelVendorAssignment(order.id)
                 )
               );
+            } else if (
+              bulkStatusState === "Cancel DC Mapped"
+            ) {
+              console.log("Cancel DC Mapped action triggered");
+              // await Promise.all(
+              //   selectedBulkOrders.map((order) =>
+              //     cancelDCAssignment(order.id)
+              //   )
+              // );
+              return
             } else {
               if (!bulkStatusState) {
                 toast.error("Please select status");
@@ -4855,9 +5029,11 @@ useEffect(() => {
             ? "Cancel Vendor Mapped"
             : bulkStatusState === "cancelled"
               ? "Mark Cancelled"
-              : bulkStatusState === "lost"
+              :  bulkStatusState === "lost"
                 ? "Mark Lost"
-                : "Change Action"}
+                : bulkStatusState === "Cancel DC Mapped"
+                  ? "Cancel DC Mapped"
+                  : "Change Action"}
         </button>
       </div>
     )}
@@ -6035,19 +6211,54 @@ useEffect(() => {
                                   <>
                                     
                                     <TableCell className="text-center ">
-                                      {
+                                      {/* {
                                         order.rider_vendor_id === null && order.rider_merchant_id === null && order.mapped_with === null ? (
                                           <>
                                             {order.rider_id !== null ? `DKT_` : ""}
                                             {order.rider_id}
                                           </>
-                                        ) : (
+                                        ) : order?.mapped_dc_id !== null ? (
+                                          <>
+                                         
+                                            {order.rider_id}
+                                          </>
+                                        )  : (
                                           <>
                                             {order.rider_id !== null ? `FP_${order.rider_vendor_id}_` : order.rider_merchant_id ? `M${order.r_merchant_id}_R` : order.mapped_with ? `FP_${order.mapped_with}` : "DKT_"}
                                             {order.rider_id}
                                           </>
                                         )
-                                      }
+                                      } */}
+
+                                      {
+                                          order.mapped_dc_id !== null ? (
+                                            <>
+                                              DC_{order.mapped_dc_id}
+                                            </>
+                                          ) : (
+                                            order.rider_vendor_id === null &&
+                                            order.rider_merchant_id === null &&
+                                            order.mapped_with === null ? (
+                                              <>
+                                                {order.rider_id !== null ? "DKT_" : ""}
+                                                {order.rider_id}
+                                              </>
+                                            ) : (
+                                              <>
+                                                {order.rider_id !== null
+                                                  ? `FP_${order.rider_vendor_id}_`
+                                                  : order.rider_merchant_id
+                                                    ? `M${order.rider_merchant_id}_R`
+                                                    : order.mapped_with
+                                                      ? `FP_${order.mapped_with}`
+                                                      : "DKT_"
+                                                }
+
+                                                {order.rider_id}
+                                              </>
+                                            )
+                                          )
+                                        }
 
                                       {
                                         selectedStatus === "picked" && (
@@ -6059,13 +6270,13 @@ useEffect(() => {
                                         )
                                       }
 
-                                      {
+                                      {/* {
                                         order.mapped_with === null && (
                                           <>
                                            -
                                           </>
                                         )
-                                      }
+                                      } */}
 
                                     </TableCell>
 

@@ -130,17 +130,17 @@ function DcUserLogin() {
       );
 
       const token = res.data.token;
-        console.log(res)
-        return
+        
       if (token) {
         localStorage.setItem("token", token);
 
-        localStorage.setItem("userType",res?.data?.userType,);
-        navigate("/user/analytics");
+        // localStorage.setItem("userType",'dc',);
+        navigate("/dc/analytics");
 
         toast.success("Login successful");
       }
     } catch (err) {
+      setCaptchaToken('')
       toast.error(
         err.response?.data?.message ||
           err.message ||

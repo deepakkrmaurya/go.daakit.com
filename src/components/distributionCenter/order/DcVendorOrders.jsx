@@ -1,13 +1,13 @@
 import { use, useEffect, useState } from "react";
 import axios from "axios";
 import Select from "react-select";
-import Loader from "../../Loader";
 
-import { TbFileInfo } from "react-icons/tb";
-import { FaFilter, FaRegCopy } from "react-icons/fa";
+import { HiOutlineDocumentMagnifyingGlass } from "react-icons/hi2";
+
+import { FaRegCopy } from "react-icons/fa";
 import { CiCircleCheck } from "react-icons/ci";
 import { toast } from "react-toastify";
-import { data } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -44,12 +44,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Loader2 } from "lucide-react";
-import AxiosInstance from "../../../Helper/axiosInstance";
+import { Loader2, PackageCheck, UserPlus,X } from "lucide-react";
+import AxiosInstance from "@/Helper/axiosInstance";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 
-function VendorOrderDetails() {
+function DCOrderDetails() {
+const [bulkActionLoading, setBulkActionLoading] = useState(false);
+const [assignRiderLoading, setAssignRiderLoading] = useState(false);
+const [assign, setAssign] = useState(false);
+
   const [isOpenIndividualMap, setIsOpenIndividualMap] = useState("");
   const [open, setOpen] = useState(false);
   const [endopen, setEndOpen] = useState(false);
@@ -200,7 +204,7 @@ function VendorOrderDetails() {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${baseURL}/api/vendor/getVendorOrdersWithRiders`,
+        `${baseURL}/api/dc/orders`,
         {
           params: {
             page,
@@ -640,16 +644,7 @@ function VendorOrderDetails() {
       return (
         <>
           <div
-            // onSubmit={async (e) => {
-            //   e.preventDefault();
-            //   const newStatus =
-            //     e.target.elements.status.value;
-            //   const newRemarks =
-            //     e.target.elements.remarks.value;
-            //     console.log(data.ndr_id, newStatus, newRemarks)
-            //   //   return
-            //   // changeStatus(data.ndr_id, newStatus, newRemarks);
-            // }}
+            
 
             className="flex flex-col gap-2"
           >
@@ -1395,7 +1390,7 @@ useEffect(() => {
             </div>
           </div>
   
-          <div className="   bg-white dark:bg-gray-900 rounded-md">
+          <div className="  dark:bg-gray-900 rounded-md">
             <div className="w-full  bg-white   rounded shadow-sm  dark:bg-gray-900   left-0 px-4 z-40   ">
               <div className="relative flex justify-center ">
                 <div
@@ -1426,7 +1421,7 @@ useEffect(() => {
                         className={`px-5 py-2.5 rounded-full my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${
                           selectedStatus === st
                             ? "bg-[#0446DB] text-white shadow-sm  border-transparent"
-                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
+                            : "bg-white hover:bg-[#0446DB] hover:text-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
                         }`}
                       >
                         {st === "ndr" ? "NDR" : toCapitalizeEachWord(st)}
@@ -1436,52 +1431,646 @@ useEffect(() => {
                   </div>
                 </div>
               </div>
+              {selectedBulkOrders.length > 0 &&
+              (selectedStatus === "pending pickup" ||
+                selectedStatus === "out for delivery" ||
+                selectedStatus === "rto in transit" ||
+                selectedStatus === "picked" ||
+                selectedStatus === "undelivered") && (
+                <AlertDialog>
+                  {/* ================= ACTION BUTTON ================= */}
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="my-1 h-7 py-2 cursor-pointer rounded-sm border-[#0446DB] bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:bg-[#0446DB] dark:text-white dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+                    >
+                      Action
+                    </Button>
+                  </AlertDialogTrigger>
+
+                  {/* ================= MAIN POPUP ================= */}
+                  <AlertDialogContent className="!max-w-2xl overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+                    {/* ================= HEADER ================= */}
+                    <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 text-left dark:border-neutral-800">
+                      <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+                        Bulk Order Actions
+                      </AlertDialogTitle>
+
+                      <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                        Manage{" "}
+                        <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                          {selectedBulkOrders?.length || 0}
+                        </span>{" "}
+                        selected orders.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    {/* ================= CONTENT ================= */}
+                    <div className="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-5">
+                      {/* =====================================================
+                          RTO IN TRANSIT
+                      ===================================================== */}
+
+                      {selectedStatus === "rto in transit" && (
+                        <div className="overflow-hidden rounded-sm border border-blue-200 dark:border-blue-500/20">
+                          {/* CARD HEADER */}
+                          <div className="border-b border-blue-100 bg-blue-50/70 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/5">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                              RTO Delivery
+                            </h3>
+
+                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                              Mark the selected RTO order as delivered.
+                            </p>
+                          </div>
+
+                          <div className="space-y-4 p-4">
+                            {!editingStatusId ? (
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                    Bulk RTO Delivered
+                                  </p>
+
+                                  <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                    Update{" "}
+                                    <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                                      {selectedBulkOrders?.length || 0}
+                                    </span>{" "}
+                                    selected orders.
+                                  </p>
+                                </div>
+
+                                <Button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingStatusId(true);
+                                  }}
+                                  className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-[#0339B5]"
+                                >
+                                  Bulk RTO Delivered
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                <div>
+                                  <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                    Change Status
+                                    <span className="ml-1 text-red-500">*</span>
+                                  </label>
+
+                                  <select
+                                    id="bulkRtoStatus"
+                                    defaultValue=""
+                                    disabled={bulkActionLoading}
+                                    className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-800 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                                  >
+                                    <option value="" disabled>
+                                      Change Status
+                                    </option>
+
+                                    <option value="rto delivered">
+                                      RTO Delivered
+                                    </option>
+                                  </select>
+                                </div>
+
+                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-4 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                      Update RTO Status
+                                    </p>
+
+                                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                      Confirm status update for the selected order.
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      disabled={bulkActionLoading}
+                                      onClick={() => {
+                                        setEditingStatusId(null);
+                                      }}
+                                      className="h-9 cursor-pointer rounded-sm px-4 text-sm font-medium"
+                                    >
+                                      Cancel
+                                    </Button>
+
+                                    <Button
+                                      type="button"
+                                      disabled={bulkActionLoading}
+                                      onClick={async () => {
+                                        const select =
+                                          document.getElementById("bulkRtoStatus");
+
+                                        const newStatus = select?.value;
+
+                                        if (!newStatus) {
+                                          toast.error("Please Select Status");
+                                          return;
+                                        }
+
+                                        try {
+                                          setBulkActionLoading(true);
+
+                                          await changeStatus(
+                                            selectedBulkOrders[0].id,
+                                            newStatus
+                                          );
+                                        } finally {
+                                          setBulkActionLoading(false);
+                                        }
+                                      }}
+                                      className="h-9 min-w-[110px] cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white hover:bg-[#0339B5] disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                      {bulkActionLoading ? (
+                                        <>
+                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                          Updating...
+                                        </>
+                                      ) : (
+                                        "Continue"
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* =====================================================
+                          PICKED / UNDELIVERED - ASSIGN RIDER
+                      ===================================================== */}
+
+                      {(selectedStatus === "picked" ||
+                        selectedStatus === "undelivered") && (
+                        <div className="overflow-hidden rounded-sm border border-blue-200 dark:border-blue-500/20">
+                          {/* CARD HEADER */}
+
+                          <div className="border-b border-blue-100 bg-blue-50/70 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/5">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                              Assign Orders
+                            </h3>
+
+                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                              Assign all currently selected orders to a rider.
+                            </p>
+                          </div>
+
+                          <div className="space-y-4 p-4">
+                            {!assign ? (
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                    Assign Selected Orders
+                                  </p>
+
+                                  <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                    Select a rider for{" "}
+                                    <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                                      {selectedBulkOrders?.length || 0}
+                                    </span>{" "}
+                                    selected orders.
+                                  </p>
+                                </div>
+
+                                <Button
+                                  type="button"
+                                  disabled={assignRiderLoading}
+                                  onClick={async () => {
+                                    const order_ids = [
+                                      ...new Set(
+                                        selectedBulkOrders.map((o) => o.id)
+                                      ),
+                                    ];
+
+                                    try {
+                                      setAssignRiderLoading(true);
+
+                                      await fetchReassignRiders(order_ids);
+
+                                      setAssign(true);
+                                    } finally {
+                                      setAssignRiderLoading(false);
+                                    }
+                                  }}
+                                  className="h-9 min-w-[120px] cursor-pointer rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-[#0339B5] disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {assignRiderLoading ? (
+                                    <>
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      Loading...
+                                    </>
+                                  ) : (
+                                    "Assign Orders"
+                                  )}
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                {/* RIDER SELECT */}
+
+                                <div>
+                                  <label
+                                    htmlFor="riderSelect"
+                                    className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                                  >
+                                    Select Rider
+                                    <span className="ml-1 text-red-500">*</span>
+                                  </label>
+
+                                  <select
+                                    id="riderSelect"
+                                    value={newRider || ""}
+                                    disabled={assignRiderLoading}
+                                    onChange={(e) =>
+                                      setNewRider(e.target.value)
+                                    }
+                                    className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-800 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                                  >
+                                    <option value="">
+                                      Select Rider
+                                    </option>
+
+                                    {reassignRidersOptions.map((rider) => (
+                                      <option
+                                        key={rider.rider_id}
+                                        value={rider.value}
+                                      >
+                                        {rider.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                {/* ASSIGN ACTION */}
+
+                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-4 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                      Assign Selected Orders
+                                    </p>
+
+                                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                      Assign{" "}
+                                      <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                                        {selectedBulkOrders?.length || 0}
+                                      </span>{" "}
+                                      selected orders to the chosen rider.
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      disabled={assignRiderLoading}
+                                      onClick={() => {
+                                        setAssign(false);
+                                        setNewRider("");
+                                      }}
+                                      className="h-9 cursor-pointer rounded-sm px-4 text-sm font-medium"
+                                    >
+                                      Cancel
+                                    </Button>
+
+                                    <Button
+                                      type="button"
+                                      disabled={assignRiderLoading}
+                                      onClick={async () => {
+                                        if (!newRider) {
+                                          toast.error("Please select a rider.");
+                                          return;
+                                        }
+
+                                        const ids = selectedBulkOrders.map(
+                                          (order) => order.id
+                                        );
+
+                                        try {
+                                          setAssignRiderLoading(true);
+
+                                          await assignBulkOrderRider(
+                                            ids,
+                                            newRider
+                                          );
+
+                                          setNewRider("");
+                                          setAssign(false);
+                                        } catch (error) {
+                                          console.error(error);
+                                        } finally {
+                                          setAssignRiderLoading(false);
+                                        }
+                                      }}
+                                      className="h-9 min-w-[105px] cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white hover:bg-[#0339B5] disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                      {assignRiderLoading ? (
+                                        <>
+                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                          Assigning...
+                                        </>
+                                      ) : (
+                                        "Continue"
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* =====================================================
+                          OUT FOR DELIVERY
+                      ===================================================== */}
+
+                      {selectedStatus === "out for delivery" && (
+                        <div className="overflow-hidden rounded-sm border border-blue-200 dark:border-blue-500/20">
+                          {/* HEADER */}
+
+                          <div className="border-b border-blue-100 bg-blue-50/70 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/5">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                              Update Order Status
+                            </h3>
+
+                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                              Update the selected out for delivery orders.
+                            </p>
+                          </div>
+
+                          <div className="space-y-4 p-4">
+                            {!bulkStatusState ? (
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                    Mark Orders Delivered
+                                  </p>
+
+                                  <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                    Update{" "}
+                                    <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                                      {selectedBulkOrders?.length || 0}
+                                    </span>{" "}
+                                    selected orders.
+                                  </p>
+                                </div>
+
+                                <Button
+                                  type="button"
+                                  onClick={() => {
+                                    setBulkStatusState(true);
+                                  }}
+                                  className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-[#0339B5]"
+                                >
+                                  Update Status
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                {/* STATUS */}
+
+                                <div>
+                                  <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                    Change Status
+                                    <span className="ml-1 text-red-500">*</span>
+                                  </label>
+
+                                  <select
+                                    id="bulkDeliveryStatus"
+                                    defaultValue=""
+                                    disabled={bulkActionLoading}
+                                    className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-800 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                                  >
+                                    <option value="" disabled>
+                                      Change Status
+                                    </option>
+
+                                    <option value="delivered">
+                                      Delivered
+                                    </option>
+                                  </select>
+                                </div>
+
+                                {/* ACTION */}
+
+                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-4 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                      Update Selected Orders
+                                    </p>
+
+                                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                      Mark{" "}
+                                      <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                                        {selectedBulkOrders?.length || 0}
+                                      </span>{" "}
+                                      selected orders as delivered.
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      disabled={bulkActionLoading}
+                                      onClick={() => {
+                                        setBulkStatusState(false);
+                                      }}
+                                      className="h-9 cursor-pointer rounded-sm px-4 text-sm font-medium"
+                                    >
+                                      Cancel
+                                    </Button>
+
+                                    <Button
+                                      type="button"
+                                      disabled={bulkActionLoading}
+                                      onClick={async () => {
+                                        const select =
+                                          document.getElementById(
+                                            "bulkDeliveryStatus"
+                                          );
+
+                                        const newStatus = select?.value;
+
+                                        if (!newStatus) {
+                                          toast.error("Please Select Status");
+                                          return;
+                                        }
+
+                                        try {
+                                          setBulkActionLoading(true);
+
+                                          for (const order of selectedBulkOrders) {
+                                            await markOrdersDeliveredBulk(
+                                              order.id
+                                            );
+                                          }
+                                        } finally {
+                                          setBulkActionLoading(false);
+                                        }
+                                      }}
+                                      className="h-9 min-w-[120px] cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white hover:bg-[#0339B5] disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                      {bulkActionLoading ? (
+                                        <>
+                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                          Updating...
+                                        </>
+                                      ) : (
+                                        "Continue"
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* =====================================================
+                          PENDING PICKUP
+                      ===================================================== */}
+
+                      {selectedStatus === "pending pickup" && (
+                        <div className="overflow-hidden rounded-sm border border-blue-200 dark:border-blue-500/20">
+                          {/* HEADER */}
+
+                          <div className="border-b border-blue-100 bg-blue-50/70 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/5">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                              Pickup Orders
+                            </h3>
+
+                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                              Mark all currently selected orders as picked.
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                Mark Bulk Pickup
+                              </p>
+
+                              <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                Mark{" "}
+                                <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+                                  {selectedBulkOrders?.length || 0}
+                                </span>{" "}
+                                selected orders as picked.
+                              </p>
+                            </div>
+
+                            <Button
+                              type="button"
+                              disabled={bulkActionLoading}
+                              onClick={async () => {
+                                const order_ids =
+                                  selectedBulkOrders.map(
+                                    (order) => order.id
+                                  );
+
+                                try {
+                                  setBulkActionLoading(true);
+
+                                  await PickedOrder(order_ids);
+                                } catch (error) {
+                                  console.error(error);
+                                } finally {
+                                  setBulkActionLoading(false);
+                                }
+                              }}
+                              className="h-9 min-w-[145px] cursor-pointer rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-[#0339B5] disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {bulkActionLoading ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Processing...
+                                </>
+                              ) : (
+                                "Mark Bulk Pickup"
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* =====================================================
+                          CLEAR SELECTION
+                      ===================================================== */}
+
+                      <div className="flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                            Clear Selection
+                          </p>
+
+                          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                            Remove all currently selected orders and reset bulk actions.
+                          </p>
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={
+                            bulkActionLoading ||
+                            assignRiderLoading
+                          }
+                          onClick={() => {
+                            setSelectedBulkOrders([]);
+                            setEditingStatusId(null);
+                            setBulkStatusState(false);
+                            setNewRider("");
+                            setAssign(false);
+                          }}
+                          className="h-9 cursor-pointer rounded-sm border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
+                        >
+                          Clear Selected
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* ================= FOOTER ================= */}
+
+                    <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 my-0 dark:border-neutral-800 dark:bg-neutral-950/30">
+                      <AlertDialogCancel
+                        disabled={
+                          bulkActionLoading ||
+                          assignRiderLoading
+                        }
+                        onClick={() => {
+                          setEditingStatusId(null);
+                          setBulkStatusState(false);
+                          setNewRider("");
+                          setAssign(false);
+                        }}
+                        className="cursor-pointer rounded-sm"
+                      >
+                        Close
+                      </AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
   
             {/* Bulk Pending Pickup Handle */}
-            {selectedBulkOrders.length > 0 &&
+            {/* {selectedBulkOrders.length > 0 &&
               (selectedStatus === "pending pickup" ||
                 selectedStatus === "out for delivery" ||
                 selectedStatus === "rto in transit" ||
                 selectedStatus === "picked" ||
                 selectedStatus === "undelivered") && (
                 <div className=" bg-white  ">
-                  {/* <h2 className="text-xl font-bold text-gray-800 mb-5">
-                    Orders ({selectedBulkOrders.length} Selected)
-                  </h2>
-  
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full table-auto border border-gray-200 rounded-md overflow-hidden">
-                      <thead className="bg-gray-100 text-gray-600 text-sm font-semibold">
-                        <tr>
-                          <th className="px-4 py-3 text-left border-b">
-                            Order ID
-                          </th>
-                          <th className="px-4 py-3 text-left border-b">
-                            Order Weight
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-gray-800 text-sm">
-                        {selectedBulkOrders.map((order) => (
-                          <tr key={order.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-2 border-b">{order.id}</td>
-                            <td className="px-4 py-2 border-b">
-                              {order.total_weight}g
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr className="bg-indigo-50 text-indigo-700 font-semibold text-sm">
-                          <td className="px-4 py-2 border-t">Total Weight</td>
-                          <td className="px-4 py-2 border-t">
-                            {Number(bulkOrderWeight).toLocaleString()}g
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div> */}
+                  
   
                   <div className=" px-5 py-1 flex flex-wrap items-center gap-4">
                     {selectedStatus === "rto in transit" ? (
@@ -1686,7 +2275,13 @@ useEffect(() => {
                     </Button>
                   </div>
                 </div>
-              )}
+              )} */}
+
+
+              
+
+
+             
   
             {/* Table */}
             <div className="overflow-x-auto bg-white dark:bg-gray-900 ">
@@ -1857,584 +2452,535 @@ useEffect(() => {
                                 <AlertDialogTrigger
                                   render={<Button variant="outline" />}
                                 >
-                                  <TbFileInfo className=" h-5 w-5" />
+                                  <button
+  type="button"
+  title="View Details"
+  className="
+    group flex ml-2 h-7 w-7 cursor-pointer items-center justify-center
+    rounded-lg border border-slate-200
+    bg-white text-slate-500
+    shadow-sm transition-all duration-200
+    hover:border-[#0446DB]/30
+    hover:bg-blue-50
+    hover:text-[#0446DB]
+    hover:shadow-md
+    active:scale-95
+    dark:border-slate-700
+    dark:bg-slate-900
+    dark:text-slate-400
+    dark:hover:border-blue-500/30
+    dark:hover:bg-blue-500/10
+    dark:hover:text-blue-400
+  "
+>
+  <HiOutlineDocumentMagnifyingGlass
+    className="h-[19px] w-[19px] transition-transform duration-200 group-hover:scale-110"
+  />
+</button>
                                 </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      Order Details
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription
-                                    className='!max-h-96 overflow-y-scroll'
-                                    >
-                                      <div className="p-6 space-y-6">
-                                        {/* Order Badge */}
-                                        <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-indigo-50 p-4 rounded-sm border border-indigo-100">
-                                          <div className="flex items-center space-x-4">
-                                            <div
-                                              className={`px-3 py-1 rounded-full ${order.order_type === "cod" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}
-                                            >
-                                              <span className="font-semibold text-sm">
-                                                {order.order_type === "cod"
-                                                  ? "COD"
-                                                  : "PREPAID"}
-                                              </span>
-                                            </div>
-                                            <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
-                                              <span className="font-semibold text-sm">
-                                                {toCapitalizeEachWord(
-                                                  order.status,
-                                                )}
-                                              </span>
-                                            </div>
-                                          </div>
-                                          <div className="text-right">
-                                            <div className="text-2xl font-bold text-gray-800">
-                                              ₹
-                                              {Number(
-                                                order.total_amount,
-                                              ).toLocaleString()}
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                              Total Amount
-                                            </div>
-                                          </div>
-                                        </div>
-  
-                                        {/* Basic Details Card */}
-                                        <div className="bg-white rounded-sm border border-gray-200 overflow-hidden">
-                                          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-3 border-b border-grey-200">
-                                            <h3 className="font-semibold text-gray-800 flex items-center">
-                                              <svg
-                                                className="w-5 h-5 mr-2 text-indigo-600"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                              >
-                                                <path
-                                                  strokeLinecap="round"
-                                                  strokeLinejoin="round"
-                                                  strokeWidth={2}
-                                                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                />
-                                              </svg>
-                                              Basic Information
-                                            </h3>
-                                          </div>
-                                          <div className="p-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                              {[
-                                                {
-                                                  label: "Order ID",
-                                                  value: order.merchant_order_id,
-                                                  copy: true,
-                                                },
-                                                {
-                                                  label: "AWB Number",
-                                                  value: order.awb_number,
-                                                  copy: true,
-                                                },
-                                                {
-                                                  label: "Order Type",
-                                                  value:
-                                                    order.order_type === "cod"
-                                                      ? "COD"
-                                                      : "Prepaid",
-                                                },
-                                                {
-                                                  label: "Order Specific",
-                                                  value:
-                                                    order.order_specific ===
-                                                    "Turant"
-                                                      ? "Turant"
-                                                      : order.order_specific.slice(
-                                                          0,
-                                                          3,
-                                                        ),
-                                                },
-                                                // { label: "Total Weight", value: `${Number(popup.total_weight).toLocaleString()}g` },
-                                                {
-                                                  label: "Packets",
-                                                  value: order.number_of_boxes,
-                                                },
-                                                {
-                                                  label: "Status",
-                                                  value: toCapitalizeEachWord(
-                                                    order.status,
-                                                  ),
-                                                  highlight: true,
-                                                },
-                                              ].map((item, index) => (
-                                                <div
-                                                  key={index}
-                                                  className="space-y-1"
-                                                >
-                                                  <div className="text-sm text-gray-500 font-medium">
-                                                    {item.label}
-                                                  </div>
-                                                  <div className="flex items-center">
-                                                    <span
-                                                      className={`font-semibold ${item.highlight ? "text-indigo-600" : "text-gray-800"}`}
-                                                    >
-                                                      {item.value}
-                                                    </span>
-                                                    {item.copy && (
-                                                      <button
-                                                        onClick={() => {
-                                                          navigator.clipboard.writeText(
-                                                            item.value,
-                                                          );
-                                                          setCopySuccess(
-                                                            item.value,
-                                                          );
-                                                          setTimeout(
-                                                            () =>
-                                                              setCopySuccess(
-                                                                null,
-                                                              ),
-                                                            2000,
-                                                          );
-                                                        }}
-                                                        className="ml-2 p-1 hover:bg-gray-100 rounded transition"
-                                                      >
-                                                        {copySuccess ===
-                                                        item.value ? (
-                                                          <svg
-                                                            className="w-4 h-4 text-green-500"
-                                                            fill="currentColor"
-                                                            viewBox="0 0 20 20"
-                                                          >
-                                                            <path
-                                                              fillRule="evenodd"
-                                                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                              clipRule="evenodd"
-                                                            />
-                                                          </svg>
-                                                        ) : (
-                                                          <svg
-                                                            className="w-4 h-4 text-gray-400 hover:text-indigo-600"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                          >
-                                                            <path
-                                                              strokeLinecap="round"
-                                                              strokeLinejoin="round"
-                                                              strokeWidth={2}
-                                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                                            />
-                                                          </svg>
-                                                        )}
-                                                      </button>
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        </div>
-  
-                                        {/* Delivery Details Card */}
-                                        <div className="bg-white rounded-sm border border-gray-200 overflow-hidden">
-                                          <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-3 border-b border-grey-200">
-                                            <h3 className="font-semibold text-gray-800 flex items-center">
-                                              <svg
-                                                className="w-5 h-5 mr-2 text-green-600"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                              >
-                                                <path
-                                                  strokeLinecap="round"
-                                                  strokeLinejoin="round"
-                                                  strokeWidth={2}
-                                                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                                />
-                                              </svg>
-                                              Delivery Details
-                                            </h3>
-                                          </div>
-                                          <div className="p-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                              <div className="space-y-3">
-                                                <div className="flex items-center space-x-3">
-                                                  <div className="p-2 bg-green-100 rounded-sm">
-                                                    <svg
-                                                      className="w-5 h-5 text-green-600"
-                                                      fill="none"
-                                                      stroke="currentColor"
-                                                      viewBox="0 0 24 24"
-                                                    >
-                                                      <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                                      />
-                                                    </svg>
-                                                  </div>
-                                                  <div>
-                                                    <div className="text-sm text-gray-500">
-                                                      Customer Name
-                                                    </div>
-                                                    <div className="font-semibold text-gray-800">
-                                                      {
-                                                        order.delivery_contact_name
-                                                      }
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                                
-                                              </div>
-                                              <div className="space-y-3">
-                                                <div className="flex items-start space-x-3">
-                                                  <div className="p-2 bg-purple-100 rounded-sm mt-1">
-                                                    <svg
-                                                      className="w-5 h-5 text-purple-600"
-                                                      fill="none"
-                                                      stroke="currentColor"
-                                                      viewBox="0 0 24 24"
-                                                    >
-                                                      <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                                      />
-                                                      <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                                      />
-                                                    </svg>
-                                                  </div>
-                                                  <div>
-                                                    <div className="text-sm text-gray-500">
-                                                      Address
-                                                    </div>
-                                                    <div className="font-semibold text-gray-800">
-                                                      {
-                                                        order.delivery_address_line
-                                                      }
-                                                    </div>
-                                                    <div className="text-sm text-gray-600 mt-1">
-                                                      {order.delivery_city},{" "}
-                                                      {order.delivery_state} -{" "}
-                                                      {order.delivery_pincode}
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-  
-                                        {/* Pickup Details Card */}
-                                        <div className="bg-white rounded-sm border border-gray-200 overflow-hidden">
-                                          <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-3 border-b border-grey-200">
-                                            <h3 className="font-semibold text-gray-800 flex items-center">
-                                              <svg
-                                                className="w-5 h-5 mr-2 text-amber-600"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                              >
-                                                <path
-                                                  strokeLinecap="round"
-                                                  strokeLinejoin="round"
-                                                  strokeWidth={2}
-                                                  d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-                                                />
-                                              </svg>
-                                              Pickup Details
-                                            </h3>
-                                          </div>
-                                          <div className="p-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                              <div className="space-y-3">
-                                                <div className="flex items-center space-x-3">
-                                                  <div className="p-2 bg-amber-100 rounded-sm">
-                                                    <svg
-                                                      className="w-5 h-5 text-amber-600"
-                                                      fill="none"
-                                                      stroke="currentColor"
-                                                      viewBox="0 0 24 24"
-                                                    >
-                                                      <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                                      />
-                                                    </svg>
-                                                  </div>
-                                                  <div>
-                                                    <div className="text-sm text-gray-500">
-                                                      Pickup Contact
-                                                    </div>
-                                                    <div className="font-semibold text-gray-800">
-                                                      {order.pickup_contact_name ||
-                                                        "N/A"}
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                                
-                                              </div>
-                                              <div className="space-y-3">
-                                                <div className="flex items-start space-x-3">
-                                                  <div className="p-2 bg-orange-100 rounded-sm mt-1">
-                                                    <svg
-                                                      className="w-5 h-5 text-orange-600"
-                                                      fill="none"
-                                                      stroke="currentColor"
-                                                      viewBox="0 0 24 24"
-                                                    >
-                                                      <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                                      />
-                                                    </svg>
-                                                  </div>
-                                                  <div>
-                                                    <div className="text-sm text-gray-500">
-                                                      Address
-                                                    </div>
-                                                    <div className="font-semibold text-gray-800">
-                                                      {order.pickup_address_line ||
-                                                        "N/A"}
-                                                    </div>
-                                                    <div className="text-sm text-gray-600 mt-1">
-                                                      {order.pickup_city
-                                                        ? `${order.pickup_city}, ${order.pickup_state} - ${order.pickup_pincode}`
-                                                        : "N/A"}
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-  
-                                        {/* NDR Actions Section */}
-                                        {order.ndr_actions &&
-                                          order.ndr_actions.length > 0 && (
-                                            <div className="bg-white rounded-sm border border-gray-200 overflow-hidden">
-                                              <button
-                                                onClick={() =>
-                                                  setShowNdrActions(
-                                                    !showNdrActions,
-                                                  )
-                                                }
-                                                className="w-full bg-gradient-to-r from-red-50 to-pink-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between hover:bg-gray-50 transition"
-                                              >
-                                                <div className="flex items-center">
-                                                  <svg
-                                                    className={`w-5 h-5 mr-3 ${showNdrActions ? "text-red-600" : "text-gray-600"}`}
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                  >
-                                                    <path
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                      strokeWidth={2}
-                                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                  </svg>
-                                                  <div>
-                                                    <h3 className="font-semibold text-gray-800 text-left">
-                                                      NDR Actions
-                                                    </h3>
-                                                    <p className="text-sm text-gray-500 text-left">
-                                                      Non-Delivery Reports (
-                                                      {order.ndr_actions.length})
-                                                    </p>
-                                                  </div>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                  <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">
-                                                    {order.ndr_actions.length}{" "}
-                                                    actions
-                                                  </span>
-                                                  <svg
-                                                    className={`w-5 h-5 text-gray-600 transform transition ${showNdrActions ? "rotate-180" : ""}`}
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                  >
-                                                    <path
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                      strokeWidth={2}
-                                                      d="M19 9l-7 7-7-7"
-                                                    />
-                                                  </svg>
-                                                </div>
-                                              </button>
-  
-                                              {showNdrActions && (
-                                                <div className="p-6 space-y-4">
-                                                  {order.ndr_actions.map(
-                                                    (item) => (
-                                                      <div
-                                                        key={item.action_id}
-                                                        className="border border-gray-200 rounded-sm p-4 hover:border-red-200 hover:bg-red-50/50 transition group relative"
-                                                      >
-                                                        <div className="flex items-start justify-between">
-                                                          <div className="flex items-start space-x-3">
-                                                            <div
-                                                              className={`p-2 rounded-sm ${getActionColor(item.action_taken).bg}`}
-                                                            >
-                                                              <svg
-                                                                className={`w-5 h-5 ${getActionColor(item.action_taken).text}`}
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                              >
-                                                                <path
-                                                                  strokeLinecap="round"
-                                                                  strokeLinejoin="round"
-                                                                  strokeWidth={2}
-                                                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                />
-                                                              </svg>
-                                                            </div>
-                                                            <div>
-                                                              <div className="flex items-center space-x-2">
-                                                                <span className="font-semibold text-gray-800">
-                                                                  {getActionLabel(
-                                                                    item.action_taken,
-                                                                  )}
-                                                                </span>
-                                                                <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                                                                  #
-                                                                  {item.action_id}
-                                                                </span>
-                                                              </div>
-                                                              <div className="mt-2 space-y-2">
-                                                                {item.action_taken ===
-                                                                "change_phone" ? (
-                                                                  <div className="text-sm text-gray-600">
-                                                                    <span className="font-medium">
-                                                                      New Phone:
-                                                                    </span>{" "}
-                                                                    {
-                                                                      item.customer_phone
-                                                                    }
-                                                                  </div>
-                                                                ) : item.action_taken ===
-                                                                  "change_address" ? (
-                                                                  <>
-                                                                    <div className="text-sm text-gray-600">
-                                                                      <span className="font-medium">
-                                                                        Name:
-                                                                      </span>{" "}
-                                                                      {
-                                                                        item.customer_name
-                                                                      }
-                                                                    </div>
-                                                                    <div className="text-sm text-gray-600">
-                                                                      <span className="font-medium">
-                                                                        Address:
-                                                                      </span>{" "}
-                                                                      {
-                                                                        item.customer_details_address
-                                                                      }
-                                                                    </div>
-                                                                  </>
-                                                                ) : (
-                                                                  <div className="text-sm text-gray-600">
-                                                                    <span className="font-medium">
-                                                                      Remarks:
-                                                                    </span>{" "}
-                                                                    {item.remarks}
-                                                                  </div>
-                                                                )}
-                                                              </div>
-                                                              <div className="mt-3 text-xs text-gray-500 flex items-center">
-                                                                <svg
-                                                                  className="w-4 h-4 mr-1"
-                                                                  fill="none"
-                                                                  stroke="currentColor"
-                                                                  viewBox="0 0 24 24"
-                                                                >
-                                                                  <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={
-                                                                      2
-                                                                    }
-                                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                  />
-                                                                </svg>
-                                                                {new Date(
-                                                                  item.created_at,
-                                                                ).toLocaleString(
-                                                                  "en-IN",
-                                                                  {
-                                                                    timeZone:
-                                                                      "Asia/Kolkata",
-                                                                    day: "2-digit",
-                                                                    month:
-                                                                      "2-digit",
-                                                                    year: "numeric",
-                                                                    hour: "2-digit",
-                                                                    minute:
-                                                                      "2-digit",
-                                                                    hour12: true,
-                                                                  },
-                                                                )}
-                                                              </div>
-                                                            </div>
-                                                          </div>
-  
-                                                          {/* Action Menu */}
-                                                          <div className="relative">
-                                                            <button
-                                                              onClick={() =>
-                                                                setOpenDropdown(
-                                                                  openDropdown ===
-                                                                    item.action_id
-                                                                    ? null
-                                                                    : item.action_id,
-                                                                )
-                                                              }
-                                                              className="p-2 hover:bg-gray-100 rounded-sm transition opacity-0 group-hover:opacity-100"
-                                                            >
-                                                              <svg
-                                                                className="w-5 h-5 text-gray-400"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                              >
-                                                                <path
-                                                                  strokeLinecap="round"
-                                                                  strokeLinejoin="round"
-                                                                  strokeWidth={2}
-                                                                  d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                                                                />
-                                                              </svg>
-                                                            </button>
-                                                          </div>
-                                                        </div>
-                                                      </div>
-                                                    ),
-                                                  )}
-                                                </div>
-                                              )}
-                                            </div>
-                                          )}
-                                      </div>
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
+                                <AlertDialogContent
+  className="
+    flex max-h-[92dvh] w-[calc(100%-24px)] !max-w-5xl flex-col
+    overflow-hidden rounded-xl border border-slate-200
+    bg-white p-0 shadow-2xl
+    dark:border-slate-800 dark:bg-[#0d1421]
+  "
+>
+  {/* ================= HEADER ================= */}
+  <AlertDialogHeader className="shrink-0 border-b border-slate-200 px-5 py-4 text-left dark:border-slate-800 sm:px-6">
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <AlertDialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+          Order Details
+        </AlertDialogTitle>
+
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Complete shipment and customer information
+        </p>
+      </div>
+
+      <div className="hidden items-center gap-2 sm:flex">
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+            order?.order_type === "cod"
+              ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/20"
+              : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20"
+          }`}
+        >
+          {order?.order_type === "cod" ? "COD" : "PREPAID"}
+        </span>
+
+        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-[#0446DB] ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-500/20">
+          {toCapitalizeEachWord(order?.status)}
+        </span>
+      </div>
+    </div>
+  </AlertDialogHeader>
+
+  {/* ================= SCROLL BODY ================= */}
+  <div className="min-h-0 flex-1 overflow-y-auto">
+    <div className="space-y-5 p-4 sm:p-6">
+      {/* ================= ORDER SUMMARY ================= */}
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/40 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Order
+            </p>
+
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <p className="truncate text-base font-semibold text-slate-900 dark:text-white">
+                {order?.merchant_order_id || "N/A"}
+              </p>
+
+              <div className="flex items-center gap-2 sm:hidden">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                    order?.order_type === "cod"
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                  }`}
+                >
+                  {order?.order_type === "cod" ? "COD" : "PREPAID"}
+                </span>
+
+                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+                  {toCapitalizeEachWord(order?.status)}
+                </span>
+              </div>
+            </div>
+
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              AWB: {order?.awb_number || "N/A"}
+            </p>
+          </div>
+
+          <div className="sm:text-right">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Total Amount
+            </p>
+
+            <p className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              ₹{Number(order?.total_amount || 0).toLocaleString("en-IN")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= BASIC INFORMATION ================= */}
+
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/30">
+        <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3.5 dark:border-slate-800 sm:px-5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Basic Information
+            </h3>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Shipment and order information
+            </p>
+          </div>
+        </div>
+         
+        <div className="grid grid-cols-1 gap-px overflow-hidden bg-slate-200 sm:grid-cols-2 lg:grid-cols-4 dark:bg-slate-800">
+  {[
+    {
+      label: "Order ID",
+      value: order?.merchant_order_id || "N/A",
+      copy: true,
+    },
+    {
+      label: "AWB Number",
+      value: order?.awb_number || "N/A",
+      copy: true,
+    },
+    {
+      label: "Order Type",
+      value: order?.order_type === "cod" ? "COD" : "Prepaid",
+      type: "orderType",
+    },
+    {
+      label: "Order Specific",
+      value:
+        order?.order_specific === "Turant"
+          ? "Turant"
+          : order?.order_specific?.slice(0, 3) || "N/A",
+    },
+    {
+      label: "Packets",
+      value: order?.number_of_boxes ?? "N/A",
+    },
+    {
+      label: "Weight",
+      value:
+        order?.total_weight !== null &&
+        order?.total_weight !== undefined &&
+        order?.total_weight !== ""
+          ? `${order.total_weight-200} g`
+          : "N/A",
+    },
+    {
+      label: "Status",
+      value: order?.status
+        ? toCapitalizeEachWord(order.status)
+        : "N/A",
+      type: "status",
+    },
+  ].map((item, index) => (
+    <div
+      key={index}
+      className="
+        group min-w-0 bg-white px-4 py-4
+        transition-colors duration-200
+        hover:bg-slate-50
+        dark:bg-[#0d1421]
+        dark:hover:bg-slate-800/50
+        sm:px-5
+      "
+    >
+      {/* LABEL */}
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-400 dark:text-slate-500">
+        {item.label}
+      </p>
+
+      {/* VALUE */}
+      <div className="flex min-h-7 min-w-0 items-center gap-2">
+        {item.type === "status" ? (
+          <span
+            className="
+              inline-flex max-w-full items-center gap-1.5
+              rounded-full border border-blue-200
+              bg-blue-50 px-2.5 py-1
+              text-xs font-semibold text-[#0446DB]
+              dark:border-blue-500/20
+              dark:bg-blue-500/10
+              dark:text-blue-400
+            "
+          >
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#0446DB] dark:bg-blue-400" />
+
+            <span className="truncate">
+              {item.value}
+            </span>
+          </span>
+        ) : item.type === "orderType" ? (
+          <span
+            className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${
+              order?.order_type === "cod"
+                ? `
+                  border-amber-200 bg-amber-50 text-amber-700
+                  dark:border-amber-500/20
+                  dark:bg-amber-500/10
+                  dark:text-amber-400
+                `
+                : `
+                  border-emerald-200 bg-emerald-50 text-emerald-700
+                  dark:border-emerald-500/20
+                  dark:bg-emerald-500/10
+                  dark:text-emerald-400
+                `
+            }`}
+          >
+            {item.value}
+          </span>
+        ) : (
+          <span
+            className="
+              min-w-0 truncate text-sm
+              font-semibold text-slate-800
+              dark:text-slate-100
+            "
+            title={String(item.value)}
+          >
+            {item.value}
+          </span>
+        )}
+
+        {/* COPY BUTTON */}
+        {item.copy && item.value !== "N/A" && (
+          <button
+            type="button"
+            title={
+              copySuccess === item.value
+                ? "Copied"
+                : `Copy ${item.label}`
+            }
+            onClick={() => {
+              navigator.clipboard.writeText(
+                String(item.value)
+              );
+
+              setCopySuccess(item.value);
+
+              setTimeout(() => {
+                setCopySuccess(null);
+              }, 2000);
+            }}
+            className="
+              flex h-7 w-7 shrink-0 cursor-pointer
+              items-center justify-center rounded-md
+              text-slate-400 transition-all
+              hover:bg-blue-50
+              hover:text-[#0446DB]
+              active:scale-95
+              dark:text-slate-500
+              dark:hover:bg-blue-500/10
+              dark:hover:text-blue-400
+            "
+          >
+            {copySuccess === item.value ? (
+              <svg
+                className="h-4 w-4 text-emerald-500"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M16.704 5.292a1 1 0 010 1.416l-8 8a1 1 0 01-1.416 0l-4-4a1 1 0 011.416-1.416L8 12.586l7.296-7.294a1 1 0 011.408 0z"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.8}
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  ))}
+</div>
+      </div>
+
+      {/* ================= DELIVERY + PICKUP ================= */}
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {/* ================= DELIVERY ================= */}
+
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/30">
+          <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3.5 dark:border-slate-800 sm:px-5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4m-4 0h4"
+                />
+              </svg>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                Delivery Details
+              </h3>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Customer and delivery address
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-5 p-4 sm:p-5">
+            <div>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Customer Name
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
+                {order?.delivery_contact_name || "N/A"}
+              </p>
+            </div>
+
+            <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Delivery Address
+              </p>
+
+              <p className="mt-1 text-sm font-medium leading-6 text-slate-800 dark:text-slate-200">
+                {order?.delivery_address_line || "N/A"}
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                {order?.delivery_city || "N/A"}
+                {order?.delivery_state
+                  ? `, ${order.delivery_state}`
+                  : ""}
+                {order?.delivery_pincode
+                  ? ` - ${order.delivery_pincode}`
+                  : ""}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ================= PICKUP ================= */}
+
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/30">
+          <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3.5 dark:border-slate-800 sm:px-5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                />
+              </svg>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                Pickup Details
+              </h3>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Pickup contact and warehouse address
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-5 p-4 sm:p-5">
+            <div>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Pickup Contact
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
+                {order?.pickup_contact_name || "N/A"}
+              </p>
+            </div>
+
+            <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Pickup Address
+              </p>
+
+              <p className="mt-1 text-sm font-medium leading-6 text-slate-800 dark:text-slate-200">
+                {order?.pickup_address_line || "N/A"}
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                {order?.pickup_city
+                  ? `${order.pickup_city}, ${order?.pickup_state || ""} - ${
+                      order?.pickup_pincode || ""
+                    }`
+                  : "N/A"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================
+          AAPKA EXISTING NDR ACTIONS BLOCK YAHA SAME RAHEGA
+          Iski logic bilkul change mat karo.
+      ========================================================== */}
+
+      {order?.ndr_actions && order.ndr_actions.length > 0 && (
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/30">
+          <button
+            type="button"
+            onClick={() => setShowNdrActions(!showNdrActions)}
+            className="flex w-full cursor-pointer items-center justify-between px-4 py-4 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/50 sm:px-5"
+          >
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                  NDR Actions
+                </h3>
+
+                <span className="rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-400">
+                  {order.ndr_actions.length}
+                </span>
+              </div>
+
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Non-Delivery Reports
+              </p>
+            </div>
+
+            <svg
+              className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
+                showNdrActions ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          {showNdrActions && (
+            <div className="space-y-3 border-t border-slate-200 p-4 dark:border-slate-800 sm:p-5">
+              {order.ndr_actions.map((item) => (
+                <div
+                  key={item.action_id}
+                  className="group rounded-lg border border-slate-200 bg-slate-50/50 p-4 transition hover:border-red-200 hover:bg-red-50/30 dark:border-slate-800 dark:bg-slate-950/30 dark:hover:border-red-500/20 dark:hover:bg-red-500/5"
+                >
+                  {/* YAHAN AAPKE CURRENT NDR ITEM KA
+                      EXISTING INNER CONTENT SAME PASTE KARO */}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+
+  {/* ================= STICKY FOOTER ================= */}
+
+  <AlertDialogFooter className="shrink-0 border-t border-slate-200 bg-slate-50/70 px-4 my-0 dark:border-slate-800 dark:bg-slate-900/50 sm:px-6">
+    <AlertDialogCancel className="m-0 h-9 cursor-pointer rounded-md border-slate-300 px-5 text-sm font-medium dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+      Close
+    </AlertDialogCancel>
+  </AlertDialogFooter>
+                              </AlertDialogContent>
                               </AlertDialog>
                             </p>
                             <p className="text-s text-gray-500 dark:text-white">
@@ -2453,11 +2999,55 @@ useEffect(() => {
                             </p>
   
                             <p className="text-s text-gray-400 dark:text-white">
-                              Merchant ID: {order.merchant_id}
+                              MID: {order.merchant_id}
                             </p>
-                            <p className="text-s text-gray-400 dark:text-white whitespace-nowrap">
-                              Merchant Order ID: {order.merchant_order_id}
-                            </p>
+                          <div className="flex min-w-0 items-center gap-1.5">
+  <p className="min-w-0 text-xs text-gray-400 dark:text-gray-400">
+    <span className="whitespace-nowrap">MOID: </span>
+
+    <span
+      className="inline-block max-w-[150px] truncate align-bottom font-medium text-gray-600 dark:text-gray-300"
+      title={order?.merchant_order_id}
+    >
+      {order?.merchant_order_id || "N/A"}
+    </span>
+  </p>
+
+  {order?.merchant_order_id && (
+    <button
+      type="button"
+      title="Copy Merchant Order ID"
+      onClick={(e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(order.merchant_order_id);
+        setCopySuccess(order.merchant_order_id);
+
+        setTimeout(() => {
+          setCopySuccess(null);
+        }, 2000);
+      }}
+      className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-gray-400 transition hover:bg-blue-50 hover:text-[#0446DB] dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+    >
+      {copySuccess === order.merchant_order_id ? (
+        <span className="text-xs text-green-500">✓</span>
+      ) : (
+        <svg
+          className="h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+          />
+        </svg>
+      )}
+    </button>
+  )}
+</div>
                           </TableCell>
   
                           {/* Rider ID */}
@@ -2972,4 +3562,4 @@ useEffect(() => {
   );
 }
 
-export default VendorOrderDetails;
+export default DCOrderDetails;

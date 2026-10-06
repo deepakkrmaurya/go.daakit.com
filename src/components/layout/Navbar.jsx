@@ -65,6 +65,7 @@ import {
   MdDirectionsBike,
   MdCardMembership,
   MdOutlineSubscriptions,
+  MdOutlineScale,
 
 } from "react-icons/md";
 
@@ -1513,15 +1514,18 @@ const getNavLinks = () => {
       { label: "Merchant", href: "/admin/merchant-details", icon: <MdOutlineBusinessCenter className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
       { label: "Coupon", href: "/admin/coupon", icon: <RiCoupon2Fill className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
       { label: "Pricing", href: "/admin/pricing", icon: <ImPriceTag className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-      {
-        label: "DC",
-        href: "#",
-        icon: <FaUserPlus className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
+      { label: "DC", href: "#", icon: <FaUserPlus className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, 
         subItems: [
-          
           {label: "DC List",href: "/admin/dc/list",icon: <FaWarehouse className="h-4 w-4" />,},
-        ],
+         ],
       },
+      { label: "Weight", href: "#", icon: <MdOutlineScale  className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, 
+       subItems: [
+            { label: "MIS", href: "/admin/weightMIS" },
+            { label: "Discrepancies",  href: "/admin/dispute",},
+          ],
+      },
+
       { label: "Finance", href: "#", icon: <FaIndianRupeeSign className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
         { label: "Billing & Invoices", href: "/admin/billingandinvoices", icon: <BillingIcon /> },
         { label: "COD Remittances", href: "/admin/cod-remittances", icon: <LuReceiptIndianRupee className="h-4 w-4" /> },
@@ -1585,6 +1589,34 @@ const getNavLinks = () => {
       { label: "Support", href: "/vendor/support", icon: <LifeBuoy className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
     ],
 
+    dc: [
+      { label: "Dashboard", href: "/dc/analytics", icon: <IoAnalyticsOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
+
+      { label: "Operation", href: "#", icon: <MdBuild className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
+        { label: "Orders", href: "/dc/rider-orders", icon: <TbPackage className="h-4 w-4" /> },
+        { label: "New Mapped Orders", href: "/dc/mapped-orders", icon: <TbPackage className="h-4 w-4" /> },
+      ]},
+
+      { label: "Finance", href: "#", icon: <MdAccountBalance className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
+        { label: "Remittance Record", href: "/dc/remittance-record", icon: <ImStatsBars2 className="h-4 w-4" /> },
+      ]},
+
+      { label: "Rider", href: "#", icon: <MdDirectionsBike className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
+        { label: "Riders", href: "/dc/riders", icon: <MdDirectionsBike className="h-4 w-4" /> },
+        { label: "COD Remittances", href: "/dc/cod-remittances", icon: <FaIndianRupeeSign className="h-4 w-4" /> },
+        { label: "Rider Onboarding", href: "/dc/rider-onboarding", icon: <FaWpforms className="h-4 w-4" /> },
+        { label: "Rider's Live Location", href: "/dc/map", icon: <FaMapMarkedAlt className="h-4 w-4" /> },
+        { label: "Rate List", href: "/dc/rider_rate/list", icon: <LuReceiptIndianRupee className="h-4 w-4" /> },
+        { label: "Rider Performance", href: "/dc/shipment-tracking", icon: <CiDeliveryTruck className="h-4 w-4" /> },
+      ]},
+
+      { label: "Hub", href: "#", icon: <MdWarehouse className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
+        { label: "Hub List", href: "/vendor/hub_list", icon: <FaTruck className="h-4 w-4" /> },
+      ]},
+
+      { label: "Support", href: "/vendor/support", icon: <LifeBuoy className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
+    ],
+
     merchant: decoded.tech_based !== "1" ? [
       { label: "Dashboard", href: "/merchant/analytics", icon: <IoAnalyticsOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
       { label: "Operation", href: "#", icon: <MdBuild className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
@@ -1594,7 +1626,7 @@ const getNavLinks = () => {
       ]},
 
       // { label: "CX", href: "/merchant/cx", icon: <FaGears className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-
+      { label: "Weight Discrepancies",  href: "/merchant/weight-discrepancies", icon: <MdOutlineScale className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, },
       { label: "Finance", href: "#", icon: <MdAccountBalance className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
         { label: "Billing", href: "/merchant/billing", icon: <BillingIcon className="h-4 w-4" /> },
         { label: "Recharge", href: "/merchant/recharge", icon: <FaBolt className="h-4 w-4" /> },
@@ -1659,7 +1691,7 @@ const getNavLinks = () => {
       ? "vendor"
       : allowedRoles?.includes("user")
         ? "user"
-        : "merchant";
+        : allowedRoles?.includes("dc") ? "dc" : "merchant";
 
   return navConfig[currentRole] || [];
 };
@@ -1680,7 +1712,7 @@ const getNavLinks = () => {
 
     try {
 
-      const role = decoded.usertype || decoded.type || decoded.userType;
+      const role = decoded.usertype || decoded.type || decoded.userType || decoded?.user_type;
 
       if (role === "vendor") {
 
@@ -1701,7 +1733,12 @@ const getNavLinks = () => {
          await AxiosInstance.post(`/api/user/logout`)
         navigate("/login/user");
 
-      } else {
+      } else if(role=='dc'){
+       clearStorageAndRedirect();
+           await AxiosInstance.post(`/api/dc/logout`)
+        navigate("/login");
+      
+       } else {
 
         clearStorageAndRedirect();
            await AxiosInstance.post(`/api/merchant/merchantLogout`)
@@ -1831,87 +1868,15 @@ const getNavLinks = () => {
 
   }, []);
 
-  const placeholders = [
-
-    "Search shipments...",
-
-    "Enter AWB number...",
-
-    "Track your order...",
-
-  ];
+ 
 
   const [query, setQuery] = useState("");
 
-  const [close, Setclose] = useState(false);
 
-  const handleChange = (e) => {
 
-    setQuery(e.target.value);
 
-  };
 
-  const onSubmit = async (e) => {
-
-    e.preventDefault();
-
-    const res = await axios.get(
-
-      `${baseURL}/api/merchant/getOrderDetailsByMerchant`,
-
-      {
-
-        params: {
-
-          awb_number: query,
-
-          token: localStorage.getItem("token"),
-
-        },
-
-        headers: {
-
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-
-        },
-
-      },
-
-    );
-
-    setOrders(res.data || {});
-
-    Setclose(true);
-
-  };
-
-  const goToPage = () => {
-
-    Setclose(false);
-
-    if (decoded.tech_based === "1") {
-
-      navigate("/techbased_merchant/order-tracking", {
-
-        state: orders,
-
-      });
-
-    } else if (decoded.tech_based === "0") {
-
-      navigate("/merchant/order-tracking", {
-
-        state: orders,
-
-      });
-
-    } else {
-
-      return;
-
-    }
-
-  };
+ 
 
   // Aceternity SidebarLink + nested menu support
 

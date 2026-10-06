@@ -12,7 +12,7 @@ const Register = lazy(() => import("./components/auth/Register"));
 const Login = lazy(() => import("./components/auth/Login"));
 const Analytics = lazy(() => import("./components/admin/Analytics"));
 const Navbar = lazy(() => import("./components/layout/Navbar"));
-const OrderDetails = lazy(() => import("./components/admin/OrderDetails"));
+const OrderDetails = lazy(() => import("./components/admin/order/OrderDetails"));
 const CODRemittances = lazy(() => import("./components/admin/CODRemittances"));
 const RiderOnboarding = lazy(() => import("./components/admin/RiderOnboarding"));
 const OrderAssignment = lazy(() => import("./components/admin/OrderAssignment"));
@@ -26,6 +26,7 @@ const VendorAnalytics = lazy(() => import("./components/vendor_components/Vendor
 const VendorAllRiders = lazy(() => import("./components/vendor_components/rider/VendorAllRiders"));
 const VendorCodRemittance = lazy(() => import("./components/vendor_components/remittance/VendorCodRemittance"));
 const VendorOrderDetails = lazy(() => import("./components/vendor_components/order/VendorOrderDetails"));
+const DCOrderDetails = lazy(() => import("./components/distributionCenter/order/DcVendorOrders"));
 const VendorMappedOrder = lazy(() => import("./components/vendor_components/order/VendorMappedOrder"));
 const VendorRiderOnboarding = lazy(() => import("./components/vendor_components/rider/VendorRiderOnboarding"));
 const OrderTracking = lazy(() => import("./components/OrderTracking"));
@@ -144,6 +145,9 @@ import DcUserLogin from "./components/auth/DcLogin";
 import DevAnalytics from "./components/admin/dev/DevAnalytics";
 import DistributionCenterOnboarding from "./components/admin/dc/DistributionCenterOnboarding";
 import DistributionCenterListing from "./components/admin/dc/DistributionCenterListing";
+import WeightDiscrepancies from "./components/merchant_component/WeightDiscrepancies";
+import WeightMIS from "./components/admin/WeightMIS";
+import Dispute from "./components/admin/Dispute";
 
 
 const getLocalPermissions = () => {
@@ -282,11 +286,13 @@ function App() {
         { path: "orderNewMappings", element: <Suspense fallback={<LoadingFallback />}><NewMappingOrders /></Suspense> },
         { path: "billingandinvoices", element: <Suspense fallback={<LoadingFallback />}><BillingAndInvoices /></Suspense> },
         { path: "dev/analytics", element: <Suspense fallback={<LoadingFallback />}><DevAnalytics /></Suspense> },
-
-
         { path: "onboarding/distribution-center", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterOnboarding /></Suspense> },
-        { path: "dc/list", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterListing /></Suspense> },
+        { path: "weightMIS", element: <Suspense fallback={<LoadingFallback />}><WeightMIS /></Suspense> },
+        { path: "dispute", element: <Suspense fallback={<LoadingFallback />}><Dispute /></Suspense> },
 
+        // dc
+        { path: "dc/list", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterListing /></Suspense> },
+         
 
         
 
@@ -370,13 +376,13 @@ function App() {
     
     {
       path: "/dc",
-      element: <ProtectedLayout allowedRoles={['vendor']} permissions={permissions} loading={loading} />,
+      element: <ProtectedLayout allowedRoles={['dc']} permissions={permissions} loading={loading} />,
       children: [
         { path: "analytics", element: <Suspense fallback={<LoadingFallback />}><VendorAnalytics /></Suspense> },
         { path: "riders", element: <Suspense fallback={<LoadingFallback />}><VendorAllRiders /></Suspense> },
         { path: "cod-remittances", element: <Suspense fallback={<LoadingFallback />}><VendorCodRemittance /></Suspense> },
         { path: "remittance-record", element: <Suspense fallback={<LoadingFallback />}><VendorRemittanceRecord /></Suspense> },
-        { path: "rider-orders", element: <Suspense fallback={<LoadingFallback />}><VendorOrderDetails /></Suspense> },
+        { path: "rider-orders", element: <Suspense fallback={<LoadingFallback />}><DCOrderDetails /></Suspense> },
         { path: "mapped-orders", element: <Suspense fallback={<LoadingFallback />}><VendorMappedOrder /></Suspense> },
         { path: "rider-onboarding", element: <Suspense fallback={<LoadingFallback />}><VendorRiderOnboarding /></Suspense> },
         { path: "map", element: <Suspense fallback={<LoadingFallback />}><VendorRidersMap /></Suspense> },
@@ -445,12 +451,11 @@ function App() {
         { path: "remittance", element: <Suspense fallback={<LoadingFallback />}><MerchantCOD /></Suspense> },
         { path: "cx", element: <Suspense fallback={<LoadingFallback />}><MerchantCX /></Suspense> },
         { path: "billing", element: <Suspense fallback={<LoadingFallback />}><Billing /></Suspense> },
-
         { path: "create_order", element: <Suspense fallback={<LoadingFallback />}><CreateOrder /></Suspense> },
         { path: "bulk-upload", element: <Suspense fallback={<LoadingFallback />}><BulkUpload /></Suspense> },
         { path: "order-draft", element: <Suspense fallback={<LoadingFallback />}><DraftsList /></Suspense> },
         { path: "insurance", element: <Suspense fallback={<LoadingFallback />}><Insurance /></Suspense> },
-        
+        { path: "weight-discrepancies", element: <Suspense fallback={<LoadingFallback />}><WeightDiscrepancies /></Suspense> },
 
         { path: "recharge", element: <Suspense fallback={<LoadingFallback />}><MerchantRecharge /></Suspense> },
         { path: "profile", element: <Suspense fallback={<LoadingFallback />}><Profile /></Suspense> },
@@ -501,7 +506,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <InspectController />
+      {/* <InspectController /> */}
 
       <RouterProvider router={appRouter}>
         <ScrollToTop />
