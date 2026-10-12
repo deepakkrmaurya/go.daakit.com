@@ -1731,7 +1731,7 @@ export default function WeightDiscrepancies() {
                     ].map((h, i) => (
                       <th
                         key={i}
-                        className="px-4 md:px-5 py-3 text-[10px] font-bold tracking-wider uppercase text-gray-400"
+                        className="px-4 md:px-5 py-3 text-[12px] font-bold tracking-wider uppercase text-gray-400"
                       >
                         {h}
                       </th>

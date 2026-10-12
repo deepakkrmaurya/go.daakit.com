@@ -80,7 +80,8 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import AxiosInstance from '../../Helper/axiosInstance';
+import AxiosInstance from '../../../Helper/axiosInstance';
+import CustomButton from '../../common/CustomButton';
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
@@ -406,12 +407,16 @@ function BookOrders() {
                                     onOpenChange={setDrawerOpen}
                                     direction="right">
                                     <DrawerTrigger asChild>
-                                        <Button variant="outline"
-                                            className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
+                                        
+                                        <CustomButton
+                                        variant="outline"
+                                        size="md"
+                                        icon={FaFilter}
+                                        className="rounded-sm font-medium shadow "
                                         >
-                                            <FaFilter className="text-sm" />
-                                            <span>Filter</span>
-                                        </Button>
+                                        Filter
+                                        </CustomButton>
+
                                     </DrawerTrigger>
                                     <DrawerContent>
                                         <form
@@ -542,16 +547,7 @@ function BookOrders() {
                                                         />
                                                     </div>
 
-                                                    {/* <div>
-                                                        <Label htmlFor="vendor_id">Vendor ID</Label>
-                                                        <Input
-                                                            id="vendor_id"
-                                                            name="vendor_id"
-                                                            value={advanceFilters.vendor_id}
-                                                            onChange={handleFilterChange}
-                                                            placeholder="Enter vendor ID"
-                                                        />
-                                                    </div> */}
+                                                    
 
                                                     <div>
 
@@ -565,7 +561,7 @@ function BookOrders() {
                                                                 }));
                                                             }}
                                                         >
-                                                            <option value="">Select a vendot</option>
+                                                            <option value="">Select a vendo</option>
                                                             {
                                                                 vendorList?.map((v)=>{
                                                                     return (
@@ -574,28 +570,7 @@ function BookOrders() {
                                                                 })
                                                             }
                                                         </select>
-                                                        {/* <Combobox
-                                                            items={vendorList?.map(v => v?.vendor_name) || []}
-                                                            value={advanceFilters.vendor_id}
-                                                            onValueChange={(value) => {
-                                                                setAdvanceFilters((prev) => ({
-                                                                    ...prev,
-                                                                    vendor_id: value,
-                                                                }));
-                                                            }}
-                                                        >
-                                                            <ComboboxInput placeholder="Select a Vendor" />
-                                                            <ComboboxContent>
-                                                                <ComboboxEmpty>No Vendor found.</ComboboxEmpty>
-                                                                <ComboboxList>
-                                                                    {(item) => (
-                                                                        <ComboboxItem key={item} value={item}>
-                                                                            {item}
-                                                                        </ComboboxItem>
-                                                                    )}
-                                                                </ComboboxList>
-                                                            </ComboboxContent>
-                                                        </Combobox> */}
+                                                        
                                                     </div>
                                                 </div>
                                             </div>
@@ -629,9 +604,9 @@ function BookOrders() {
                                             setSelectedStatus(st);
                                             setPage(1);
                                         }}
-                                        className={`px-5 py-2.5 rounded-full my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${selectedStatus === st
-                                            ? "bg-[#0446DB] text-white"
-                                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
+                                        className={`px-5 py-2.5 cursor-pointer rounded-full my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${selectedStatus === st
+                                            ? "bg-[#0446DB]  hover:bg-[#0446DB] text-white"
+                                            : "bg-white hover:bg-[#0446DB] hover:text-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
                                             }`}
                                     >
                                         {st === "rto in transit"
@@ -647,77 +622,7 @@ function BookOrders() {
                     </div>
                 </div>
 
-                {/* {selectedBulkOrders.length > 0 && (
-                    <div className="">
-                        
-                        <div className="py-2 px-3 flex flex-wrap items-center gap-4">
-                            {!fetchBulkAssignmentVendor || vendor?.length === 0 ? (
-                                <Button
-                                    onClick={() => {
-                                        setFetchBulkAssignmentVendor(true);
-                                        const order_ids = [...new Set(selectedBulkOrders.map(o => o.id))];
-                                        fetchVendor(order_ids);
-                                    }}
-                                    className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                                >
-                                    Get Available Vendor
-                                </Button>
-                            ) : (
-                                vendor?.length > 0 && (
-                                    <>
-                                        <select
-                                            className="border border-gray-300 text-sm text-gray-700 px-4 py-2 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-64"
-                                            value={assignmentState}
-                                            onChange={(e) => setAssignmentState(e.target.value)}
-                                        >
-                                            <option value="">Select Vendor for Bulk Assignment</option>
-                                            {vendor.map((vendor) => (
-                                                <option key={vendor.vendor_id} value={vendor.vendor_id}>
-                                                    {vendor.vendor_id} : {vendor.vendor_name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <Button
-                                            onClick={async () => {
-                                                if (!assignmentState) {
-                                                    toast.warn("Please select a vendor");
-                                                    return;
-                                                }
-                                                const order_ids = selectedBulkOrders.map((order) => order.id);
-
-                                                const result = await assignBulkOrderVendor(
-                                                order_ids,
-                                                assignmentState
-                                                );
-                                                // for (const order of selectedBulkOrders) {
-                                                //     const result = await assignBulkOrderVendor(
-                                                //         order.id,
-                                                //         assignmentState
-                                                //     );
-                                                // }
-                                            }}
-                                            className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                                        >
-                                            Bulk Assign
-                                        </Button>
-                                    </>
-                                )
-                            )}
-                            <Button
-                                className="bg-red-500 hover:bg-red-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                                onClick={() => {
-                                    setSelectedBulkOrders([]);
-                                    setBulkOrderWeight(0);
-                                    setFetchBulkAssignmentVendor(false);
-                                    setVendor([]);
-                                    setcanceledBulkOrder(false);
-                                }}
-                            >
-                                Clear Selected Orders
-                            </Button>
-                        </div>
-                    </div>
-                )} */}
+                
 
                 {selectedBulkOrders.length > 0 && (
                     <>
@@ -1226,23 +1131,25 @@ function BookOrders() {
                                                 </p>
                                                 <p className="text-s text-gray-400 dark:text-white">
                                                     <span>Merchant ID: {order.merchant_id}</span>
-                                                    <span
-                                                        className={`ml-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-                                                            order?.rider_preference === "daakit"
-                                                            ? "border-blue-200 bg-blue-50 text-[#0446DB] dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400"
-                                                            : "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400"
-                                                        }`}
-                                                        >
-                                                        <span
-                                                            className={`h-1.5 w-1.5 rounded-full ${
-                                                            order?.rider_preference === "daakit"
-                                                                ? "bg-[#0446DB]"
-                                                                : "bg-violet-500"
-                                                            }`}
-                                                        />
+                                                    
+<span
+  className={`ml-2 inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-[11px] font-semibold ${
+    order?.rider_preference === "daakit"
+      ? "border-blue-200 bg-blue-50 text-[#0446DB] dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400"
+      : "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400"
+  }`}
+>
+  <span
+    className={`h-1.5 w-1.5 rounded-full ${
+      order?.rider_preference === "daakit"
+        ? "bg-[#0446DB]"
+        : "bg-violet-500"
+    }`}
+  />
 
-                                                        {order?.rider_preference === "daakit" ? "Daakit" : "Self"}
-                                                        </span>
+  {order?.rider_preference === "daakit" ? "DDN" : "BYOB"}
+</span>
+
                                                 </p>
 
                                                 <p className="text-s text-gray-400 dark:text-white">

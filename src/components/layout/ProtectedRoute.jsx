@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children, allowedRoles = [], requiredPermission,permis
   try {
     const decoded = jwtDecode(token);
     const userRole = decoded.usertype || decoded.type || decoded.userType || decoded?.user_type;
-    console.log("User Role:", userRole);
+   
    
     if (!allowedRoles.includes(userRole)) {
       return <Navigate to="/unauthorized" replace />;

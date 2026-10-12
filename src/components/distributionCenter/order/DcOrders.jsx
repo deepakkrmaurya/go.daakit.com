@@ -44,8 +44,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Loader2, PackageCheck, UserPlus,X } from "lucide-react";
+import { Download, Filter, Loader2, PackageCheck, UserPlus,X, Zap } from "lucide-react";
 import AxiosInstance from "@/Helper/axiosInstance";
+import CustomButton from "../../common/CustomButton";
+import { FiRefreshCw } from "react-icons/fi";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 
@@ -57,28 +59,19 @@ const [assign, setAssign] = useState(false);
   const [isOpenIndividualMap, setIsOpenIndividualMap] = useState("");
   const [open, setOpen] = useState(false);
   const [endopen, setEndOpen] = useState(false);
-  const [RtoType, setRtoType] = useState("");
-  const [isselectRtoInTransit, selectRtoInTransit] = useState("");
-  const [setMark, setmarkPickup] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [vendorId, setVendorId] = useState(null);
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
-  const [popup, setPopup] = useState(null);
+
   const [copySuccess, setCopySuccess] = useState(null);
   const [bulkStatusState, setBulkStatusState] = useState("");
-  const [bulkOrderWeight, setBulkOrderWeight] = useState(0);
   const [selectedBulkOrders, setSelectedBulkOrders] = useState([]);
   const [editingStatusId, setEditingStatusId] = useState(null);
-  const [isOpenIndividualAssignmnet, setIsOpenIndividualAssignmnet] =
-    useState("");
-  const [
-    isOpenIndividualAssignOrderToRider,
-    setIsOpenIndividualAssignOrderToRider,
-  ] = useState("");
+  const [isOpenIndividualAssignmnet, setIsOpenIndividualAssignmnet] = useState("");
+
   const [reassignPopup, setReassignPopup] = useState(null);
   const [reassignRiderPopup, setReassignRiderPopup] = useState(null);
   const [newRider, setNewRider] = useState("");
@@ -100,33 +93,84 @@ const [assign, setAssign] = useState(false);
   });
 
   const [filterUpdate, setFilterUpdate] = useState(false);
-  const [riderOptions, setRiderOptions] = useState([]);
+
   const [reassignRidersOptions, setReassignRidersOptions] = useState([]);
-  const [fetchBulkAssignmentRider, setFetchBulkAssignmentRider] =
-    useState(false);
-  const [fetchBulkAssignmentVendor, setFetchBulkAssignmentVendor] =
-    useState(false);
+
   const [assignmentState, setAssignmentState] = useState("");
 
   const [showNdrActions, setShowNdrActions] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
 
   const toggleSelectAll = () => {
     if (selectedBulkOrders.length === orders.length) {
       setSelectedBulkOrders([]);
-      setBulkOrderWeight(0);
+
     } else {
       const assignedOrder = orders.filter(
         (order) => order.mapped_with !== null,
       );
       setSelectedBulkOrders(assignedOrder);
-      const totalWeight = orders
-        .filter((order) => order.mapped_with !== null)
-        .reduce((acc, order) => acc + Number(order.total_weight), 0);
-
-      setBulkOrderWeight(totalWeight);
+    
     }
   };
+
+
+  const clearAllState = () => {
+  // Loading States
+  setBulkActionLoading(false);
+  setAssignRiderLoading(false);
+  setAssign(false);
+  setLoading(false);
+
+  // Popups & Dialogs
+  setIsOpenIndividualMap("");
+  setOpen(false);
+  setEndOpen(false);
+  setIsOpenIndividualAssignmnet("");
+  setReassignPopup(null);
+  setReassignRiderPopup(null);
+  setIsFilterOpen(false);
+  setShowNdrActions(false);
+
+  // Orders & Pagination
+  setOrders([]);
+  setPage(1);
+  setLimit(20);
+  setTotalPages(1);
+  setTotalOrders(0);
+
+  // Selection & Status
+  setCopySuccess(null);
+  setBulkStatusState("");
+  setSelectedBulkOrders([]);
+  setEditingStatusId(null);
+  setSelectedStatus(selectedStatus);
+  setAssignmentState("");
+
+  // Rider
+  setNewRider("");
+  setReassignRidersOptions([]);
+
+  // Filters
+  setAdvanceFilters({
+    startDate: "",
+    endDate: "",
+    order_id: "",
+    awbNumber: "",
+    city: "",
+    state: "",
+    pincode: "",
+    rider_id: "",
+    order_specific: "",
+  });
+
+  setFilterUpdate(false);
+
+  // NDR
+  setNdrData({
+    ndr_id: "",
+    newRemarks: "",
+  });
+};
 
   function toCapitalizeEachWord(str) {
     return str
@@ -156,34 +200,6 @@ const [assign, setAssign] = useState(false);
     });
   };
 
-  const getActionColor = (action) => {
-    switch (action) {
-      case "change_address":
-        return { bg: "bg-blue-100", text: "text-blue-600" };
-      case "change_phone":
-        return { bg: "bg-green-100", text: "text-green-600" };
-      case "reattempt":
-        return { bg: "bg-purple-100", text: "text-purple-600" };
-      default:
-        return { bg: "bg-gray-100", text: "text-gray-600" };
-    }
-  };
-
-  const getActionLabel = (action) => {
-    switch (action) {
-      case "change_address":
-        return "Address Changed";
-      case "change_phone":
-        return "Phone Number Updated";
-      case "reattempt":
-        return "Delivery Reattempt";
-      default:
-        return action
-          .split("_")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-    }
-  };
 
   const status = [
     "All",
@@ -203,10 +219,7 @@ const [assign, setAssign] = useState(false);
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${baseURL}/api/dc/orders`,
-        {
-          params: {
+    const params = {
             page,
             limit,
             status: selectedStatus === "All" ? undefined : selectedStatus,
@@ -218,22 +231,17 @@ const [assign, setAssign] = useState(false);
             pincode: advanceFilters.pincode,
             rider_id: advanceFilters.rider_id,
             order_specific: advanceFilters.order_specific,
-          },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-      setTotalOrders(res.data.pagination.total_records);
-      setOrders(res.data.data || []);
-      setTotalPages(Math.max(1, res.data.pagination.total_pages));
-      setVendorId(res.data.filters.vendor_id);
+          }
+
+      const res = await AxiosInstance.get(`/api/dc/orders`,{params})
+       console.log(res.data.data)
+       console.log(res.data.data?.orders)
+      setTotalOrders(res.data.data?.total);
+      setOrders(res?.data?.data?.orders || []);
+      setTotalPages(Math.max(1, res?.data?.data?.totalPages));
+     
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "An error occurred while fetching orders.",
-      );
+      toast.error(err.response?.data?.message || err.message || "An error occurred while fetching orders.");
     } finally {
       setLoading(false);
     }
@@ -255,8 +263,8 @@ const [assign, setAssign] = useState(false);
       fetchOrders();
       setAssignmentState("");
       setSelectedBulkOrders([]);
-      setBulkOrderWeight(0);
-      setFetchBulkAssignmentRider(false);
+     
+   
     } catch (err) {
       toast.error(err.response.data.message);
       return;
@@ -270,15 +278,11 @@ const [assign, setAssign] = useState(false);
   const cancelRiderAssignment = async (id) => {
     setLoading(true);
     try {
-      const res = await axios.post(
-        `${baseURL}/api/vendor/cancelRiderAssignment/${id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
+
+      const res = await AxiosInstance.post('/api/dc/cancelRiderAssignment',{
+        order_id:id
+      })
+      
       if (res.data.success) {
         toast.success("Rider assignment canceled successfully");
         fetchOrders();
@@ -323,14 +327,8 @@ const [assign, setAssign] = useState(false);
 
   const fetchReassignRiders = async (order_id) => {
     try {
-      const res = await axios.get(
-        `${baseURL}/api/vendor/getRidersOutsideIdealLoad?order_id=${order_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
+
+      const res = await AxiosInstance.get(`/api/dc/getRidersOutsideIdealLoad?order_id=${order_id}`)
       const tempArr = [];
       res?.data?.data.forEach((element) => {
         tempArr.push({
@@ -355,18 +353,13 @@ const [assign, setAssign] = useState(false);
     setLoading(true);
     try {
       if (selectedStatus === "picked") {
-        const resPick = await axios.post(
-          `${baseURL}/api/vendor/assignOrderToRider`,
+        const resPick = await AxiosInstance.post(`/api/dc/assignOrdersToRider`,
           {
             order_id,
             rider_id: new_rider_id,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          },
-        );
+        )
+       
         if (resPick.data.success) {
           fetchOrders();
           setReassignPopup(null);
@@ -378,24 +371,18 @@ const [assign, setAssign] = useState(false);
         return;
       }
 
-      const res = await axios.post(
-        `${baseURL}/api/vendor/reassignOrderToRider`,
-        {
+
+      const res = await AxiosInstance.post(`/api/dc/assignOrdersToRider`,
+         {
           order_id,
-          new_rider_id,
+         rider_id: new_rider_id,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
+      )
+
+      
       toast.success("Order reassigned successfully");
       fetchOrders();
-      setNewRider("");
-      setReassignPopup(null);
-      setReassignRidersOptions([]);
-      setIsOpenIndividualAssignmnet(null);
+      clearAllState()
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
@@ -421,7 +408,7 @@ const [assign, setAssign] = useState(false);
   setLoading(true);
 
   try {
-    const res = await AxiosInstance.post(`/api/vendor/bulkAssignOrdersToRider`,{
+    const res = await AxiosInstance.post(`/api/dc/assignOrdersToRider`,{
       
           order_ids:ids,
           rider_id: new_rider_id,
@@ -429,15 +416,13 @@ const [assign, setAssign] = useState(false);
     })
    
 
+    clearAllState()
     await fetchOrders();
 
     toast.success(
       `${ids.length} order${ids.length > 1 ? "s" : ""} assigned successfully`
     );
-
-    setSelectedBulkOrders([]);
-    setNewRider("");
-    setEditingStatusId(null);
+    
   } catch (err) {
     console.error("Bulk assign error:", err);
 
@@ -451,54 +436,20 @@ const [assign, setAssign] = useState(false);
   }
   };
 
-  const AssignBulkOrder = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.post(
-        `${baseURL}/api/vendor/markOrdersPickedBulk`,
-        {
-          order_ids: selectedBulkOrders.map((order) => order.id),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-
-      if (res.data.success) {
-        toast.success("Bulk Pickup Marked Successfully");
-        fetchOrders();
-        setSelectedBulkOrders([]);
-        setBulkOrderWeight(0);
-      }
-      return;
-    } catch (error) {
-      toast.error("Something went wrong while marking bulk pickup");
-      return;
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const PickedOrder = async (order_ids) => {
     setLoading(true);
     try {
-      const res = await axios.post(
-        `${baseURL}/api/vendor/markOrdersPickedBulk`,
-        {
+      const res = await AxiosInstance.post(`/api/dc/markOrdersPickedBulk`,{
           order_ids: order_ids,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
+        })
+      
       fetchOrders();
       toast.success("Pickup Marked Successfully");
+      clearAllState()
       setSelectedBulkOrders([]);
-      setBulkOrderWeight(0);
+    
       setIsOpenIndividualMap("");
     } catch (error) {
       toast.error("Something went wrong while marking pickup");
@@ -507,6 +458,7 @@ const [assign, setAssign] = useState(false);
       setLoading(false);
     }
   };
+
 
   const changeNdrStatus = async (data) => {
     setLoading(true);
@@ -536,6 +488,76 @@ const [assign, setAssign] = useState(false);
       setLoading(false);
     }
   };
+   const [assignVendor, setAssignVendor] = useState(false);
+const [selectedVendor, setSelectedVendor] = useState("");
+  const [vendorList, setVendorList] = useState([]);
+const [vendorLoading, setVendorLoading] = useState(false);
+
+
+const getEligibleVendorsByOrders = async ({ order_ids }) => {
+  try {
+    setVendorLoading(true);
+
+    const ids = [...new Set(
+      order_ids.map(Number).filter((id) => Number.isSafeInteger(id) && id > 0)
+    )];
+
+    if (!ids.length) {
+      toast.error("Please select at least one order");
+      return;
+    }
+
+    const { data } = await AxiosInstance.get(
+      "/api/dc/eligibleVendorsByOrders",
+      {
+        params: { order_ids: ids },
+        paramsSerializer: {
+          indexes: null,
+        },
+      }
+    );
+
+    console.log("Eligible Vendors:", data);
+
+    const vendors = Array.isArray(data?.data)
+      ? data.data
+      : Array.isArray(data?.vendors)
+        ? data.vendors
+        : [];
+
+    setVendorList(vendors);
+
+  } catch (error) {
+    console.error(error);
+    setVendorList([]);
+    toast.error(
+      error.response?.data?.message ||
+      "Failed to fetch eligible vendors"
+    );
+  } finally {
+    setVendorLoading(false);
+  }
+};
+
+
+const handleRefreshVendors = async () => {
+  const order_ids = [
+    ...new Set(
+      (selectedBulkOrders || [])
+        .map((order) => order.id)
+        .filter((id) => id !== null && id !== undefined)
+    ),
+  ];
+
+  setSelectedVendor("");
+
+  await getEligibleVendorsByOrders({ order_ids });
+};
+
+
+
+
+
   const changeStatus = async (id, newStatus) => {
     setLoading(true);
     try {
@@ -599,16 +621,7 @@ const [assign, setAssign] = useState(false);
     if (status === "pending pickup" && mapped_with === null) {
       return (
         <>
-          {/* <button
-            type="button"
-            onClick={() => {
-              cancelRiderAssignment(id);
-              setIsOpenIndividualAssignmnet("");
-            }}
-            className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800 mr-2"
-          >
-            Cancel Rider Assignment
-          </button> */}
+          
           <button
             type="button"
             onClick={async () => {
@@ -857,7 +870,7 @@ const [assign, setAssign] = useState(false);
                   toast.warning("Order is not mapped with any vendor");
                   return;
                 }
-                setmarkPickup(true);
+              
                 setIsOpenIndividualMap(id);
               }}
               className="px-3 py-1 cursor-pointer whitespace-nowrap rounded-full text-xs font-semibold inline-block bg-yellow-100 text-yellow-600"
@@ -1184,30 +1197,32 @@ useEffect(() => {
       ):(
         <div className="bg-gray-100 dark:bg-gray-900  min-h-screen w-full">
           {/* Heading Strip */}
-          <div className="mb-0  z-10  dark:bg-gray-900 py-[24px]  h-auto px-[24px]">
+          <div className="mb-0  z-10  dark:bg-gray-900  pb-4  h-auto ">
             <div className="flex flex-wrap items-center justify-between">
               {/* Heading */}
-              <h1 className="text-2xl dark:text-white">Order Details</h1>
+              <h1 className="text-2xl font-bold dark:text-white">Order Details</h1>
               <div className="flex flex-wrap items-end gap-4 text-white">
                 {/* Right Side Filters */}
-                <Button
-                  onClick={() => exportVendorPendingPickupOrders()}
-                  className="bg-white text-[#0446DB] font-medium px-5 py-2 rounded-sm shadow hover:bg-indigo-100 transition"
-                >
-                  Export Pickup List
-                </Button>
-                <Button
-                  onClick={() => exportVendorOrdersWithRider()}
-                  className="bg-white text-[#0446DB] font-medium px-5 py-2 rounded-sm shadow hover:bg-indigo-100 transition"
-                >
-                  Export Orders List
-                </Button>
-                <Button
-                  onClick={() => exportVendorRotOrders()}
-                  className="bg-white text-[#0446DB] font-medium px-5 py-2 rounded-sm shadow hover:bg-indigo-100 transition"
-                >
-                  Export RTO List
-                </Button>
+                <CustomButton
+                    icon={Download}
+                    onClick={exportVendorPendingPickupOrders}
+                  >
+                    Export Pickup List
+                  </CustomButton>
+                                  <CustomButton
+                    variant="outline"
+                    icon={Download}
+                    onClick={exportVendorOrdersWithRider}
+                  >
+                    Export Orders List
+                  </CustomButton>
+                                  <CustomButton
+                      variant="outline"
+                      icon={Download}
+                      onClick={exportVendorRotOrders}
+                    >
+                      Export RTO List
+                    </CustomButton>
   
                 <Drawer
                   direction="right"
@@ -1215,13 +1230,9 @@ useEffect(() => {
                   onOpenChange={setIsFilterOpen}
                 >
                   <DrawerTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="bg-white text-[#0446DB] font-medium px-5  rounded-sm shadow hover:bg-indigo-100 transition"
-                    >
-                     
-                      <span>Filter</span>
-                    </Button>
+                     <CustomButton variant="outline" icon={Filter}>
+    Filter
+  </CustomButton>
                   </DrawerTrigger>
                   <DrawerContent>
                     <DrawerHeader>
@@ -1391,10 +1402,10 @@ useEffect(() => {
           </div>
   
           <div className="  dark:bg-gray-900 rounded-md">
-            <div className="w-full  bg-white   rounded shadow-sm  dark:bg-gray-900   left-0 px-4 z-40   ">
+            <div className="w-full  bg-white  shadow-sm  dark:bg-gray-900   left-0 px-4 z-40   ">
               <div className="relative flex justify-center ">
                 <div
-                  className="flex  overflow-x-auto  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4"
+                  className="flex  overflow-x-auto  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 "
                   onWheel={(e) => {
                     if (e.deltaY === 0) return;
                     e.currentTarget.scrollLeft += e.deltaY;
@@ -1411,11 +1422,7 @@ useEffect(() => {
                           setPage(1);
                           setEditingStatusId(null);
                           setSelectedBulkOrders([]);
-                          setBulkOrderWeight(0);
-                          setFetchBulkAssignmentRider(false);
-                          setFetchBulkAssignmentVendor(false);
-                          setmarkPickup(false);
-                          setPopup(null);
+                         
                           setIsOpenIndividualAssignmnet("");
                         }}
                         className={`px-5 py-2.5 rounded-full my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${
@@ -1440,12 +1447,21 @@ useEffect(() => {
                 <AlertDialog>
                   {/* ================= ACTION BUTTON ================= */}
                   <AlertDialogTrigger asChild>
-                    <Button
+                    {/* <Button
                       variant="outline"
                       className="my-1 h-7 py-2 cursor-pointer rounded-sm border-[#0446DB] bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:bg-[#0446DB] dark:text-white dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
                     >
                       Action
-                    </Button>
+                    </Button> */}
+
+                 <CustomButton
+                    variant="primary"
+                    icon={Zap}
+                    onClick={() => setOpen(true)}
+                    
+                  >
+                    Action
+                  </CustomButton>
                   </AlertDialogTrigger>
 
                   {/* ================= MAIN POPUP ================= */}
@@ -1611,10 +1627,9 @@ useEffect(() => {
                         selectedStatus === "undelivered") && (
                         <div className="overflow-hidden rounded-sm border border-blue-200 dark:border-blue-500/20">
                           {/* CARD HEADER */}
-
                           <div className="border-b border-blue-100 bg-blue-50/70 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/5">
                             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-                              Assign Orders
+                              Assign Orders to Rider
                             </h3>
 
                             <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -1635,7 +1650,7 @@ useEffect(() => {
                                     <span className="font-semibold text-[#0446DB] dark:text-blue-400">
                                       {selectedBulkOrders?.length || 0}
                                     </span>{" "}
-                                    selected orders.
+                                    selected orders.sssss
                                   </p>
                                 </div>
 
@@ -1786,6 +1801,197 @@ useEffect(() => {
                           </div>
                         </div>
                       )}
+
+
+
+                      {selectedStatus === "picked" && (
+  <div className="overflow-hidden rounded-sm border border-emerald-200 dark:border-emerald-500/20">
+    {/* HEADER */}
+    <div className="border-b border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+      <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+        Assign Orders to Vendor
+      </h3>
+      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+        Assign all currently selected orders to a vendor.
+      </p>
+    </div>
+
+    <div className="space-y-4 p-4">
+      {!assignVendor ? (
+        /* INITIAL ASSIGN BUTTON */
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+              Assign Selected Orders
+            </p>
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+              Select a vendor for{" "}
+              <span className="font-semibold text-emerald-600">
+                {selectedBulkOrders?.length || 0}
+              </span>{" "}
+              selected orders.
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            disabled={vendorLoading || !selectedBulkOrders?.length}
+            onClick={async () => {
+              const order_ids = [
+                ...new Set(
+                  (selectedBulkOrders || [])
+                    .map((order) => order.id)
+                    .filter((id) => id != null)
+                ),
+              ];
+
+              if (!order_ids.length) {
+                toast.error("Please select at least one order");
+                return;
+              }
+
+              setSelectedVendor("");
+              setAssignVendor(true);
+
+              await getEligibleVendorsByOrders({ order_ids });
+            }}
+            className="h-9 min-w-[120px] rounded-sm bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+          >
+            {vendorLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              "Assign Orders"
+            )}
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* VENDOR DROPDOWN */}
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label
+                htmlFor="vendorSelect"
+                className="text-xs font-medium text-neutral-700 dark:text-neutral-300"
+              >
+                Select Vendor <span className="text-red-500">*</span>
+              </label>
+
+              {vendorList.length === 0 && (
+                <button
+                  type="button"
+                  onClick={handleRefreshVendors}
+                  disabled={vendorLoading}
+                  className="flex h-8 items-center gap-2 rounded-sm border border-emerald-200 px-3 text-xs font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-500/30 dark:text-emerald-400"
+                >
+                  <FiRefreshCw
+                    className={vendorLoading ? "animate-spin" : ""}
+                  />
+                  {vendorLoading ? "Refreshing..." : "Refresh"}
+                </button>
+              )}
+            </div>
+
+            <select
+              id="vendorSelect"
+              value={selectedVendor}
+              onChange={(e) => setSelectedVendor(e.target.value)}
+              disabled={vendorLoading || vendorList.length === 0}
+              className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-800 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+            >
+              <option value="">
+                {vendorLoading
+                  ? "Loading vendors..."
+                  : vendorList.length === 0
+                    ? "No vendors available"
+                    : "Select Vendor"}
+              </option>
+
+              {vendorList.map((vendor) => (
+                <option
+                  key={vendor.vendor_id ?? vendor.id}
+                  value={vendor.vendor_id ?? vendor.id}
+                >
+                  {vendor.vendor_name ??
+                    vendor.company_name ??
+                    vendor.name}
+                </option>
+              ))}
+            </select>
+
+            {!vendorLoading && vendorList.length === 0 && (
+              <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                No eligible vendors found. Click Refresh to try again.
+              </p>
+            )}
+          </div>
+
+          {/* FOOTER */}
+          <div className="flex flex-col gap-3 border-t border-neutral-100 pt-4 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                Assign Selected Orders
+              </p>
+              <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                Assign{" "}
+                <span className="font-semibold text-emerald-600">
+                  {selectedBulkOrders?.length || 0}
+                </span>{" "}
+                selected orders to the chosen vendor.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={vendorLoading}
+                onClick={() => {
+                  setAssignVendor(false);
+                  setSelectedVendor("");
+                }}
+                className="h-9 rounded-sm px-4 text-sm font-medium"
+              >
+                Cancel
+              </Button>
+
+              <Button
+                type="button"
+                disabled={
+                  vendorLoading ||
+                  !selectedVendor ||
+                  !selectedBulkOrders?.length
+                }
+                onClick={() => {
+                  const order_ids = [
+                    ...new Set(
+                      (selectedBulkOrders || [])
+                        .map((order) => order.id)
+                        .filter((id) => id != null)
+                    ),
+                  ];
+
+                  // Call actual vendor assignment API here
+                  console.log({
+                    order_ids,
+                    vendor_id: Number(selectedVendor),
+                  });
+                }}
+                className="h-9 min-w-[105px] rounded-sm bg-emerald-600 px-5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
+
 
                       {/* =====================================================
                           OUT FOR DELIVERY
@@ -2062,220 +2268,7 @@ useEffect(() => {
               )}
             </div>
   
-            {/* Bulk Pending Pickup Handle */}
-            {/* {selectedBulkOrders.length > 0 &&
-              (selectedStatus === "pending pickup" ||
-                selectedStatus === "out for delivery" ||
-                selectedStatus === "rto in transit" ||
-                selectedStatus === "picked" ||
-                selectedStatus === "undelivered") && (
-                <div className=" bg-white  ">
-                  
-  
-                  <div className=" px-5 py-1 flex flex-wrap items-center gap-4">
-                    {selectedStatus === "rto in transit" ? (
-                      <>
-                        {editingStatusId ? (
-                          <form
-                            onSubmit={async (e) => {
-                              e.preventDefault();
-                              const newStatus = e.target.elements.status.value;
-                              changeStatus(selectedBulkOrders[0].id, newStatus);
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              <select
-                                name="status"
-                                defaultValue={"order.status"}
-                                className="text-xs border border-gray-300 rounded-md px-2 py-3"
-                                required
-                              >
-                                <option disabled value="">
-                                  Change Status
-                                </option>
-                                <option value="rto delivered">
-                                  RTO Delivered
-                                </option>
-                              </select>
-                              <button
-                                type="submit"
-                                className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                              >
-                                Update
-                              </button>
-                            </div>
-                          </form>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setEditingStatusId(true);
-                            }}
-                            className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                          >
-                            Bulk RTO Delivered
-                          </button>
-                        )}
-                      </>
-                    ) : selectedStatus === "picked" ||
-                      selectedStatus === "undelivered" ? (
-                      <>
-                        
-  
-                        <AlertDialog>
-                          <AlertDialogTrigger
-                            render={<Button variant="outline" />}
-                          >
-                            <Button
-                              onClick={() => {
-                                const order_ids = [
-                                  ...new Set(selectedBulkOrders.map((o) => o.id)),
-                                ];
-                                fetchReassignRiders(order_ids);
-                              }}
-                              className=" bg-[#0446DB] text-white py-1 px-2 rounded-sm cursor-pointer"
-                            >
-                              Assign Rider
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="!max-w-sm">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Assign Order to a Rider
-                              </AlertDialogTitle>
-                              <AlertDialogDescription className="w-full">
-                                <div className=" flex w-full">
-                                  <form className="space-y-6 w-full">
-                                    <div className="w-full  space-y-2">
-                                      <label
-                                        htmlFor="riderSelect"
-                                        className="block text-lg font-medium text-gray-700"
-                                      >
-                                        Select Rider:
-                                      </label>
-                                      <select
-                                        value={newRider || ""}
-                                        onChange={(e) =>
-                                          setNewRider(e.target.value)
-                                        }
-                                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                                      >
-                                        <option value="">Select Rider</option>
-  
-                                        {reassignRidersOptions.map((rider) => {
-                                          return (
-                                            <option
-                                              key={rider.rider_id}
-                                              value={rider.value}
-                                            >
-                                              {rider.label}
-                                            </option>
-                                          );
-                                        })}
-                                      </select>
-                                    </div>
-                                  </form>
-                                </div>
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={async (e) => {
-                                  if (!newRider) {
-                                    toast.error("Please seleact a rider.");
-                                    return;
-                                  }
-
-                                    const ids = selectedBulkOrders.map((order) => order.id);
-  
-                                  
-                                    assignBulkOrderRider(ids, newRider);
-                                 
-                                  setNewRider("");
-                                }}
-
-                                
-                              >
-                                Assign
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </>
-                    ) : selectedStatus === "out for delivery" ? (
-                      <>
-                        <>
-                          {bulkStatusState ? (
-                            <form
-                              onSubmit={async (e) => {
-                                e.preventDefault();
-                                const newStatus = e.target.elements.status.value;
-                                if (!newStatus) {
-                                  toast.error("Please Select Status");
-                                }
-                                for (const order of selectedBulkOrders) {
-                                  markOrdersDeliveredBulk(order.id);
-                                }
-                              }}
-                            >
-                              <div className="flex items-center gap-2">
-                                <select
-                                  name="status"
-                                  defaultValue={"order.status"}
-                                  className="text-xs border border-gray-300 rounded-md px-2 py-3"
-                                  required
-                                >
-                                  <option disabled value="">
-                                    Change Status
-                                  </option>
-                                  <option value="delivered">Delivered</option>
-                                </select>
-                                <button
-                                  type="submit"
-                                  className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                                >
-                                  Update Status
-                                </button>
-                              </div>
-                            </form>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setBulkStatusState(true);
-                              }}
-                              className="bg-[#0446DB] hover:bg-indigo-800 transition text-white px-5 py-2 rounded-md shadow font-medium"
-                            >
-                              Update Status
-                            </button>
-                          )}
-                        </>
-                      </>
-                    ) : (
-                      <Button
-                        onClick={async () => {
-                          const order_ids = selectedBulkOrders.map((order) => order.id);
-                          const result = await PickedOrder(order_ids);
-                          // for (const order of selectedBulkOrders) {
-                          // }
-                        }}
-                        className="bg-[#0446DB]  transition text-white px-5 py-2 rounded-sm shadow font-medium"
-                      >
-                        Mark Bulk Pickup
-                      </Button>
-                    )}
-  
-                    <Button
-                      className="bg-red-500 hover:bg-red-800 transition text-white px-3 py-1 rounded-sm shadow-sm font-medium"
-                      onClick={() => {
-                        setSelectedBulkOrders([]);
-                        setEditingStatusId(null);
-                      }}
-                    >
-                      Clear Selected Orders
-                    </Button>
-                  </div>
-                </div>
-              )} */}
+            
 
 
               
@@ -2375,6 +2368,8 @@ useEffect(() => {
                           (o) => o.id === order.id,
                         );
                       }
+
+                   
   
                       return (
                         <TableRow
@@ -2399,18 +2394,12 @@ useEffect(() => {
                                       ...prev,
                                       order,
                                     ]);
-                                    setBulkOrderWeight(
-                                      (prev) =>
-                                        Number(prev) + Number(order.total_weight),
-                                    );
+                                    
                                   } else {
                                     setSelectedBulkOrders((prev) =>
                                       prev.filter((o) => o.id !== order.id),
                                     );
-                                    setBulkOrderWeight(
-                                      (prev) =>
-                                        Number(prev) - Number(order.total_weight),
-                                    );
+                                   
                                   }
                                 }}
                                 className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
@@ -3058,7 +3047,7 @@ useEffect(() => {
                             selectedStatus === "ndr" ||
                             selectedStatus === "rto in transit" ||
                             selectedStatus === "rto delivered") && (
-                            <td className="px-6 py-4 dark:text-white">{`FP_${order.rider_vendor_id}_${order.rider_id}`}</td>
+                            <td className="px-6 py-4 dark:text-white">{`DC_${order?.rider_dc_id}_${order?.rider_id}`}</td>
                           )}
   
                           {/* Address */}

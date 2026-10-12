@@ -59,6 +59,7 @@ import { toast } from "react-toastify";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import AxiosInstance from "@/Helper/axiosInstance";
+import CustomButton from "../../common/CustomButton";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 
@@ -76,8 +77,6 @@ function OrderDetails() {
   const [totalPages, setTotalPages] = useState(1);
   const [riders, setRiders] = useState([]);
   const [vendor, setVendor] = useState([]);
-  const [isMappedOrder, setIsMappedOrder] = useState(false);
-  const [limitReached, setLimitReached] = useState(false);
   const [assignmentState, setAssignmentState] = useState("");
   const [riderID, setRiderID] = useState("");
   const [isOpenIndividualAssignmnet, setIsOpenIndividualAssignmnet] = useState("");
@@ -431,6 +430,7 @@ function OrderDetails() {
         });
         toast.success(res?.data?.message);
         clearAllState()
+        fetchOrders()
     } catch (error) {
         toast.error(error?.response?.data?.message);
     }
@@ -751,6 +751,42 @@ function OrderDetails() {
       setLoading(false);
     }
   };
+
+
+
+  const CancelDcMapping = async ({orderIds}) => {
+  try {
+    setLoading(true);
+
+    const responses = await Promise.all(
+      orderIds.map((id) =>
+        AxiosInstance.post(
+          `/api/dc/admin/cancelOrderMapping/${id}`,
+          {}
+        )
+      )
+    );
+
+    toast.success(
+      responses[0]?.data?.message ||
+        "DC mapping cancelled successfully"
+    );
+
+    setSelectedBulkOrders([]);
+    setBulkOrderWeight(0);
+
+    fetchOrders();
+    clearAllState()
+  } catch (err) {
+    toast.error(
+      err?.response?.data?.message ||
+        err?.message ||
+        "Error while canceling DC mapping"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const changeStatus = async ({id, newStatus,remark}) => {
 
@@ -1092,11 +1128,11 @@ useEffect(() => {
       loadingPage?(
         <>
          <div className=" w-full h-[90vh] flex justify-center items-center">
-                  <div>
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-                    <p className="mt-2"> Loading Order Details...</p>
-                  </div>
-                </div>
+              <div>
+                <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                <p className="mt-2"> Loading Order Details...</p>
+              </div>
+         </div>
         </>
       ):(
         <>
@@ -1104,311 +1140,10 @@ useEffect(() => {
 
         <div className=" left-0  z-10  dark:bg-neutral-900 py-4 md:py-6 ">
           <div className="  mx-auto px-8  ">
-            {/* Mobile Layout */}
-            <div className="md:hidden  flex flex-col space-y-4">
-              {/* Top Row: Heading and Buttons */}
-              <div className="flex-col items-center justify-between">
-                <h1 className="text-xl font-bold text-gray-800 ">Order Details</h1>
-
-                <div className="flex-col  items-center gap-2">
-                  <Link to="/admin/bookOrders">
-                    <Button
-                      variant="outline"
-                      className="bg-white w-full mt-1 text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
-                    >
-                      <FaTasks className="text-sm" />
-                      <span>Assignment Console</span>
-
-                    </Button>
-                  </Link>
-                  <Button variant="outline"
-                    onClick={exportCSV}
-                    className="bg-white w-full mt-1 text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
-                  >
-                    <FaFileExport className="text-sm" />
-                    <span>Export</span>
-                  </Button>
-                  <Drawer direction="right"
-                    open={isMobileFilterDrawerOpen}
-                    onOpenChange={setIsMobileFilterDrawerOpen}>
-                    <DrawerTrigger asChild>
-
-                      <Button variant="outline"
-                        className="bg-white w-full mt-1 text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
-                      >
-                        <FaFilter className="text-sm" />
-                        <span>Filter</span>
-                      </Button>
-                    </DrawerTrigger>
-                    <DrawerContent>
-                      <DrawerHeader>
-                        <DrawerTitle>Filter</DrawerTitle>
-                        {/* <DrawerDescription>Set your daily activity goal.</DrawerDescription> */}
-                      </DrawerHeader>
-                      <div className="no-scrollbar overflow-y-auto">
-                        <form onSubmit={(e) => e.preventDefault()}
-                          className=" w-full"
-                        >
-                          <div className="gap-y-2 mb-2">
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-
-
-                              <div>
-                                <label className="block text-xs text-gray-600 dark:text-gray-300 mb-1">
-                                  Start Date
-                                </label>
-                                <input
-                                  type="date"
-                                  value={advanceFilters.startDate}
-                                  max={advanceFilters.endDate || undefined}
-                                  onClick={openDatePicker}
-                                  onFocus={openDatePicker}
-                                  onChange={(e) => updateAdvanceFilter("startDate", e.target.value)}
-                                  className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
-                                          dark:text-white px-3 py-2 rounded-sm text-sm 
-                                          focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                              </div>
-
-                              {/* End Date */}
-                              <div>
-                                <label className="block text-xs text-gray-600 dark:text-gray-300 mb-1">
-                                  End Date
-                                </label>
-                                <input
-                                  type="date"
-                                  value={advanceFilters.endDate}
-                                  min={advanceFilters.startDate || undefined}
-                                  onClick={openDatePicker}
-                                  onFocus={openDatePicker}
-                                  onChange={(e) => updateAdvanceFilter("endDate", e.target.value)}
-                                  className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
-      focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                              </div>
-
-                            </div>
-
-
-                            <div className=" mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                              <div>
-                                <label className="block text-xs dark:text-white text-gray-600 mb-1">
-                                  Order Specific
-                                </label>
-                                <select
-                                  value={advanceFilters.order_specific}
-                                  onChange={(e) => {
-                                    setAdvanceFilters((prev) => ({
-                                      ...prev,
-                                      order_specific: e.target.value,
-                                    }));
-                                  }}
-                                  className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
-      focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                >
-                                  <option value="">All orders</option>
-                                  <option value="Turant">Turant</option>
-                                  <option value="SDD">Same Day Delivery</option>
-                                  <option value="NDD">Next Day Delivery</option>
-                                </select>
-                              </div>
-                              <div>
-                                <label className="block text-xs dark:text-white text-gray-600 mb-1">
-                                  AWB Number(s)
-                                </label>
-                                <input
-                                  type="text"
-                                  value={advanceFilters.awbNumber}
-                                  onChange={(e) =>
-                                    setAdvanceFilters((prev) => ({
-                                      ...prev,
-                                      awbNumber: e.target.value,
-                                    }))
-                                  }
-                                  placeholder="AWB Number(s)"
-                                  className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
-      focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                              </div>
-                            </div>
-
-
-
-                            <div className=" mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-
-                              <div>
-                                <label className="block text-xs dark:text-white text-gray-600 mb-1">
-                                  Merchant ID
-                                </label>
-                                <input
-                                  type="number"
-                                  value={advanceFilters.merchant_id}
-                                  onChange={(e) =>
-                                    setAdvanceFilters((prev) => ({
-                                      ...prev,
-                                      merchant_id: e.target.value,
-                                    }))
-                                  }
-                                  placeholder="Integer Only"
-                                  className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
-      focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                              </div>
-
-
-                              <div>
-                                <label className="block text-xs dark:text-white text-gray-600 mb-1">
-                                  City
-                                </label>
-
-                                <input
-                                  type="text"
-                                  value={advanceFilters.city}
-                                  onChange={(e) =>
-                                    setAdvanceFilters((prev) => ({
-                                      ...prev,
-                                      city: e.target.value,
-                                    }))
-                                  }
-                                  placeholder="Enter City"
-                                  className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
-      focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                              </div>
-                            </div>
-
-
-                            <div className=" mt-2 grid  grid-cols-1 md:grid-cols-2 gap-4 w-full">
-
-                              <div>
-                                <label className="block text-xs dark:text-white text-gray-600 mb-1">
-                                  Vendor ID
-                                </label>
-                                <input
-                                  type="number"
-                                  value={advanceFilters.vendor_id}
-                                  onChange={(e) =>
-                                    setAdvanceFilters((prev) => ({
-                                      ...prev,
-                                      vendor_id: e.target.value,
-                                    }))
-                                  }
-                                  placeholder="Integer Only"
-                                  className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
-      focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                              </div>
-
-
-                              <div>
-                                <label className="block text-xs dark:text-white text-gray-600 mb-1">
-                                  Pincode
-                                </label>
-                                <input
-                                  type="text"
-                                  value={advanceFilters.pincode}
-                                  onChange={(e) =>
-                                    setAdvanceFilters((prev) => ({
-                                      ...prev,
-                                      pincode: e.target.value,
-                                    }))
-                                  }
-                                  placeholder="Enter Pincode"
-                                  className="w-full border dark:border-gray-700 dark:bg-gray-800 
-                          dark:text-white px-3 py-2 rounded-sm text-sm 
-                             focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                              </div>
-                            </div>
-
-
-
-
-
-
-
-                            <div className=" mt-2">
-                              <label className="block text-xs dark:text-white text-gray-600 mb-1">
-                                Rider ID
-                              </label>
-                              <input
-                                type="number"
-                                value={advanceFilters.rider_id}
-                                onChange={(e) =>
-                                  setAdvanceFilters((prev) => ({
-                                    ...prev,
-                                    rider_id: e.target.value,
-                                  }))
-                                }
-                                placeholder="Integer Only"
-                                className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
-      focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              />
-                            </div>
-                          </div>
-
-                          <div className=" w-full flex">
-                            <button
-                              type="submit"
-                              onClick={applyFilters}
-                              className="bg-[#0446DB] w-1/2 text-white px-4 py-2 rounded-md hover:bg-indigo-800 transition text-sm mx-2"
-                            >
-                              Filter
-                            </button>
-                            <button
-                              type="button"
-                              onClick={resetFilters}
-                              className="bg-[#0446DB] w-1/2 text-white px-4 py-2 rounded-md hover:bg-indigo-800 transition text-sm mx-2"
-                            >
-                              Reset
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                      <DrawerFooter>
-                        <Button onClick={() => setIsMobileFilterDrawerOpen(false)} variant="outline">Cancel</Button>
-                      </DrawerFooter>
-                    </DrawerContent>
-                  </Drawer>
-                </div>
-              </div>
-
-              {/* Search Bar */}
-              <div className="w-full">
-                <form
-                  className="flex w-full"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSearch();
-                  }}
-                >
-                  <input
-                    type="text"
-                    placeholder="Search AWB Number..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-grow px-4 py-2 rounded-l-lg text-sm text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0446DB]"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-white px-4 py-2 rounded-r-lg border border-l-0 border-gray-300 text-gray-600 hover:bg-indigo-100 hover:text-[#0446DB] transition"
-                  >
-                    <FaSearch />
-                  </button>
-                </form>
-              </div>
-            </div>
+           
 
             {/* Desktop Layout */}
-            <div className="hidden md:flex  items-center justify-between h-full">
+            <div className=" md:flex  items-center justify-between h-full">
 
               <div className="flex-shrink-0">
                 <h1 className="text-2xl font-bold dark:text-white">Order Details</h1>
@@ -1442,13 +1177,13 @@ useEffect(() => {
 
 
               <div className="flex items-center gap-4">
-                <Link to="/admin/bookOrders">
+                {/* <Link to="/admin/bookOrders">
                   <Button
                     variant="outline"
                     className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
                   >
                     <FaTasks className="text-sm" />
-                    <span>Assignment Console</span>
+                    <span>Assignment Consolee</span>
 
                   </Button>
                 </Link>
@@ -1458,15 +1193,40 @@ useEffect(() => {
                 >
                   <FaFileExport className="text-sm" />
                   <span>Export</span>
-                </Button>
+                </Button> */}
+
+
+<Link to="/admin/bookOrders" className="block w-full">
+  <CustomButton
+    variant="outline"
+    size="md"
+    icon={FaTasks}
+    className="w-full mt-1 whitespace-nowrap rounded-sm"
+  >
+    Assignment Console
+  </CustomButton>
+</Link>
+
+<CustomButton
+  variant="outline"
+  size="md"
+  icon={FaFileExport}
+  onClick={exportCSV}
+  className="w-full mt-1 rounded-sm "
+>
+  Export
+</CustomButton>
+
                 <Drawer direction="right" open={isDesktopFilterDrawerOpen} onOpenChange={setIsDesktopFilterDrawerOpen}>
                   <DrawerTrigger asChild>
-                    <Button variant="outline"
-                      className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
-                    >
-                      <FaFilter className="text-sm" />
-                      <span>Filter</span>
-                    </Button>
+                                  <CustomButton
+                variant="outline"
+                size="md"
+                icon={FaFilter}
+                  className="w-full mt-1 rounded-sm"
+              >
+                Filter
+              </CustomButton>
                   </DrawerTrigger>
                   <DrawerContent>
                     <DrawerHeader>
@@ -1754,19 +1514,14 @@ useEffect(() => {
 
                               <>       
                                 <AlertDialog>
-                                        {/* =========================
-                                            OPEN DIALOG BUTTON
-                                        ========================= */}
-                                        <AlertDialogTrigger
-                                          
-                                        >
-
-                                          <Button
-                                              variant="outline"
-                                              className="h-7 bg-[#0446DB] cursor-pointer gap-2 rounded-sm border-[#0446DB] px-4 text-sm font-medium text-white hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10"
-                                            >
+                                        <AlertDialogTrigger>
+                                        <CustomButton
+                                          variant="primary"
+                                          size="md"
+                                          className='rounded-sm'>
                                           Action
-                                              </Button>
+                                        </CustomButton>
+
                                         </AlertDialogTrigger>
 
                                         {/* =========================
@@ -1948,143 +1703,149 @@ useEffect(() => {
                                             </div>
 
                                             {/* map dc  */}
+
+                                            {
+                                              false && (
                                             <div className="overflow-hidden rounded-sm border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-  {/* Header */}
-  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-800/40">
-    <div>
-      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-        Assign Orders to DC
-      </h3>
+  
+                                              <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-800/40">
+                                                <div>
+                                                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                    Assign Orders to DC
+                                                  </h3>
 
-      <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
-        Assign all selected orders to a distribution center.
-      </p>
-    </div>
+                                                  <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                                                    Assign all selected orders to a distribution center.
+                                                  </p>
+                                                </div>
 
-    {/* Optional badge */}
-    <div className="hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 sm:block dark:bg-blue-500/10 dark:text-blue-400">
-      Bulk Action
-    </div>
-  </div>
+                                                
+                                                <div className="hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 sm:block dark:bg-blue-500/10 dark:text-blue-400">
+                                                  Bulk Action
+                                                </div>
+                                              </div>
 
-  {/* Content */}
-  <div className="p-5">
-    {!dcBulkOrder ? (
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-700 dark:text-neutral-200">
-            Select a distribution center
-          </p>
+                                              
+                                              <div className="p-5">
+                                                {!dcBulkOrder ? (
+                                                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                                    <div>
+                                                      <p className="text-sm font-medium text-gray-700 dark:text-neutral-200">
+                                                        Select a distribution center
+                                                      </p>
 
-          <p className="mt-1 text-xs text-gray-500 dark:text-neutral-500">
-            Choose a DC to map the selected orders.
-          </p>
-        </div>
+                                                      <p className="mt-1 text-xs text-gray-500 dark:text-neutral-500">
+                                                        Choose a DC to map the selected orders.
+                                                      </p>
+                                                    </div>
 
-        <button
-          type="button"
-          onClick={() => setDcBulkOrder(true)}
-          className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0446DB] px-5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
-        >
-          Assign to DC
-        </button>
-      </div>
-    ) : (
-      <form
-        className="space-y-4"
-        onSubmit={async (e) => {
-          e.preventDefault();
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => setDcBulkOrder(true)}
+                                                      className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0446DB] px-5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
+                                                    >
+                                                      Assign to DC
+                                                    </button>
+                                                  </div>
+                                                ) : (
+                                                  <form
+                                                    className="space-y-4"
+                                                    onSubmit={async (e) => {
+                                                      e.preventDefault();
 
-          const dcId = Number(
-            e.currentTarget.elements.dc_id.value
-          );
+                                                      const dcId = Number(
+                                                        e.currentTarget.elements.dc_id.value
+                                                      );
 
 
 
-          if (!dcId) {
-            toast.error("Please select a DC");
-            return;
-          }
+                                                      if (!dcId) {
+                                                        toast.error("Please select a DC");
+                                                        return;
+                                                      }
 
-          const orderIds = selectedBulkOrders.map((order) => order.id);
+                                                      const orderIds = selectedBulkOrders.map((order) => order.id);
 
-          
-          await assignOrdersToDc({
-            order_ids: orderIds,
-            dc_id: dcId,
-          });
+                                                      
+                                                      await assignOrdersToDc({
+                                                        order_ids: orderIds,
+                                                        dc_id: dcId,
+                                                      });
 
-          
-        }}
-      >
-        {/* DC Select */}
-        <div>
-          <label
-            htmlFor="dc_id"
-            className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-neutral-300"
-          >
-            Distribution Center
-          </label>
+                                                      
+                                                    }}
+                                                  >
+                                                    
+                                                    <div>
+                                                      <label
+                                                        htmlFor="dc_id"
+                                                        className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-neutral-300"
+                                                      >
+                                                        Distribution Center
+                                                      </label>
 
-          <div className="relative">
-            <select
-              id="dc_id"
-              name="dc_id"
-              defaultValue=""
-              className="h-11 w-full cursor-pointer appearance-none rounded-lg border border-gray-300 bg-white px-3 pr-10 text-sm text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:border-blue-500"
-            >
-              <option value="" disabled>
-                Select a distribution center
-              </option>
+                                                      <div className="relative">
+                                                        <select
+                                                          id="dc_id"
+                                                          name="dc_id"
+                                                          defaultValue=""
+                                                          className="h-11 w-full cursor-pointer appearance-none rounded-lg border border-gray-300 bg-white px-3 pr-10 text-sm text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:border-blue-500"
+                                                        >
+                                                          <option value="" disabled>
+                                                            Select a distribution center
+                                                          </option>
 
-              {dcList?.map((dc) => (
-                <option key={dc.id} value={dc.id}>
-                  {dc?.dc_code} : {dc?.dc_name}
-                </option>
-              ))}
-            </select>
+                                                          {dcList?.map((dc) => (
+                                                            <option key={dc.id} value={dc.id}>
+                                                              {dc?.dc_code} : {dc?.dc_name}
+                                                            </option>
+                                                          ))}
+                                                        </select>
 
-            {/* Custom arrow */}
-            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-              <svg
-                className="h-4 w-4 text-gray-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
+                                                        
+                                                        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                                                          <svg
+                                                            className="h-4 w-4 text-gray-400"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                          >
+                                                            <path
+                                                              fillRule="evenodd"
+                                                              d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                                              clipRule="evenodd"
+                                                            />
+                                                          </svg>
+                                                        </div>
+                                                      </div>
+                                                    </div>
 
-        {/* Info */}
-        
+                                                   
+                                                    
 
-        {/* Actions */}
-        <div className="flex flex-col-reverse gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end dark:border-neutral-800">
-          <button
-            type="button"
-            onClick={() => setDcBulkOrder(false)}
-            className="h-10 cursor-pointer rounded-sm border border-gray-300 bg-white px-5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            Cancel
-          </button>
+                                                   
+                                                    <div className="flex flex-col-reverse gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end dark:border-neutral-800">
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => setDcBulkOrder(false)}
+                                                        className="h-10 cursor-pointer rounded-sm border border-gray-300 bg-white px-5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                                                      >
+                                                        Cancel
+                                                      </button>
 
-          <button
-            type="submit"
-            className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-6 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
-          >
-            Assign Orders
-          </button>
-        </div>
-      </form>
-    )}
-  </div>
-</div>
+                                                      <button
+                                                        type="submit"
+                                                        className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-6 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
+                                                      >
+                                                        Assign Orders
+                                                      </button>
+                                                    </div>
+                                                  </form>
+                                                )}
+                                              </div>
+                                            </div>
+
+                                              )
+                                            }
 
                                             {/* ============================================
                                                 VENDOR ASSIGNMENT
@@ -4786,261 +4547,261 @@ useEffect(() => {
 
                     <div className="px-5 py-5">
   
-<div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
-  
-  <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
-    <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-      Change Order Status
-    </h3>
+                        <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                          
+                          <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                              Change Order Status
+                            </h3>
 
-    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-      Select an action to apply to all selected orders.
-    </p>
-  </div>
+                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                              Select an action to apply to all selected orders.
+                            </p>
+                          </div>
 
- 
-  <div className="space-y-4 p-4">
-   
-    <div>
-      <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
-        Select Status
-      </label>
+                        
+                          <div className="space-y-4 p-4">
+                          
+                            <div>
+                              <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                Select Status
+                              </label>
 
-      <select
-        className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
-        value={bulkStatusState}
-        onChange={(e) => {
-          const value = e.target.value;
+                              <select
+                                className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                                value={bulkStatusState}
+                                onChange={(e) => {
+                                  const value = e.target.value;
 
-          setBulkStatusState(value);
+                                  setBulkStatusState(value);
 
-          if (value === "cancelled") {
-            setNewStatus(value);
-          } else {
-            setNewStatus("");
-            setRemark("");
-          }
-        }}
-      >
-        <option value="">Select Status</option>
+                                  if (value === "cancelled") {
+                                    setNewStatus(value);
+                                  } else {
+                                    setNewStatus("");
+                                    setRemark("");
+                                  }
+                                }}
+                              >
+                                <option value="">Select Status</option>
 
-        <option value="cancelled">
-          Mark Cancelled
-        </option>
-        {
-          selectedBulkOrders[0].mapped_with!==null && (
+                                <option value="cancelled">
+                                  Mark Cancelled
+                                </option>
+                                {
+                                  selectedBulkOrders[0].mapped_with!==null && (
 
-        <option value="Cancel Vendor Mapped">
-          Cancel Vendor Mapping
-        </option>
-          )
-        }
-        {
-          selectedBulkOrders[0].mapped_dc_id!==null && (
+                                <option value="Cancel Vendor Mapped">
+                                  Cancel Vendor Mapping
+                                </option>
+                                  )
+                                }
+                                {
+                                  selectedBulkOrders[0].mapped_dc_id!==null && (
 
-        <option value="Cancel DC Mapped">
-          Cancel DC Mapping
-        </option>
-          )
-        }
+                                <option value="Cancel DC Mapped">
+                                  Cancel DC Mapping
+                                </option>
+                                  )
+                                }
 
-        
-      </select>
-    </div>
-     
-     
-    
-    {newStatus === "cancelled" && (
-      <div className="rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5">
-        <div className="mb-3">
-          <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-            Cancellation Details
-          </p>
+                                
+                              </select>
+                            </div>
+                            
+                            
+                            
+                            {newStatus === "cancelled" && (
+                              <div className="rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5">
+                                <div className="mb-3">
+                                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                    Cancellation Details
+                                  </p>
 
-          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-            Select a cancellation remark for all selected orders.
-          </p>
-        </div>
+                                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                                    Select a cancellation remark for all selected orders.
+                                  </p>
+                                </div>
 
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
-            Cancel Remark
-            <span className="ml-1 text-red-500">*</span>
-          </label>
+                                <div>
+                                  <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                    Cancel Remark
+                                    <span className="ml-1 text-red-500">*</span>
+                                  </label>
 
-          <select
-            name="remark"
-            value={remark || ""}
-            onChange={(e) => {
-              setRemark(e.target.value);
-            }}
-            className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
-          >
-            <option value="">
-              Select Remark
-            </option>
+                                  <select
+                                    name="remark"
+                                    value={remark || ""}
+                                    onChange={(e) => {
+                                      setRemark(e.target.value);
+                                    }}
+                                    className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                                  >
+                                    <option value="">
+                                      Select Remark
+                                    </option>
 
-            <option value="Seller Requested Future Pick up">
-              Seller Requested Future Pick up
-            </option>
+                                    <option value="Seller Requested Future Pick up">
+                                      Seller Requested Future Pick up
+                                    </option>
 
-            <option value="Awb rejected">
-              AWB Rejected
-            </option>
+                                    <option value="Awb rejected">
+                                      AWB Rejected
+                                    </option>
 
-            <option value="Duplicate Pickup Request">
-              Duplicate Pickup Request
-            </option>
+                                    <option value="Duplicate Pickup Request">
+                                      Duplicate Pickup Request
+                                    </option>
 
-            <option value="Non Serviceable Location">
-              Non Serviceable Location
-            </option>
+                                    <option value="Non Serviceable Location">
+                                      Non Serviceable Location
+                                    </option>
 
-            <option value="Pick Failed Due to Dangerous Goods">
-              Pick Failed Due to Dangerous Goods
-            </option>
+                                    <option value="Pick Failed Due to Dangerous Goods">
+                                      Pick Failed Due to Dangerous Goods
+                                    </option>
 
-            <option value="Product packaging Issue">
-              Product Packaging Issue
-            </option>
+                                    <option value="Product packaging Issue">
+                                      Product Packaging Issue
+                                    </option>
 
-            <option value="Shipment Handedover to other courier">
-              Shipment Handedover to Other Courier
-            </option>
+                                    <option value="Shipment Handedover to other courier">
+                                      Shipment Handedover to Other Courier
+                                    </option>
 
-            <option value="Seller Closed">
-              Seller Closed
-            </option>
+                                    <option value="Seller Closed">
+                                      Seller Closed
+                                    </option>
 
-            <option value="Pick up Request Expired">
-              Pick up Request Expired
-            </option>
+                                    <option value="Pick up Request Expired">
+                                      Pick up Request Expired
+                                    </option>
 
-            <option value="Entry not Permitted">
-              Entry not Permitted
-            </option>
+                                    <option value="Entry not Permitted">
+                                      Entry not Permitted
+                                    </option>
 
-            <option value="Customer wants refund/replacement first">
-              Customer wants refund/replacement first
-            </option>
-          </select>
+                                    <option value="Customer wants refund/replacement first">
+                                      Customer wants refund/replacement first
+                                    </option>
+                                  </select>
 
-          <p className="mt-1.5 text-[11px] text-neutral-500 dark:text-neutral-400">
-            This remark will be applied to all{" "}
-            <span className="font-semibold text-red-600 dark:text-red-400">
-              {selectedBulkOrders?.length || 0}
-            </span>{" "}
-            selected orders.
-          </p>
-        </div>
-      </div>
-    )}
+                                  <p className="mt-1.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+                                    This remark will be applied to all{" "}
+                                    <span className="font-semibold text-red-600 dark:text-red-400">
+                                      {selectedBulkOrders?.length || 0}
+                                    </span>{" "}
+                                    selected orders.
+                                  </p>
+                                </div>
+                              </div>
+                            )}
 
-   
-    {bulkStatusState && (
-      <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
-        <div>
-          <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-            Selected Orders
-          </p>
+                          
+                            {bulkStatusState && (
+                              <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
+                                <div>
+                                  <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                    Selected Orders
+                                  </p>
 
-          <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
-            This action will be applied to all selected orders.
-          </p>
-        </div>
+                                  <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+                                    This action will be applied to all selected orders.
+                                  </p>
+                                </div>
 
-        <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-          {selectedBulkOrders?.length || 0}
-        </span>
-      </div>
-    )}
+                                <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+                                  {selectedBulkOrders?.length || 0}
+                                </span>
+                              </div>
+                            )}
 
-   
-    {bulkStatusState && (
-      <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
-        <button
-          type="button"
-          onClick={async () => {
-            if (!bulkStatusState) {
-              toast.warn("Select new status");
-              return;
-            }
-  
-            if (
-              bulkStatusState === "Cancel Assignment"
-            ) {
-              await Promise.all(
-                selectedBulkOrders.map((order) =>
-                  cancelRiderAssignment(order.id)
-                )
-              );
-            } else if (
-              bulkStatusState === "Cancel Vendor Mapped"
-            ) {
-              await Promise.all(
-                selectedBulkOrders.map((order) =>
-                  cancelVendorAssignment(order.id)
-                )
-              );
-            } else if (
-              bulkStatusState === "Cancel DC Mapped"
-            ) {
-              console.log("Cancel DC Mapped action triggered");
-              // await Promise.all(
-              //   selectedBulkOrders.map((order) =>
-              //     cancelDCAssignment(order.id)
-              //   )
-              // );
-              return
-            } else {
-              if (!bulkStatusState) {
-                toast.error("Please select status");
-                return;
-              }
+                          
+                            {bulkStatusState && (
+                              <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    if (!bulkStatusState) {
+                                      toast.warn("Select new status");
+                                      return;
+                                    }
+                          
+                                    if (
+                                      bulkStatusState === "Cancel Assignment"
+                                    ) {
+                                      await Promise.all(
+                                        selectedBulkOrders.map((order) =>
+                                          cancelRiderAssignment(order.id)
+                                        )
+                                      );
+                                    } else if (
+                                      bulkStatusState === "Cancel Vendor Mapped"
+                                    ) {
+                                      await Promise.all(
+                                        selectedBulkOrders.map((order) =>
+                                          cancelVendorAssignment(order.id)
+                                        )
+                                      );
+                                    } else if (
+                                      bulkStatusState === "Cancel DC Mapped"
+                                    ) {
+                                      const orderIds = selectedBulkOrders.map((order) => order.id);
+                                          
+                                      console.log("Cancel DC Mapped action triggered",orderIds);
+                                      CancelDcMapping({orderIds})
+                                      return
+                                    } else {
+                                      if (!bulkStatusState) {
+                                        toast.error("Please select status");
+                                        return;
+                                      }
 
-              if (bulkStatusState === "cancelled") {
-                if (!remark) {
-                  toast.error("Please select remark");
-                  return;
-                }
-              }
+                                      if (bulkStatusState === "cancelled") {
+                                        if (!remark) {
+                                          toast.error("Please select remark");
+                                          return;
+                                        }
+                                      }
 
-              await Promise.all(
-                selectedBulkOrders.map((order) =>
-                  changeStatus({
-                    id: order.id,
-                    newStatus: bulkStatusState,
-                    remark: remark,
-                  })
-                )
-              );
-            }
+                                      await Promise.all(
+                                        selectedBulkOrders.map((order) =>
+                                          changeStatus({
+                                            id: order.id,
+                                            newStatus: bulkStatusState,
+                                            remark: remark,
+                                          })
+                                        )
+                                      );
+                                    }
 
-            setSelectedBulkOrders([]);
-            setBulkStatusState("");
-          }}
-          className={`h-9 w-full shrink-0 cursor-pointer rounded-sm px-5 text-sm font-medium text-white transition sm:w-auto ${
-            bulkStatusState === "cancelled"
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-[#0446DB] hover:bg-indigo-800"
-          }`}
-        >
-          {bulkStatusState === "Cancel Vendor Mapped"
-            ? "Cancel Vendor Mapped"
-            : bulkStatusState === "cancelled"
-              ? "Mark Cancelled"
-              :  bulkStatusState === "lost"
-                ? "Mark Lost"
-                : bulkStatusState === "Cancel DC Mapped"
-                  ? "Cancel DC Mapped"
-                  : "Change Action"}
-        </button>
-      </div>
-    )}
-  </div>
-</div>
+                                    setSelectedBulkOrders([]);
+                                    setBulkStatusState("");
+                                  }}
+                                  className={`h-9 w-full shrink-0 cursor-pointer rounded-sm px-5 text-sm font-medium text-white transition sm:w-auto ${
+                                    bulkStatusState === "cancelled"
+                                      ? "bg-red-600 hover:bg-red-700"
+                                      : "bg-[#0446DB] hover:bg-indigo-800"
+                                  }`}
+                                >
+                                  {bulkStatusState === "Cancel Vendor Mapped"
+                                    ? "Cancel Vendor Mapped"
+                                    : bulkStatusState === "cancelled"
+                                      ? "Mark Cancelled"
+                                      :  bulkStatusState === "lost"
+                                        ? "Mark Lost"
+                                        : bulkStatusState === "Cancel DC Mapped"
+                                          ? "Cancel DC Mapped"
+                                          : "Change Action"}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
 
-  
+                     
+                   
+
                     <div className="overflow-hidden mt-4 rounded-sm border border-neutral-200 dark:border-neutral-800">
                     
                       <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
@@ -5256,11 +5017,11 @@ useEffect(() => {
                           Clear Selected Orders
                         </button>
                       </div>
+                     
                     </div>
 
-                   
+                     
 
-                   
                     <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
                       <AlertDialogCancel
                       onClick={()=>{
@@ -5399,59 +5160,10 @@ useEffect(() => {
                               {
 
                                 ((selectedStatus === "booked" && order?.rider_preference == 'daakit') && (order.tpc_awb_number == null) || (selectedStatus === "pending pickup" && order?.rider_preference == 'daakit') && order.tpc_awb_number == null )  ? (
-                                  // <td className="px-6 py-4 text-center">
-                                  //   <input
-                                  //     type="checkbox"
-                                  //     checked={isSelected}
-
-                                  //     onChange={(e) => {
-                                  //       const isChecked = e.target.checked;
-
-                                  //       if ((selectedStatus === "booked" || selectedStatus === "pending pickup"  ) ) {
-                                  //         if (isChecked) {
-                                  //           setSelectedBulkOrders((prev) => {
-                                  //             const updated = [...prev, order];
-
-                                  //             const order_ids = updated.map((o) => o.id);
-                                              
-                                              
-
-                                  //             return updated;
-                                  //           });
-
-                                  //           setBulkOrderWeight(
-                                  //             (prev) => Number(prev) + Number(order.total_weight)
-                                  //           );
-                                  //         } else {
-                                  //           setSelectedBulkOrders((prev) => {
-                                  //             const updated = prev.filter((o) => o.id !== order.id);
-
-                                  //             const order_ids = updated.map((o) => o.id);
-                                  //             if (selectedStatus === "booked") {
-                                  //               fetchVendor(order_ids);
-                                  //             }
-
-
-                                  //             return updated;
-                                  //           });
-
-                                  //           setBulkOrderWeight(
-                                  //             (prev) => Number(prev) - Number(order.total_weight) // ✅ fixed bug
-                                  //           );
-                                  //         }
-                                  //       }
-
-
-                                  //     }}
-                                  //     className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
-                                  //   />
-
-                                  // </td>
-
+                                
                                   <td className="px-6 py-4 text-center">
                                     {(() => {
-                                      // true  = mapped
-                                      // false = unmapped
+                                      
                                       const currentIsMapped =
                                         order?.mapped_with !== null &&
                                         order?.mapped_with !== undefined;
@@ -5462,15 +5174,13 @@ useEffect(() => {
                                             selectedBulkOrders[0]?.mapped_with !== undefined
                                           : null;
 
-                                      // Sirf Pending Pickup me mapped/unmapped group check hoga
+                                 
                                       const isDifferentMappingType =
                                         selectedStatus === "pending pickup" &&
                                         selectedBulkOrders.length > 0 &&
                                         firstSelectedIsMapped !== currentIsMapped;
 
-                                      // Ek mapped order select hai aur current unmapped hai
-                                      // YA ek unmapped select hai aur current mapped hai
-                                      // => checkbox ki jagah --
+                                      
                                       if (isDifferentMappingType) {
                                         return (
                                           <span
@@ -5498,10 +5208,7 @@ useEffect(() => {
                                               selectedStatus === "pending pickup"
                                             ) {
                                               if (isChecked) {
-                                                // =========================================
-                                                // PENDING PICKUP
-                                                // Mapped + Unmapped ko mix nahi hone dena
-                                                // =========================================
+                                            
                                                 if (
                                                   selectedStatus === "pending pickup" &&
                                                   selectedBulkOrders.length > 0
@@ -5723,7 +5430,7 @@ useEffect(() => {
                                             });
 
                                             setBulkOrderWeight(
-                                              (prev) => Number(prev) - Number(order.total_weight) // ✅ fixed bug
+                                              (prev) => Number(prev) - Number(order.total_weight) 
                                             );
                                           }
                                         }}
@@ -6169,7 +5876,7 @@ useEffect(() => {
                                         : "border-emerald-500 bg-emerald-50/50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
                                     }`}
                                   >
-                                    {order?.rider_preference === "daakit" ? "Daakit" : "Self"}
+                                    {order?.rider_preference === "daakit" ? "DDN" : "BYOB"}
                                   </span>
                                 </p>
                                 <p className="text-s text-gray-400 dark:text-white">

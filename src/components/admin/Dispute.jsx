@@ -6,6 +6,7 @@ import {
   getDisputeDetail,
   resolveDispute,
 } from "../../Redux/weightMis";
+import { FiRefreshCw } from "react-icons/fi";
 
 const BRAND_COLOR = "#0446DB";
 const baseURL = import.meta.env.VITE_BASE_URL;
@@ -435,14 +436,21 @@ function Dispute() {
   };
 
 
-  useEffect(() => {
-  const refreshed = sessionStorage.getItem("dispute_page_refreshed");
+  const handleRefresh = async () => {
+  try {
+    await loadList("action_required");
+    if (detail?.discrepancy_id) {
+      await loadDetail(detail.discrepancy_id, selectedDispute, true);
+    }
 
-  if (refreshed === "true") {
-    sessionStorage.removeItem("dispute_page_refreshed");
-    toast.success("Page refreshed successfully");
+    toast.success("Dispute queue refreshed");
+  } catch (err) {
+    toast.error(
+      err?.response?.data?.message || "Failed to refresh queue",
+    );
   }
-}, []);
+};
+
 
   // ============================================================
   // VIEW 1: ALL DISCREPANCIES
@@ -468,9 +476,9 @@ function Dispute() {
             <button
               type="button"
               onClick={() => setActiveTab("action_required")}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-sm transition-all cursor-pointer ${
                 activeTab === "action_required"
-                  ? "bg-white text-[#0446DB] shadow-sm"
+                  ? "bg-[#0446DB] text-white shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -478,7 +486,7 @@ function Dispute() {
               <span
                 className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                   activeTab === "action_required"
-                    ? "bg-[#0446DB] text-white"
+                    ? "bg-white text-[#0446DB]"
                     : "bg-gray-200 text-gray-600"
                 }`}
               >
@@ -491,7 +499,7 @@ function Dispute() {
               onClick={() => setActiveTab("closed")}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-lg transition-all cursor-pointer ${
                 activeTab === "closed"
-                  ? "bg-white text-green-700 shadow-sm"
+                  ? "bg-[#0446DB] text-white shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -499,7 +507,7 @@ function Dispute() {
               <span
                 className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                   activeTab === "closed"
-                    ? "bg-green-700 text-white"
+                    ? "bg-white text-[#0446DB]"
                     : "bg-gray-200 text-gray-600"
                 }`}
               >
@@ -975,7 +983,7 @@ function Dispute() {
   // ============================================================
   return (
     <div className="min-h-screen bg-gray-50">
-      <header
+     <header
         className="text-white p-5 md:p-6 md:px-10"
         style={{ backgroundColor: BRAND_COLOR }}
       >
@@ -986,38 +994,23 @@ function Dispute() {
               Action Required · Resolve open disputes
             </p>
           </div>
+
           <div className="flex items-center gap-2">
-            {/* Refresh */}
+          
             <button
               type="button"
-              onClick={() => {
-                sessionStorage.setItem("dispute_page_refreshed", "true");
-                window.location.reload();
-              }}
-              className="flex items-center gap-2 text-xs bg-white/20 hover:bg-white/30
-             text-white px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-              title="Refresh Page"
+              onClick={handleRefresh}
+              className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+              title="Refresh dispute queue"
             >
-              <svg
-                className="w-4 h-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5" />
-                <path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" />
-              </svg>
+             <FiRefreshCw className="w-3 h-3" />
               Refresh
             </button>
-            {/* Back */}
+
+            
             <button
-              type="button"
               onClick={() => setView("list")}
-              className="text-xs bg-white/20 hover:bg-white/30 text-white 
-               px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+              className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
             >
               ← Back to List
             </button>

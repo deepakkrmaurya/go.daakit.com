@@ -208,17 +208,7 @@ function DcUserLogin() {
         <div className="relative z-10 flex h-full w-full flex-col px-10 py-10 xl:px-12 xl:py-12">
           {/* Company Badge */}
           <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
-
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
-              </span>
-
-              <span className="text-[11px] font-bold tracking-[0.12em] text-white/90">
-                DAAKIT TECHNOLOGY
-              </span>
-            </div>
+           
 
             {/* Main Heading */}
             <h1 className="max-w-[650px] text-[clamp(2.3rem,3.1vw,3.8rem)] font-extrabold leading-[1.06] tracking-tight text-white">

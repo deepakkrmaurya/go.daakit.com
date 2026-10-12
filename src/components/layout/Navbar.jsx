@@ -66,6 +66,9 @@ import {
   MdCardMembership,
   MdOutlineSubscriptions,
   MdOutlineScale,
+  MdPersonAddAlt1,
+  MdOutlineAppRegistration,
+  MdOutlineAssessment,
 
 } from "react-icons/md";
 
@@ -83,7 +86,7 @@ import { IoAnalyticsOutline } from "react-icons/io5";
 
 import { TbChartBar, TbClipboardSearch, TbMotorbike, TbPackage, TbPackageOff } from "react-icons/tb";
 
-import { FaIndianRupeeSign } from "react-icons/fa6";
+import { FaIndianRupeeSign, FaUsersGear } from "react-icons/fa6";
 
 import { FaMapMarkedAlt } from "react-icons/fa";
 
@@ -122,6 +125,7 @@ import DaakitLogo from "@/assets/logo-daakit.png";
 import AxiosInstance from "@/Helper/axiosInstance";
 
 import GlassSurface from "../UiComponents/GlassSurface";
+import { FiAlertTriangle, FiSettings } from "react-icons/fi";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -1503,48 +1507,55 @@ function Navbar({ allowedRoles, children }) {
 const getNavLinks = () => {
   const navConfig = {
     admin: [
+
       { label: "Analytics", href: "/admin/analytics", icon: <IoAnalyticsOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
       { label: "Operation", href: "#", icon: <TbPackage className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
         { label: "Orders", href: "/admin/order-details", icon: <TbPackage className="h-4 w-4" /> },
         { label: "New Mapped Orders", href: "/admin/orderNewMappings", icon: <TbPackage className="h-4 w-4" /> },
+        { label: "NDR", href: "/admin/ndr", icon: <NoSymbolIcon className="h-4 w-4" /> },
+        { label: "MIS",href: "/admin/weightMIS",icon: <MdOutlineAssessment className="h-4 w-4" />,},
+        { label: "Discrepancies", href: "/admin/dispute",icon: <FiAlertTriangle className="h-4 w-4" />,},
       ]},
+
       { label: "Order History", href: "/admin/order-history", icon: <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
       { label: "Rider's Live Location", href: "/admin/map", icon: <FaMapMarkedAlt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-      { label: "NDR", href: "/admin/ndr", icon: <NoSymbolIcon className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-      { label: "Merchant", href: "/admin/merchant-details", icon: <MdOutlineBusinessCenter className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-      { label: "Coupon", href: "/admin/coupon", icon: <RiCoupon2Fill className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-      { label: "Pricing", href: "/admin/pricing", icon: <ImPriceTag className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-      { label: "DC", href: "#", icon: <FaUserPlus className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, 
+      
+      {label: "OnBoarding",href: "#",icon: (<MdOutlineAppRegistration className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />),
         subItems: [
-          {label: "DC List",href: "/admin/dc/list",icon: <FaWarehouse className="h-4 w-4" />,},
-         ],
+          // {label: "DC List", href: "/admin/dc/list", icon: <FaWarehouse className="h-4 w-4" />,},
+          { label: "Merchant", href: "/admin/merchant-details", icon: <MdOutlineBusinessCenter className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
+          { label: "Vendor", href: "/admin/vendor-stats", icon: <TbDeviceWatchStats className="h-4 w-4" /> },
+          { label: "Vendor Riders", href: "/admin/vendor-riders", icon: <MdDirectionsBike className="h-4 w-4" /> },
+        ],
       },
-      { label: "Weight", href: "#", icon: <MdOutlineScale  className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, 
-       subItems: [
-            { label: "MIS", href: "/admin/weightMIS" },
-            { label: "Discrepancies",  href: "/admin/dispute",},
-          ],
-      },
+      
+      // { label: "Weight", href: "#", icon: <MdOutlineScale  className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, 
+      //  subItems: [
+      //       { label: "MIS", href: "/admin/weightMIS" },
+      //       { label: "Discrepancies",  href: "/admin/dispute",},
+      //     ],
+      // },
 
       { label: "Finance", href: "#", icon: <FaIndianRupeeSign className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
         { label: "Billing & Invoices", href: "/admin/billingandinvoices", icon: <BillingIcon /> },
         { label: "COD Remittances", href: "/admin/cod-remittances", icon: <LuReceiptIndianRupee className="h-4 w-4" /> },
         { label: "Merchant Remittances", href: "/admin/merchant-remittances", icon: <FaUserTie className="h-4 w-4" /> },
       ]},
-      { label: "Coupon & Subscription", href: "#", icon: <MdCardMembership className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
-        { label: "Coupon", href: "/admin/coupon", icon: <RiCoupon2Fill className="h-4 w-4" /> },
-        { label: "Subscription", href: "/admin/subscription", icon: <MdOutlineSubscriptions className="h-4 w-4" /> },
-      ]},
+    
+      // { label: "User", href: "#", icon: <FaUser className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
+      //   { label: "Add New User", href: "/admin/add-user", icon: <FaUserPlus className="h-4 w-4" /> },
+      //   { label: "Add Role & Permission", href: "/admin/role-permission", icon: <MdAdminPanelSettings className="h-4 w-4" /> },
+      // ]},
 
-      { label: "Vendor", href: "#", icon: <FaHandshake className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
-        { label: "Vendor Stats", href: "/admin/vendor-stats", icon: <TbDeviceWatchStats className="h-4 w-4" /> },
-        { label: "Vendor Riders", href: "/admin/vendor-riders", icon: <MdDirectionsBike className="h-4 w-4" /> },
-      ]},
-
-      { label: "User", href: "#", icon: <FaUser className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
-        { label: "Add New User", href: "/admin/add-user", icon: <FaUserPlus className="h-4 w-4" /> },
-        { label: "Add Role & Permission", href: "/admin/role-permission", icon: <MdAdminPanelSettings className="h-4 w-4" /> },
-      ]},
+      { label: "Settings",href: "#",icon: (<FiSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />),
+          subItems: [
+            { label: "Coupon", href: "/admin/coupon", icon: <RiCoupon2Fill className="h-4 w-4" />,},
+            { label: "Subscription", href: "/admin/subscription", icon: <MdOutlineSubscriptions className="h-4 w-4" />,},
+            { label: "Pricing", href: "/admin/pricing", icon: <ImPriceTag className="h-4 w-4" /> },
+            { label: "Add New User", href: "/admin/add-user", icon: <FaUserPlus className="h-4 w-4" /> },
+            { label: "Add Role & Permission", href: "/admin/role-permission", icon: <MdAdminPanelSettings className="h-4 w-4" /> },
+          ],
+        },
     ],
 
     user: [
@@ -1604,12 +1615,18 @@ const getNavLinks = () => {
       { label: "Rider", href: "#", icon: <MdDirectionsBike className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
         { label: "Riders", href: "/dc/riders", icon: <MdDirectionsBike className="h-4 w-4" /> },
         { label: "COD Remittances", href: "/dc/cod-remittances", icon: <FaIndianRupeeSign className="h-4 w-4" /> },
-        { label: "Rider Onboarding", href: "/dc/rider-onboarding", icon: <FaWpforms className="h-4 w-4" /> },
         { label: "Rider's Live Location", href: "/dc/map", icon: <FaMapMarkedAlt className="h-4 w-4" /> },
         { label: "Rate List", href: "/dc/rider_rate/list", icon: <LuReceiptIndianRupee className="h-4 w-4" /> },
         { label: "Rider Performance", href: "/dc/shipment-tracking", icon: <CiDeliveryTruck className="h-4 w-4" /> },
       ]},
 
+      {
+        label: "Vendor Management", href: "#", icon: (<FaUsersGear className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />),
+        subItems: [
+          {label: "Vendor",href: "/dc/vendor/listing",icon: <MdPersonAddAlt1 className="h-4 w-4" />,},
+          {label: "Vendor Onboarding",href: "/dc/vendor/on-boarding",icon: <MdPersonAddAlt1 className="h-4 w-4" />,},
+        ],
+      },
       { label: "Hub", href: "#", icon: <MdWarehouse className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
         { label: "Hub List", href: "/vendor/hub_list", icon: <FaTruck className="h-4 w-4" /> },
       ]},
@@ -1626,7 +1643,7 @@ const getNavLinks = () => {
       ]},
 
       // { label: "CX", href: "/merchant/cx", icon: <FaGears className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-      { label: "Weight Discrepancies",  href: "/merchant/weight-discrepancies", icon: <MdOutlineScale className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, },
+      { label: "Weight Discrepancies",  href: "/merchant/weight", icon: <MdOutlineScale className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, },
       { label: "Finance", href: "#", icon: <MdAccountBalance className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
         { label: "Billing", href: "/merchant/billing", icon: <BillingIcon className="h-4 w-4" /> },
         { label: "Recharge", href: "/merchant/recharge", icon: <FaBolt className="h-4 w-4" /> },
@@ -1914,7 +1931,7 @@ const getNavLinks = () => {
 
             cn(
 
-              "flex h-10 w-full items-center gap-2 rounded-md px-2 text-sm transition-colors",
+              "flex h-10 w-full items-center gap-2 rounded-md px-1 text-sm transition-colors",
 
               isActive
 
@@ -1950,7 +1967,7 @@ const getNavLinks = () => {
 
           className={cn(
 
-            "group/sidebar flex h-10 w-full items-center rounded-md text-left transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800",
+            "group/sidebar flex h-10 w-full items-center px-3 rounded-md text-left transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800",
 
             isOpen ? "justify-between px-2" : "justify-center px-0",
 
@@ -2147,7 +2164,7 @@ const getNavLinks = () => {
                   dark:hover:[&::-webkit-scrollbar-thumb]:bg-neutral-600
                 "
               >
-                <div className="flex flex-col gap-1 pb-2">
+                <div className="flex flex-col gap-1 pb-2 ">
                   {getNavLinks().map((link, idx) => (
                     <CustomSidebarLink
                       key={`${link.label}-${idx}`}

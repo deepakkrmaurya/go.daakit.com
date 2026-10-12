@@ -1,4 +1,4 @@
-import daakitIcon from "../assets/daakit-icon.png";
+import daakitIcon from "@/assets/daakit-icon.png";
 
 function Loader() {
   return (

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../Loader";
 
-import { FaFilter, FaRegCopy, FaSearch } from "react-icons/fa";
+import { FaFileExport, FaFilter, FaRegCopy, FaSearch } from "react-icons/fa";
 import { CiCircleCheck } from "react-icons/ci";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
@@ -29,6 +29,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { TbFileInfo } from "react-icons/tb";
 import { sub } from "date-fns/sub";
+import CustomButton from "../common/CustomButton";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 function NDR() {
@@ -428,22 +429,31 @@ useEffect(() => {
 
             {/* Buttons */}
             <div className="flex  justify-center md:justify-end gap-3">
-              <Button
-                onClick={exportCSV}
-                className="bg-white text-[#0446DB] font-medium px-4  rounded-sm shadow hover:bg-indigo-100 transition w-full sm:w-auto"
-              >
-                Export
-              </Button>
+              
+<CustomButton
+  variant="outline"
+  size="md"
+  icon={FaFileExport}
+  onClick={exportCSV}
+  className="w-full rounded-sm"
+>
+  Export
+</CustomButton>
+
 
 
               <Drawer direction="right" open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                 <DrawerTrigger asChild>
-                  <Button variant="outline"
-                    className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-sm shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
-                  >
-                    <FaFilter className="text-sm" />
-                    <span>Filter</span>
-                  </Button>
+                  
+<CustomButton
+  variant="outline"
+  size="md"
+  icon={FaFilter}
+  className="rounded-sm w-full font-medium "
+>
+  Filter
+</CustomButton>
+
                 </DrawerTrigger>
                 <DrawerContent>
                   <DrawerHeader>
@@ -548,9 +558,9 @@ useEffect(() => {
                         setSelectedFilter(filter[1]);
                         setPage(1);
                       }}
-                      className={`px-5 py-2.5 rounded-full my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${selectedFilter === filter[1]
-                        ? "bg-[#0446DB] text-white "
-                        : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
+                      className={`px-5 py-2.5 rounded-full cursor-pointer my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${selectedFilter === filter[1]
+                        ? "bg-[#0446DB] hover:bg-[#0446DB] text-white "
+                        : "bg-white hover:bg-[#0446DB] hover:text-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
                         }`}
                     >
                       {filter[0]}

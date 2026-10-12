@@ -19,23 +19,24 @@ const OrderAssignment = lazy(() => import("./components/admin/OrderAssignment"))
 const RoutePlanning = lazy(() => import("./components/admin/RoutePlanning"));
 const NDR = lazy(() => import("./components/admin/NDR"));
 const VendorStats = lazy(() => import("./components/admin/VendorStats"));
-const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+const ProtectedRoute = lazy(() => import("./components/layout/ProtectedRoute"));
 const VendorRiders = lazy(() => import("./components/admin/VendorRiders"));
-const VendorOnboarding = lazy(() => import("./components/VendorOnboarding"));
 const VendorAnalytics = lazy(() => import("./components/vendor_components/VendorAnalytics"));
 const VendorAllRiders = lazy(() => import("./components/vendor_components/rider/VendorAllRiders"));
+const DcAllRiders = lazy(() => import("./components/distributionCenter/rider/DcAllRiders"));
+const DcVendorOnboarding = lazy(() => import("./components/distributionCenter/vendor/DcVendorOnboarding"));
 const VendorCodRemittance = lazy(() => import("./components/vendor_components/remittance/VendorCodRemittance"));
 const VendorOrderDetails = lazy(() => import("./components/vendor_components/order/VendorOrderDetails"));
-const DCOrderDetails = lazy(() => import("./components/distributionCenter/order/DcVendorOrders"));
+const DCOrderDetails = lazy(() => import("./components/distributionCenter/order/DcOrders"));
 const VendorMappedOrder = lazy(() => import("./components/vendor_components/order/VendorMappedOrder"));
 const VendorRiderOnboarding = lazy(() => import("./components/vendor_components/rider/VendorRiderOnboarding"));
+const DcRiderOnboarding = lazy(() => import("./components/distributionCenter/rider/DcRiderOnboarding"));
 const OrderTracking = lazy(() => import("./components/OrderTracking"));
 const TrackOrder = lazy(() => import("./components/TrackOrder"));
 const MerchantAnalytics = lazy(() => import("./components/merchant_component/MerchantAnalytics"));
 const MerchantOrderTracking = lazy(() => import("./components/merchant_component/MerchantOrderTracking"));
 const MerchantNDR = lazy(() => import("./components/merchant_component/merchant/ndr/MerchantNDR"));
 const MerchantRemittances = lazy(() => import("./components/admin/MerchantRemittances"));
-const MerchantOnboarding = lazy(() => import("./components/MerchantOnboarding"));
 const MerchantDetails = lazy(() => import("./components/admin/MerchantDetails"));
 const MerchantCOD = lazy(() => import("./components/merchant_component/MerchantCOD"));
 const TrackAWBOrder = lazy(() => import("./components/TrackAWBOrder"));
@@ -47,7 +48,6 @@ const MerchantCX = lazy(() => import("./components/merchant_component/MerchantCX
 const IncognitoLogin = lazy(() => import("./components/IncognitoLogin"));
 const MerchantOrderDetails = lazy(() => import("./components/merchant_component/merchant/order/MerchantOrderDetails"));
 const LiveLocation = lazy(() => import("./components/merchant_component/techbasedMerchant/riders/LiveLocation"));
-const CodRemittances = lazy(() => import("./components/merchant_component/CodRemittances"));
 const Subscription = lazy(() => import("./components/admin/couponSub/Subscription"));
 const TechMerchantOrderDetails = lazy(() => import("./components/merchant_component/techbasedMerchant/order/TechMerchantOrderDetails"));
 const TechMerchantAnalytics = lazy(() => import("./components/merchant_component/techbasedMerchant/TechMerchantAnalytics"));
@@ -72,11 +72,9 @@ const UpdatePlanDetails = lazy(() => import("./components/UpdatePlanDetails"));
 const TechbasedMerchentRemittances = lazy(() => import("./components/merchant_component/techbasedMerchant/remittances/TechbasedMerchentRemittances"));
 const TechProfile = lazy(() => import("./components/merchant_component/techbasedMerchant/profile/TechProfile"));
 const Profile = lazy(() => import("./components/merchant_component/Profile"));
-const TechCreateOrderTurant = lazy(() => import("./components/merchant_component/techbasedMerchant/TechCreateOrderTurant"));
 const TechbasedTransaction = lazy(() => import("./components/merchant_component/techbasedMerchant/TechbasedTransaction"));
 const Transaction = lazy(() => import("./components/merchant_component/history/Transaction"));
 const Support = lazy(() => import("./components/merchant_component/Support"));
-const OTPSendComponent = lazy(() => import("./components/handleSendOTP"));
 const ForgotPasswordMerchant = lazy(() => import("./components/auth/FotgotPasswordMerchant"));
 const VendorForgotPassword = lazy(() => import("./components/auth/VendorForgotPassword"));
 const VendorRegistrationPage = lazy(() => import("./components/auth/VendorRegiater"));
@@ -95,12 +93,9 @@ const VendorProfile = lazy(() => import("./components/vendor_components/VendorPr
 const RiderRateList = lazy(() => import("./components/vendor_components/rate/RiderRateList"));
 const CreateRider = lazy(() => import("./components/vendor_components/rate/CreateRate"));
 const AdminLogin = lazy(() => import("./components/auth/AdminLogin"));
-const FestiveWisher = lazy(() => import("./components/ddd/FestiveWisher"));
 const Page404 = lazy(() => import("./components/Page404"));
-const InspectController = lazy(() => import("./Helper/InspectController"));
 const OrderSuccess = lazy(() => import("./components/OrderSuccess"));
 const HubList = lazy(() => import("./components/vendor_components/hub/HubList"));
-const MerchantPricing = lazy(() => import("./components/merchant_component/Pricing"));
 const CreateHub = lazy(() => import("./components/vendor_components/hub/CreateHub"));
 const OrderHistory = lazy(() => import("./components/admin/OrderHistory"));
 const PriceDetails = lazy(() => import("./components/merchant_component/PriceDetails"));
@@ -119,14 +114,14 @@ const UserOrderDetails = lazy(() => import("./components/User/UserOrders"));
 const Loader = lazy(() => import("./components/Loader"));
 const ChatWidget = lazy(() => import("./components/daakit-chatbot"));
 
-const LazyLoading = lazy(() => import("./components/LazyLoding"));
+const LazyLoading = lazy(() => import("./components/layout/LazyLoding"));
 
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from "./context/ThemeContext";
 
 import { jwtDecode } from "jwt-decode";
 import { UserRoles } from "@/utils/UserRole";
-import BookOrders from "./components/admin/BookOrders";
+import BookOrders from "./components/admin/order/BookOrders";
 import NewMappingOrders from "./components/admin/NewMappingOrders";
 import AssignmentConsole from "./components/User/AssignmentConsole";
 import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
@@ -148,17 +143,20 @@ import DistributionCenterListing from "./components/admin/dc/DistributionCenterL
 import WeightDiscrepancies from "./components/merchant_component/WeightDiscrepancies";
 import WeightMIS from "./components/admin/WeightMIS";
 import Dispute from "./components/admin/Dispute";
+import { ProtectedLayout } from "./components/layout/ProtectedLayout";
+import DcVendorListing from "./components/distributionCenter/vendor/DcVendorListing";
+import InspectController from "./Helper/InspectController";
 
 
-const getLocalPermissions = () => {
-  const stored = localStorage.getItem("permission");
-  if (!stored) return [];
-  try {
-    return JSON.parse(stored);
-  } catch (error) {
-    return stored;
-  }
-};
+// const getLocalPermissions = () => {
+//   const stored = localStorage.getItem("permission");
+//   if (!stored) return [];
+//   try {
+//     return JSON.parse(stored);
+//   } catch (error) {
+//     return stored;
+//   }
+// };
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -166,20 +164,20 @@ const LoadingFallback = () => (
 );
 
 // Protected layout with Navbar
-const ProtectedLayout = ({ allowedRoles, loading }) => {
-  const currentPermissions = getLocalPermissions();
+// const ProtectedLayout = ({ allowedRoles, loading }) => {
+//   const currentPermissions = getLocalPermissions();
 
-  if (loading || currentPermissions === null) {
-    return <Loader />;
-  }
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <ProtectedRoute allowedRoles={allowedRoles} permissions={currentPermissions}>
-        <Navbar allowedRoles={allowedRoles} permissions={currentPermissions} />
-      </ProtectedRoute>
-    </Suspense>
-  );
-};
+//   if (loading || currentPermissions === null) {
+//     return <Loader />;
+//   }
+//   return (
+//     <Suspense fallback={<LoadingFallback />}>
+//       <ProtectedRoute allowedRoles={allowedRoles} permissions={currentPermissions}>
+//         <Navbar allowedRoles={allowedRoles} permissions={currentPermissions} />
+//       </ProtectedRoute>
+//     </Suspense>
+//   );
+// };
 
 const UserProtectedRouteLayout = ({ allowedRoles, loading, requiredPermission = [], permissions, children }) => {
   const currentPermissions = permissions ?? getLocalPermissions();
@@ -205,55 +203,21 @@ function App() {
   const [user, setUser] = useState({})
   const appRouter = createBrowserRouter([
 
-    { path: "/FestiveWisher",element: (<Suspense fallback={<LoadingFallback />}><FestiveWisher /></Suspense>)},
+    
+    
     {path: "/register",element: (<Suspense fallback={<LoadingFallback />}><Register /></Suspense>)},
     { path: "/vendor/register", element: ( <Suspense fallback={<LoadingFallback />}><VendorRegistrationPage /></Suspense>)},
     { path: "/merchant-forgot-password", element: (<Suspense fallback={<LoadingFallback />}><ForgotPasswordMerchant /></Suspense> )},
     {path: "/vendor-forgot-password",element: ( <Suspense fallback={<LoadingFallback />}> <VendorForgotPassword /></Suspense>)},
-    {
-      path: "/track-order",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <TrackAWBOrder />
-        </Suspense>
-      )
-    },
-    {
-      path: "/unauthorized",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <Unauthorized />
-        </Suspense>
-      )
-    },
-    {
-      path: "/onRechargeSuccess",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <PaymentSuccess />
-        </Suspense>
-      )
-    },
-    {
-      path: "/onRechargeFailure",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <PaymentFailed />
-        </Suspense>
-      )
-    },
+    { path: "/track-order", element: ( <Suspense fallback={<LoadingFallback />}> <TrackAWBOrder /> </Suspense>)},
+    { path: "/unauthorized", element: (<Suspense fallback={<LoadingFallback />}> <Unauthorized /> </Suspense>)},
+    { path: "/onRechargeSuccess", element: ( <Suspense fallback={<LoadingFallback />}><PaymentSuccess /></Suspense>) },
+    { path: "/onRechargeFailure", element: ( <Suspense fallback={<LoadingFallback />}> <PaymentFailed /> </Suspense> )},
     { path: "/login",element: (<Suspense fallback={<LoadingFallback />}><Login /></Suspense>)},
     { path: "/login/dc",element: (<Suspense fallback={<LoadingFallback />}><DcUserLogin /></Suspense>)},
     { path: "/login/admin",element: (<Suspense fallback={<LoadingFallback />}><AdminLogin /></Suspense>)},
     { path: "/login/user", element: (<Suspense fallback={<LoadingFallback />}><UserLogin /></Suspense>)},
-    {
-      path: "/incognitoLogin/:token/:email/:role",
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <IncognitoLogin />
-        </Suspense>
-      )
-    },
+    { path: "/incognitoLogin/:token/:email/:role", element: ( <Suspense fallback={<LoadingFallback />}> <IncognitoLogin /></Suspense>)},
     // Admin routes
     {
       path: "/admin",
@@ -289,13 +253,8 @@ function App() {
         { path: "onboarding/distribution-center", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterOnboarding /></Suspense> },
         { path: "weightMIS", element: <Suspense fallback={<LoadingFallback />}><WeightMIS /></Suspense> },
         { path: "dispute", element: <Suspense fallback={<LoadingFallback />}><Dispute /></Suspense> },
-
         // dc
         { path: "dc/list", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterListing /></Suspense> },
-         
-
-        
-
         { index: true, element: <Navigate to="analytics" /> },
       ],
     },
@@ -379,12 +338,14 @@ function App() {
       element: <ProtectedLayout allowedRoles={['dc']} permissions={permissions} loading={loading} />,
       children: [
         { path: "analytics", element: <Suspense fallback={<LoadingFallback />}><VendorAnalytics /></Suspense> },
-        { path: "riders", element: <Suspense fallback={<LoadingFallback />}><VendorAllRiders /></Suspense> },
+        { path: "riders", element: <Suspense fallback={<LoadingFallback />}><DcAllRiders /></Suspense> },
+        { path: "vendor/on-boarding", element: <Suspense fallback={<LoadingFallback />}><DcVendorOnboarding /></Suspense> },
+        { path: "vendor/listing", element: <Suspense fallback={<LoadingFallback />}><DcVendorListing /></Suspense> },
         { path: "cod-remittances", element: <Suspense fallback={<LoadingFallback />}><VendorCodRemittance /></Suspense> },
         { path: "remittance-record", element: <Suspense fallback={<LoadingFallback />}><VendorRemittanceRecord /></Suspense> },
         { path: "rider-orders", element: <Suspense fallback={<LoadingFallback />}><DCOrderDetails /></Suspense> },
         { path: "mapped-orders", element: <Suspense fallback={<LoadingFallback />}><VendorMappedOrder /></Suspense> },
-        { path: "rider-onboarding", element: <Suspense fallback={<LoadingFallback />}><VendorRiderOnboarding /></Suspense> },
+        { path: "rider-onboarding", element: <Suspense fallback={<LoadingFallback />}><DcRiderOnboarding /></Suspense> },
         { path: "map", element: <Suspense fallback={<LoadingFallback />}><VendorRidersMap /></Suspense> },
         { path: "profile", element: <Suspense fallback={<LoadingFallback />}><VendorProfile /></Suspense> },
         { path: "rider_rate/list", element: <Suspense fallback={<LoadingFallback />}><RiderRateList /></Suspense> },
@@ -455,7 +416,7 @@ function App() {
         { path: "bulk-upload", element: <Suspense fallback={<LoadingFallback />}><BulkUpload /></Suspense> },
         { path: "order-draft", element: <Suspense fallback={<LoadingFallback />}><DraftsList /></Suspense> },
         { path: "insurance", element: <Suspense fallback={<LoadingFallback />}><Insurance /></Suspense> },
-        { path: "weight-discrepancies", element: <Suspense fallback={<LoadingFallback />}><WeightDiscrepancies /></Suspense> },
+        { path: "weight", element: <Suspense fallback={<LoadingFallback />}><WeightDiscrepancies /></Suspense> },
 
         { path: "recharge", element: <Suspense fallback={<LoadingFallback />}><MerchantRecharge /></Suspense> },
         { path: "profile", element: <Suspense fallback={<LoadingFallback />}><Profile /></Suspense> },
@@ -506,7 +467,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      {/* <InspectController /> */}
+      <InspectController />
 
       <RouterProvider router={appRouter}>
         <ScrollToTop />

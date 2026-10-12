@@ -358,7 +358,8 @@ const [advanceFilters, setAdvanceFilters] = useState({
   const status = [
     "All",
     "booked",
-    "pending pickup",
+    "pending pickup",,
+    "picked",
     "in transit",
     "out for delivery",
     "delivered",
