@@ -1,959 +1,776 @@
-// import axios from "axios";
-// import { useEffect, useState } from "react";
-// import Loader from "../Loader";
-// import { TbReportAnalytics } from "react-icons/tb";
-// import { FaPlaneArrival } from "react-icons/fa";
-// import { GiCancel } from "react-icons/gi";
-// import { toast } from "react-toastify";
-
-// const baseURL = import.meta.env.VITE_BASE_URL;
-
-// export default function MerchantCOD() {
-//   const [loading, setLoading] = useState(false);
-//   const [analytics, setAnalytics] = useState({});
-
-//   const [popupData, setPopupData] = useState(null);
-
-//   const getAnalytics = async () => {
-//     setLoading(true);
-//     try {
-//       const res = await axios.get(
-//         `${baseURL}/api/merchant/getMerchantRemittanceSummary`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem("token")}`,
-//           },
-//         }
-//       );
-//       setAnalytics(res.data);
-//     } catch (err) {
-//       toast.error(err.response?.data?.message || err.message || "Error while fetching analytics");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const openPopUp = (remmitance) => {
-//     setPopupData(remmitance);
-//   }
-
-//   const closePopUp = () => {
-//     setPopupData(null);
-//   };
-
-//   useEffect(() => {
-//     getAnalytics();
-//   }, []);
-
-//   return (
-//     <>
-//       {loading ? (
-//         <Loader />
-//       ) : (
-//         <div className="bg-gray-100 min-h-screen w-full">
-//           {/* Top Heading Stripe */}
-//           <div className="relative z-0 mb-6 bg-[#0446DB] py-[24px] shadow-md h-30 px-[24px]">
-//             <div className="flex flex-wrap items-center justify-between">
-//               {/* Heading */}
-//               <h1 className="text-2xl text-white">Remittance</h1>
-//             </div>
-//           </div>
-
-//           <div className="max-w-full px-4 -mt-20 relative z-10">
-//             <div>
-//               <div className="bg-white p-6 rounded-sm shadow-md border border-gray-200">
-//                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//                   <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-sm shadow-sm border border-gray-100">
-//                     <span className="text-gray-600 font-medium">Total COD</span>
-//                     <span className="text-xl font-bold text-[#0446DB]">
-//                       ₹{Number(analytics?.total_cod).toLocaleString()}
-//                     </span>
-//                   </div>
-//                   <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-sm shadow-sm border border-gray-100">
-//                     <span className="text-gray-600 font-medium">Remaining</span>
-//                     <span className="text-xl font-bold text-yellow-600">
-//                       ₹{Number(analytics?.remaining_cod_amount).toLocaleString()}
-//                     </span>
-//                   </div>
-//                   <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-sm shadow-sm border border-gray-100">
-//                     <span className="text-gray-600 font-medium">Paid</span>
-//                     <span className="text-xl font-bold text-green-600">
-//                       ₹{Number(analytics?.total_paid_remittance_amount).toLocaleString()}
-//                     </span>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-
-//             {analytics?.remittance_records?.length > 0 && (
-//               <div className="overflow-x-auto mt-8 rounded-sm shadow-md border border-gray-200">
-//                 <table className="min-w-full divide-y divide-gray-200">
-//                   <thead className="bg-[#0446DB] text-white">
-//                     <tr>
-//                       <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider">
-//                         ID
-//                       </th>
-//                       <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider">
-//                         Amount
-//                       </th>
-//                       <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-//                         REMITTANCE AMOUNT
-//                       </th>
-//                       <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-//                         FREIGHT DEDUCTION
-//                       </th>
-//                       <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-                        
-//                        {String('convenience FEE').toLocaleUpperCase()}
-//                       </th>
-//                       <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider">
-//                         AWB Number
-//                       </th>
-//                       <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-//                         UTR Number
-//                       </th>
-//                       <th className="px-6 whitespace-nowrap py-3 text-left text-sm font-semibold uppercase tracking-wider">
-//                         Uplode Date
-//                       </th>
-//                     </tr>
-//                   </thead>
-//                   <tbody className="bg-white divide-y divide-gray-100">
-//                     {analytics?.remittance_records.map((remittance) => (
-//                       <tr key={remittance.id} className="hover:bg-gray-50">
-//                         <td className="px-6 py-4 text-sm text-gray-800">
-//                           {remittance.id}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-800">
-//                           ₹{Number(remittance.amount).toLocaleString()}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-800">
-//                           ₹{Number(remittance.remittance_amount).toLocaleString()}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-800">
-//                           ₹{Number(remittance.freight_deductions).toLocaleString()}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-800">
-//                           ₹{Number(remittance.convenience_fee).toLocaleString()}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-800">
-//                           {remittance.awb_number.split(',').length === 1 ? (
-//                             <>{remittance.awb_number}</>
-//                           ) : (
-//                             <>
-//                               <button
-//                                 onClick={() => openPopUp(remittance)}
-//                                 className="hover:cursor-pointer"
-//                               >
-//                                 {`${remittance.awb_number.split(',')[0]}...`}
-//                               </button>
-//                             </>
-//                           )}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-800">
-//                           {remittance.utr_number}
-//                         </td>
-//                         <td className="px-6 py-4 text-sm text-gray-800">
-//                           {new Date(remittance.created_at).toLocaleString(
-//                             "en-IN",
-//                             {
-//                               timeZone: "Asia/Kolkata",
-//                               day: "2-digit",
-//                               month: "2-digit",
-//                               year: "numeric",
-//                             }
-//                           )}
-//                         </td>
-//                       </tr>
-//                     ))}
-//                   </tbody>
-//                 </table>
-//               </div>
-//             )}
-//           </div>
-//         </div>
-//       )}
-
-//       {/* 👇 Popup Modal */}
-//       {popupData && (
-//         <div className="fixed inset-0 bg-[rgba(46,46,46,0.5)] flex justify-center items-center z-50">
-//           <div className="bg-white p-6 rounded-sm shadow-lg w-96 max-h-[70vh] overflow-y-auto">
-//             <h2 className="text-lg font-semibold mb-4">AWB Numbers</h2>
-//             <ul className="list-disc pl-5 space-y-1">
-//               {popupData.awb_numbers.split(",").map((awb, idx) => (
-//                 <li key={idx} className="text-gray-700">
-//                   {awb}
-//                 </li>
-//               ))}
-//             </ul>
-//             <button
-//               onClick={closePopUp}
-//               className="mt-4 px-4 py-2 bg-[#0446DB] text-white rounded hover:bg-indigo-600"
-//             >
-//               Close
-//             </button>
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// }
 
 
-
-
-
-import axios from "axios";
-import { useEffect, useState } from "react";
-import Loader from "../Loader";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 import {
-  BadgeIndianRupee,
-  Banknote,
-  CircleDollarSign,
-  Copy,
-  ExternalLink,
-  FileText,
-  Hash,
-  IndianRupee,
-  Landmark,
-  Loader2,
-  Package,
-  ReceiptIndianRupee,
-  Search,
-  WalletCards,
-  X,
-} from "lucide-react";
+  FiRefreshCw,
+  FiArrowRight,
+  FiSearch,
+  FiFilter,
+  FiDownload,
+  FiCopy,
+  FiArrowDown,
+  FiArrowUp,
+  FiChevronLeft,
+  FiChevronRight,
+  FiX,
+  FiClock,
+} from "react-icons/fi";
+import { BsBank, BsCashStack } from "react-icons/bs";
+import { HiOutlineClock } from "react-icons/hi";
+import AxiosInstance from "../../Helper/axiosInstance";
+import CustomButton from "../common/CustomButton";
+import { Loader2 } from "lucide-react";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
 export default function MerchantCOD() {
   const [loading, setLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
   const [analytics, setAnalytics] = useState({});
-  const [popupData, setPopupData] = useState(null);
-  const [search, setSearch] = useState("");
 
-  /* =====================================================
-     GET ANALYTICS
-  ===================================================== */
+  // Applied filters (used for API)
+  const [appliedFilters, setAppliedFilters] = useState({
+    searchTerm: "",
+    startDate: "",
+    endDate: "",
+  });
 
-  const getAnalytics = async () => {
+  // Draft filters (used in the filter UI)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [sortConfig, setSortConfig] = useState({
+    key: "created_at",
+    direction: "desc",
+  });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const filterRef = useRef(null);
+
+  // ---------- API CALL ----------
+  const getAnalytics = async (filters = appliedFilters) => {
     setLoading(true);
-
     try {
-      const res = await axios.get(
+      const params = {};
+      if (filters.startDate) params.start_date = filters.startDate;
+      if (filters.endDate) params.end_date = filters.endDate;
+      if (filters.searchTerm && filters.searchTerm.trim())
+        params.utr_number = filters.searchTerm.trim();
+
+      const res = await AxiosInstance.get(
         `${baseURL}/api/merchant/getMerchantRemittanceSummary`,
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+          
+          params,
+        },
       );
-
       setAnalytics(res.data);
+      setLastUpdated(new Date());
     } catch (err) {
       toast.error(
-        err?.response?.data?.message ||
-          err?.message ||
-          "Error while fetching analytics"
+        err.response?.data?.message ||
+          err.message ||
+          "Error while fetching analytics",
       );
     } finally {
       setLoading(false);
     }
   };
 
-  /* =====================================================
-     MODAL
-  ===================================================== */
+  // Initial fetch
+  useEffect(() => {
+    getAnalytics(appliedFilters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const openPopUp = (remittance) => {
-    setPopupData(remittance);
+  // Close filter popup on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setShowFilters(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Reset page when applied filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [appliedFilters]);
+
+  // ---------- APPLY / CLEAR FILTERS ----------
+  const applyFilters = () => {
+    if (startDate && endDate && endDate <= startDate) {
+      toast.error("To Date must be after From Date");
+      return;
+    }
+    const newFilters = { searchTerm, startDate, endDate };
+    setAppliedFilters(newFilters);
+    setShowFilters(false);
+    getAnalytics(newFilters);
   };
 
-  const closePopUp = () => {
-    setPopupData(null);
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStartDate("");
+    setEndDate("");
+    const cleared = { searchTerm: "", startDate: "", endDate: "" };
+    setAppliedFilters(cleared);
+    getAnalytics(cleared);
   };
 
-  /* =====================================================
-     HELPERS
-  ===================================================== */
+  // ---------- EXPORT ----------
+  const handleExportRemittance = async (utrNumber) => {
+    if (!utrNumber) {
+      toast.error("UTR number is not available");
+      return;
+    }
 
-  const formatCurrency = (amount) => {
-    return `₹${Number(amount || 0).toLocaleString("en-IN", {
-      minimumFractionDigits: 0,
+    setExportLoading(true);
+
+    try {
+      const response = await AxiosInstance.get(
+        `${baseURL}/api/merchant/exportMerchantRemittance`,
+        {
+          params: { utr_number: utrNumber },
+          responseType: "blob",
+         
+        },
+      );
+
+      const contentType = response.headers["content-type"] || "";
+
+      if (contentType.includes("application/json")) {
+        const errorText = await response.data.text();
+        const errorData = JSON.parse(errorText);
+        throw new Error(errorData.message || "Failed to export remittance");
+      }
+
+      const blob = new Blob([response.data], {
+        type: "text/csv;charset=utf-8;",
+      });
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      const safeUtr = String(utrNumber).replace(/[^a-zA-Z0-9_-]/g, "_");
+
+      link.href = downloadUrl;
+      link.download = `merchant_remittance_${safeUtr}.csv`;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.URL.revokeObjectURL(downloadUrl);
+
+      toast.success("Remittance CSV downloaded successfully.");
+    } catch (error) {
+      console.error("Export Merchant Remittance Error:", error);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to export merchant remittance",
+      );
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // ---------- FORMATTERS ----------
+  const formatCurrency = (value) => {
+    const num = Number(value) || 0;
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    })}`;
+    }).format(num);
   };
 
-  const formatDate = (date) => {
-    if (!date) return "-";
-
-    return new Date(date).toLocaleDateString("en-IN", {
-      timeZone: "Asia/Kolkata",
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
   };
 
-  const getAwbNumbers = (remittance) => {
-    const value =
-      remittance?.awb_number ||
-      remittance?.awb_numbers ||
-      "";
-
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
+  const formatUpdatedTime = (date) => {
+    return date.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
-  const copyText = async (value, label = "Copied") => {
-    try {
-      await navigator.clipboard.writeText(value);
-      toast.success(`${label} copied`);
-    } catch {
-      toast.error("Unable to copy");
+  // ---------- DATA ----------
+  const records = analytics?.remittance_records || [];
+  const totalPaid = analytics?.total_paid_remittance_amount || 0;
+  const futureRemittance = analytics?.remaining_cod_amount || 0;
+  const totalCod = analytics?.total_cod || 0;
+
+  const lastRemittance = {
+    amount: analytics?.last_remitted_amount ?? 0,
+    utr_number: analytics?.last_remitted_utr_number ?? "-",
+    created_at: analytics?.last_remitted_at ?? null,
+  };
+
+  const nextExpectedCod = {
+    count: analytics?.next_expected_cod?.count ?? 0,
+    amount: analytics?.next_expected_cod?.collectable_amount ?? 0,
+    deliveryDate: analytics?.next_expected_cod?.delivery_date ?? null,
+    cycle: analytics?.next_expected_cod?.remittance_cycle ?? 0,
+  };
+
+  const sortedRecords = [...records].sort((a, b) => {
+    if (sortConfig.key === "created_at") {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
     }
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sortedRecords.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentRecords = sortedRecords.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
   };
 
-  /* =====================================================
-     SEARCH
-  ===================================================== */
+  const hasActiveFilters =
+    appliedFilters.searchTerm ||
+    appliedFilters.startDate ||
+    appliedFilters.endDate;
 
-  const filteredRecords =
-    analytics?.remittance_records?.filter((item) => {
-      if (!search.trim()) return true;
+      const [loadingPage, setLoadingPage] = useState(true);
 
-      const query = search.toLowerCase();
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoadingPage(false);
+  }, 2000);
 
-      return (
-        String(item?.id || "")
-          .toLowerCase()
-          .includes(query) ||
-        String(item?.awb_number || "")
-          .toLowerCase()
-          .includes(query) ||
-        String(item?.awb_numbers || "")
-          .toLowerCase()
-          .includes(query) ||
-        String(item?.utr_number || "")
-          .toLowerCase()
-          .includes(query)
-      );
-    }) || [];
-
-  useEffect(() => {
-    getAnalytics();
-  }, []);
-
-  /* =====================================================
-     LOADING
-  ===================================================== */
-   
-
-        const [loadingPage, setLoadingPage] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoadingPage(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
- 
+  return () => clearTimeout(timer);
+}, []);
 
   return (
     <>
-    {
-      loadingPage ?(
+      {loading  || loadingPage? (
         <div className=" w-full h-[90vh] flex justify-center items-center">
-          <div>
-            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-            <p className="mt-2"> Loading COD Remittance...</p>
+           <div>
+           <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+            <p className="mt-2"> Loading Remittances Details...</p>
           </div>
-        </div>
-      ):(
-      <div className="min-h-screen bg-[#F7F8FA] dark:bg-neutral-950">
-        {/* =================================================
-            HEADER
-        ================================================= */}
-
-        <div className=" dark:border-neutral-800 dark:bg-neutral-900">
+         </div>
+      ) : (
+        <div className="min-h-screen w-full font-sans bg-[#F8F9FB]">
+          {/* Blue Banner */}
           <div className="">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
-                
-
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                    COD Remittance
-                  </h1>
-
-                  <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
-                    Track COD collections, settlements and remittance details
-                  </p>
-                </div>
-              </div>
-
-             
-            </div>
-          </div>
-        </div>
-
-        {/* =================================================
-            MAIN CONTENT
-        ================================================= */}
-
-        <div className="">
-          {/* =================================================
-              SUMMARY CARDS
-          ================================================= */}
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <SummaryCard
-              title="Total COD"
-              value={formatCurrency(analytics?.total_cod)}
-              description="Total COD collected"
-              icon={CircleDollarSign}
-              type="blue"
-            />
-
-            <SummaryCard
-              title="Remaining"
-              value={formatCurrency(
-                analytics?.remaining_cod_amount
-              )}
-              description="Pending for settlement"
-              icon={ReceiptIndianRupee}
-              type="orange"
-            />
-
-            <SummaryCard
-              title="Paid"
-              value={formatCurrency(
-                analytics?.total_paid_remittance_amount
-              )}
-              description="Successfully remitted"
-              icon={Landmark}
-              type="green"
-            />
-          </div>
-
-          {/* =================================================
-              REMITTANCE TABLE CARD
-          ================================================= */}
-
-          <div className="overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            {/* TABLE HEADER */}
-
-            <div className="flex flex-col gap-4 border-b border-gray-100 px-5 py-5 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-[#0446DB]/10">
-                  <FileText className="h-4 w-4 text-[#0446DB]" />
-                </div>
-
-                <div>
-                  <h2 className="text-base font-semibold text-gray-900 dark:text-white">
-                    Remittance History
-                  </h2>
-
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
-                    View all your COD settlement transactions
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                {/* SEARCH */}
-
-                <div className="relative w-full sm:w-[280px]">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search AWB, UTR or ID..."
-                    className="h-10 w-full rounded-sm border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-                  />
-                </div>
-
-                {/* COUNT */}
-
-                <span className="w-fit whitespace-nowrap rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-300">
-                  {filteredRecords.length} Records
-                </span>
-              </div>
-            </div>
-
-            {/* =================================================
-                TABLE
-            ================================================= */}
-
-            <div className="overflow-x-auto">
-              <table className="min-w-[1200px] w-full">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50/80 dark:border-neutral-800 dark:bg-neutral-950/50">
-                    <TableHeading>ID</TableHeading>
-
-                    <TableHeading>Amount</TableHeading>
-
-                    <TableHeading>
-                      Remittance Amount
-                    </TableHeading>
-
-                    <TableHeading>
-                      Freight Deduction
-                    </TableHeading>
-
-                    <TableHeading>
-                      Convenience Fee
-                    </TableHeading>
-
-                    <TableHeading>
-                      AWB Number
-                    </TableHeading>
-
-                    <TableHeading>
-                      UTR Number
-                    </TableHeading>
-
-                    <TableHeading>
-                      Upload Date
-                    </TableHeading>
-                  </tr>
-                </thead>
-
-                <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
-                  {filteredRecords.length > 0 ? (
-                    filteredRecords.map((remittance) => {
-                      const awbNumbers =
-                        getAwbNumbers(remittance);
-
-                      return (
-                        <tr
-                          key={remittance.id}
-                          className="transition-colors duration-150 hover:bg-gray-50/80 dark:hover:bg-neutral-800/50"
-                        >
-                          {/* ID */}
-
-                          <td className="px-5 py-4">
-                            <div className="flex items-center gap-2">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-gray-100 dark:bg-neutral-800">
-                                <Hash className="h-3.5 w-3.5 text-gray-500 dark:text-neutral-400" />
-                              </div>
-
-                              <span className="text-sm font-semibold text-gray-800 dark:text-neutral-200">
-                                {remittance?.id || "-"}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* AMOUNT */}
-
-                          <td className="px-5 py-4">
-                            <p className="whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
-                              {formatCurrency(
-                                remittance?.amount
-                              )}
-                            </p>
-                          </td>
-
-                          {/* REMITTANCE AMOUNT */}
-
-                          <td className="px-5 py-4">
-                            <span className="inline-flex whitespace-nowrap rounded-md bg-green-50 px-2.5 py-1.5 text-sm font-semibold text-green-700 dark:bg-green-500/10 dark:text-green-400">
-                              {formatCurrency(
-                                remittance?.remittance_amount
-                              )}
-                            </span>
-                          </td>
-
-                          {/* FREIGHT */}
-
-                          <td className="px-5 py-4">
-                            <p className="whitespace-nowrap text-sm font-medium text-gray-600 dark:text-neutral-300">
-                              {formatCurrency(
-                                remittance?.freight_deductions
-                              )}
-                            </p>
-                          </td>
-
-                          {/* CONVENIENCE */}
-
-                          <td className="px-5 py-4">
-                            <p className="whitespace-nowrap text-sm font-medium text-gray-600 dark:text-neutral-300">
-                              {formatCurrency(
-                                remittance?.convenience_fee
-                              )}
-                            </p>
-                          </td>
-
-                          {/* AWB */}
-
-                          <td className="px-5 py-4">
-                            {awbNumbers.length === 0 ? (
-                              <span className="text-sm text-gray-400">
-                                -
-                              </span>
-                            ) : awbNumbers.length === 1 ? (
-                              <div className="flex items-center gap-1">
-                                <span className="whitespace-nowrap rounded-md bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-300">
-                                  {awbNumbers[0]}
-                                </span>
-
-                                <button
-                                  type="button"
-                                  title="Copy AWB"
-                                  onClick={() =>
-                                    copyText(
-                                      awbNumbers[0],
-                                      "AWB"
-                                    )
-                                  }
-                                  className="rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-[#0446DB] dark:hover:bg-neutral-800"
-                                >
-                                  <Copy className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  openPopUp(remittance)
-                                }
-                                className="group inline-flex items-center gap-2 rounded-sm border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-[#0446DB] transition hover:border-blue-200 hover:bg-blue-100 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20"
-                              >
-                                <Package className="h-3.5 w-3.5" />
-
-                                {awbNumbers[0]}
-
-                                <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] shadow-sm dark:bg-neutral-800">
-                                  +{awbNumbers.length - 1}
-                                </span>
-                              </button>
-                            )}
-                          </td>
-
-                          {/* UTR */}
-
-                          <td className="px-5 py-4">
-                            {remittance?.utr_number ? (
-                              <div className="flex items-center gap-1">
-                                <span className="max-w-[180px] truncate font-mono text-xs font-medium text-gray-700 dark:text-neutral-300">
-                                  {remittance.utr_number}
-                                </span>
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    copyText(
-                                      remittance.utr_number,
-                                      "UTR"
-                                    )
-                                  }
-                                  title="Copy UTR"
-                                  className="rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-[#0446DB] dark:hover:bg-neutral-800"
-                                >
-                                  <Copy className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            ) : (
-                              <span className="text-sm text-gray-400">
-                                -
-                              </span>
-                            )}
-                          </td>
-
-                          {/* DATE */}
-
-                          <td className="px-5 py-4">
-                            <span className="whitespace-nowrap text-sm text-gray-600 dark:text-neutral-300">
-                              {formatDate(
-                                remittance?.created_at
-                              )}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        className="px-6 py-16 text-center"
-                      >
-                        <div className="flex flex-col items-center justify-center">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-800">
-                            <FileText className="h-5 w-5 text-gray-400" />
-                          </div>
-
-                          <p className="mt-3 text-sm font-semibold text-gray-700 dark:text-neutral-300">
-                            No remittance records found
-                          </p>
-
-                          <p className="mt-1 text-xs text-gray-400">
-                            {search
-                              ? "Try searching with another AWB, UTR or ID."
-                              : "Your remittance transactions will appear here."}
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* TABLE FOOTER */}
-
-            {filteredRecords.length > 0 && (
-              <div className="flex flex-col gap-2 border-t border-gray-100 bg-gray-50/60 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/40 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-gray-500 dark:text-neutral-400">
-                  Showing{" "}
-                  <span className="font-semibold text-gray-700 dark:text-neutral-200">
-                    {filteredRecords.length}
-                  </span>{" "}
-                  remittance records
-                </p>
-
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <Banknote className="h-4 w-4" />
-                  COD Settlement History
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      )
-    }
-
-      {/* =====================================================
-          AWB POPUP
-      ===================================================== */}
-
-      {popupData && (
-        <AWBModal
-          data={popupData}
-          closePopUp={closePopUp}
-          getAwbNumbers={getAwbNumbers}
-          copyText={copyText}
-        />
-      )}
-    </>
-  );
-}
-
-/* =========================================================
-   SUMMARY CARD
-========================================================= */
-
-const SummaryCard = ({
-  title,
-  value,
-  description,
-  icon: Icon,
-  type = "blue",
-}) => {
-  const styles = {
-    blue: {
-      icon: `
-        bg-blue-50
-        text-[#0446DB]
-        dark:bg-blue-500/10
-        dark:text-blue-300
-      `,
-      line: "bg-[#0446DB]",
-    },
-
-    orange: {
-      icon: `
-        bg-orange-50
-        text-orange-600
-        dark:bg-orange-500/10
-        dark:text-orange-400
-      `,
-      line: "bg-orange-500",
-    },
-
-    green: {
-      icon: `
-        bg-green-50
-        text-green-600
-        dark:bg-green-500/10
-        dark:text-green-400
-      `,
-      line: "bg-green-500",
-    },
-  };
-
-  const current =
-    styles[type] || styles.blue;
-
-  return (
-    <div className="group relative overflow-hidden rounded-sm border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
-      <div
-        className={`absolute left-0 top-0 h-full w-1 ${current.line}`}
-      />
-
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
-            {title}
-          </p>
-
-          <h3 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
-            {value}
-          </h3>
-
-          <p className="mt-2 text-xs text-gray-400 dark:text-neutral-500">
-            {description}
-          </p>
-        </div>
-
-        <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-sm ${current.icon}`}
-        >
-          <Icon
-            className="h-5 w-5"
-            strokeWidth={1.8}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* =========================================================
-   TABLE HEADING
-========================================================= */
-
-const TableHeading = ({ children }) => {
-  return (
-    <th className="whitespace-nowrap px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
-      {children}
-    </th>
-  );
-};
-
-/* =========================================================
-   AWB MODAL
-========================================================= */
-
-const AWBModal = ({
-  data,
-  closePopUp,
-  getAwbNumbers,
-  copyText,
-}) => {
-  const awbNumbers =
-    getAwbNumbers(data);
-
-  return (
-    <div
-      onClick={closePopUp}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]"
-    >
-      <div
-        onClick={(e) =>
-          e.stopPropagation()
-        }
-        className="w-full max-w-lg overflow-hidden rounded-sm border border-gray-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
-      >
-        {/* HEADER */}
-
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-neutral-800">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-[#0446DB]/10">
-              <Package className="h-4 w-4 text-[#0446DB]" />
-            </div>
-
-            <div>
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white">
-                AWB Numbers
-              </h2>
-
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
-                {awbNumbers.length} shipments in this remittance
+            <div className="mx-auto">
+              <h1 className="text-xl sm:text-2xl font-bold dark:text-white">
+                COD Remittance Dashboard
+              </h1>
+              <p className="dark:text-indigo-100 mt-1.5 md:mt-2 text-xs sm:text-sm md:text-base">
+                Track settlements, payment batches and linked COD shipments.
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={closePopUp}
-            className="flex h-8 w-8 items-center justify-center rounded-sm text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-neutral-800 dark:hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+          <div className="mx-auto py-4">
+            {/* Seller Account Info Bar */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 md:mb-6 gap-3 md:gap-4">
+              <div>
+                <h2 className="text-[#2563EB] font-bold text-xs sm:text-sm tracking-wide uppercase mb-1">
+                  Seller Account
+                </h2>
+                <p className="text-gray-500 text-xs sm:text-sm break-all">
+                  Acme Corp SELLER {analytics?.merchant_id}
+                </p>
+              </div>
+              <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                <span className="text-gray-400 text-[11px] sm:text-sm">
+                  Updated: {formatUpdatedTime(lastUpdated)}
+                </span>
 
-        {/* CONTENT */}
-
-        <div className="max-h-[55vh] overflow-y-auto p-5">
-          <div className="space-y-2">
-            {awbNumbers.map(
-              (awb, index) => (
-                <div
-                  key={`${awb}-${index}`}
-                  className="group flex items-center justify-between gap-3 rounded-sm border border-gray-200 bg-gray-50 px-3 py-3 transition hover:border-blue-200 hover:bg-blue-50/50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-blue-500/30"
+                <CustomButton
+                variant = "outline"
+                onClick={() => getAnalytics(appliedFilters)}
+                  disabled={loading}
+                  icon = {FiRefreshCw}
                 >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-xs font-semibold text-gray-500 shadow-sm dark:bg-neutral-900 dark:text-neutral-400">
-                      {index + 1}
-                    </div>
+                  Refresh
+                </CustomButton>
+                {/* <button
+                  onClick={() => getAnalytics(appliedFilters)}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs sm:text-sm font-medium transition-colors disabled:opacity-60 cursor-pointer"
+                >
+                  <FiRefreshCw
+                    className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+                  />
+                  Refresh
+                </button> */}
+              </div>
+            </div>
 
-                    <span className="truncate font-mono text-sm font-semibold text-gray-700 dark:text-neutral-200">
-                      {awb}
-                    </span>
+            {/* Cards Grid - 5 Cards (responsive) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
+              {/* Card 1: Total COD */}
+              <div className="bg-white border border-blue-100 rounded-2xl p-4 sm:p-5 flex flex-col justify-between min-h-[150px] sm:min-h-[190px] shadow-sm">
+                <div>
+                  <div className="flex items-center gap-2 text-[#0446DB] font-bold mb-3 text-base sm:text-[20px]">
+                    <BsCashStack className="w-4 h-4" />
+                    Total COD
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      copyText(
-                        awb,
-                        "AWB"
-                      )
-                    }
-                    title="Copy AWB"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-gray-400 transition hover:bg-white hover:text-[#0446DB] hover:shadow-sm dark:hover:bg-neutral-900"
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="text-lg sm:text-xl font-bold text-[#0446DB] mb-2 break-words">
+                    {formatCurrency(totalCod)}
+                  </div>
+                  <p className="text-gray-500 text-xs sm:text-sm">
+                    Overall COD amount
+                  </p>
                 </div>
-              )
-            )}
+              </div>
+
+              {/* Card 2: Total Paid */}
+              <div className="bg-[#F0FDF4] border border-[#DCFCE7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between min-h-[150px] sm:min-h-[190px]">
+                <div>
+                  <div className="flex items-center gap-2 text-[#16A34A] font-bold mb-3 text-base sm:text-[20px]">
+                    <BsBank className="w-4 h-4" />
+                    Total Paid
+                  </div>
+                  <div className="text-lg sm:text-xl font-bold text-[#16A34A] mb-2 break-words">
+                    {formatCurrency(totalPaid)}
+                  </div>
+                  <p className="text-gray-500 text-xs sm:text-sm">
+                    Remitted to you
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 3: Future Remittance */}
+              <div className="bg-[#FFFCEB] border border-[#FEF3C7] rounded-2xl p-4 sm:p-5 flex flex-col justify-between min-h-[150px] sm:min-h-[190px]">
+                <div>
+                  <div className="flex items-center gap-2 text-[#D97706] font-bold mb-3 text-base sm:text-[20px]">
+                    <HiOutlineClock className="w-4 h-4" />
+                    Future Remittance
+                  </div>
+                  <p className="text-gray-500 text-[11px] sm:text-xs mb-1">
+                    No UTR generated yet
+                  </p>
+                  <div className="text-lg sm:text-xl font-bold text-[#D97706] mb-2 break-words">
+                    {formatCurrency(futureRemittance)}
+                  </div>
+                  <p className="text-gray-500 text-xs sm:text-sm">
+                    Pending settlement
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 4: Last Remittance */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between min-h-[150px] sm:min-h-[190px] shadow-sm">
+                <div>
+                  <div className="flex items-center gap-2 text-[#0446DB] font-bold mb-3 text-base sm:text-[20px]">
+                    <FiArrowRight className="w-4 h-4" />
+                    Last Remittance
+                  </div>
+                  {lastRemittance.created_at ? (
+                    <>
+                      <p className="text-gray-500 text-[11px] sm:text-xs mb-1">
+                        {formatDate(lastRemittance.created_at)}
+                      </p>
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className="text-base sm:text-lg font-bold text-gray-900">
+                          {formatCurrency(lastRemittance.amount)}
+                        </span>
+                      </div>
+                      <p className="text-[11px] sm:text-xs text-gray-500 truncate">
+                        UTR:{" "}
+                        <span className="text-gray-800">
+                          {lastRemittance.utr_number}
+                        </span>
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-gray-400 text-xs sm:text-sm">
+                      No recent remittance
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Card 5: Next Expected COD */}
+              <div className="bg-[#EFF6FF] border border-[#DBEAFE] rounded-2xl p-4 sm:p-5 flex flex-col justify-between min-h-[150px] sm:min-h-[190px]">
+                <div>
+                  <div className="flex items-center gap-2 text-[#2563EB] font-bold mb-3 text-base sm:text-[20px]">
+                    <FiClock className="w-4 h-4" />
+                    Next Expected COD
+                  </div>
+                  <p className="text-gray-500 text-[11px] sm:text-xs mb-1">
+                    {nextExpectedCod.deliveryDate
+                      ? `Expected: ${formatDate(nextExpectedCod.deliveryDate)}`
+                      : "No delivery scheduled"}
+                  </p>
+                  <div className="text-lg sm:text-xl font-bold text-[#2563EB] mb-2 break-words">
+                    {formatCurrency(nextExpectedCod.amount)}
+                  </div>
+                  <p className="text-gray-500 text-xs sm:text-sm mb-1">
+                    Orders:{" "}
+                    <span className="text-[#1E293B] font-bold text-sm sm:text-base">
+                      {nextExpectedCod.count}
+                    </span>
+                  </p>
+                  <p className="text-gray-500 text-xs sm:text-sm">
+                    Cycle:{" "}
+                    <span className="text-[#1E293B] font-semibold">
+                      {nextExpectedCod.cycle}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Section */}
+            <div>
+              <div className="flex flex-row justify-between items-center mb-4 gap-3">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                    Remittance History
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    {records.length} payment batches
+                  </p>
+                </div>
+
+                {/* Filter button — right aligned on all screens */}
+                <div className="relative" ref={filterRef}>
+                  <button
+                    onClick={() => setShowFilters((prev) => !prev)}
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
+                      showFilters
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-[#EEF2F6] text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    <FiFilter /> Filters
+                    {hasActiveFilters && (
+                      <span className="w-2 h-2 rounded-full bg-blue-600 ml-1"></span>
+                    )}
+                  </button>
+
+                  {showFilters && (
+                    <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-xs sm:w-80 bg-white border border-gray-200 rounded-xl shadow-lg p-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-semibold text-gray-800">
+                          Filter Records
+                        </h3>
+                        <button
+                          onClick={() => setShowFilters(false)}
+                          className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          <FiX />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {/* Search Bar */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            Search by UTR
+                          </label>
+                          <div className="relative">
+                            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <input
+                              type="text"
+                              placeholder="Enter UTR number..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") applyFilters();
+                              }}
+                              className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Date Range */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            From Date
+                          </label>
+                          <input
+                            type="date"
+                            value={startDate}
+                            max={endDate || undefined}
+                            onChange={(e) => {
+                              const newStart = e.target.value;
+                              setStartDate(newStart);
+
+                              if (endDate && newStart && endDate <= newStart) {
+                                setEndDate("");
+                              }
+                            }}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                          />
+                          <label className="block text-xs font-medium text-gray-500 mb-1">
+                            To Date
+                          </label>
+                          <input
+                            type="date"
+                            value={endDate}
+                            min={startDate || undefined}
+                            disabled={!startDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            placeholder={
+                              !startDate ? "Select From Date first" : ""
+                            }
+                            className={`w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                              !startDate
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                : ""
+                            }`}
+                          />
+                          {!startDate && (
+                            <p className="text-[11px] text-gray-400 mt-1">
+                              Please select From Date first
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 mt-5">
+                        <button
+                          onClick={clearFilters}
+                          className="flex-1 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Clear
+                        </button>
+                        <button
+                          onClick={applyFilters}
+                          className="flex-1 py-2 text-sm font-medium text-white bg-[#0446DB] hover:bg-blue-700 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Table Container */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[1000px]">
+                    <thead>
+                      <tr className="bg-[#F8F9FB] border-b border-gray-200 text-[#64748B] text-[11px] uppercase tracking-wider font-semibold">
+                        <th
+                          className="px-3 sm:px-6 py-3 sm:py-4 flex items-center gap-1 cursor-pointer hover:text-gray-900 transition-colors select-none"
+                          onClick={() => handleSort("created_at")}
+                        >
+                          Remittance Date
+                          {sortConfig.key === "created_at" &&
+                          sortConfig.direction === "asc" ? (
+                            <FiArrowUp className="w-3 h-3 text-blue-600" />
+                          ) : (
+                            <FiArrowDown
+                              className={`w-3 h-3 ${
+                                sortConfig.key === "created_at"
+                                  ? "text-blue-600"
+                                  : ""
+                              }`}
+                            />
+                          )}
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                          COD Collected
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
+                          Freight Deduction
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
+                          Convenience Fee
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
+                          Remitted to You
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                          UTR Number
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap">
+                          Shipments
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {currentRecords.map((record, idx) => {
+                        const shipmentCount = Number(record.awb_count) || 0;
+                        const freight = Number(record.freight_deductions) || 0;
+                        const convenience = Number(record.convenience_fee) || 0;
+
+                        return (
+                          <tr
+                            key={record.utr_number || idx}
+                            className="hover:bg-gray-50/50 transition-colors"
+                          >
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-800 whitespace-nowrap">
+                              {formatDate(record.created_at)}
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+                              {formatCurrency(record.amount)}
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap text-right">
+                              
+                                <span className="text-red-600 font-medium">
+                                  {formatCurrency(freight)}
+                                </span>
+                             
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap text-right">
+                              
+                                <span className="text-red-600 font-medium">
+                                  {formatCurrency(convenience)}
+                                 </span>
+                             
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-900 whitespace-nowrap text-right">
+                              {formatCurrency(record.remittance_amount)}
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                {record.utr_number || "-"}
+                                {record.utr_number && (
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        record.utr_number,
+                                      );
+                                      toast.success("UTR copied!");
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                                  >
+                                    <FiCopy className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-500 text-center">
+                              {shipmentCount}
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
+                              <button
+                                onClick={() =>
+                                  handleExportRemittance(record.utr_number)
+                                }
+                                disabled={exportLoading}
+                                title="Download Remittance CSV"
+                                className="p-2 text-[#0446DB] hover:bg-blue-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50 border-2"
+                              >
+                                <FiDownload className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {currentRecords.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan="8"
+                            className="px-6 py-12 text-center text-gray-500"
+                          >
+                            No records match your current filters.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="px-3 sm:px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50/50">
+                    <span className="text-xs sm:text-sm text-gray-500">
+                      Showing{" "}
+                      <span className="font-medium">
+                        {indexOfFirstItem + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(indexOfLastItem, sortedRecords.length)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {sortedRecords.length}
+                      </span>{" "}
+                      entries
+                    </span>
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <button
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}
+                        className="p-2 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      >
+                        <FiChevronLeft className="w-4 h-4" />
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from(
+                          { length: totalPages },
+                          (_, i) => i + 1,
+                        ).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-8 h-8 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center transition-colors cursor-pointer ${
+                              currentPage === page
+                                ? "bg-[#0446DB] text-white"
+                                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages),
+                          )
+                        }
+                        disabled={currentPage === totalPages}
+                        className="p-2 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      >
+                        <FiChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* FOOTER */}
-
-        <div className="flex items-center justify-between gap-3 border-t border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/50">
-          <button
-            type="button"
-            onClick={() =>
-              copyText(
-                awbNumbers.join(", "),
-                "All AWB numbers"
-              )
-            }
-            className="inline-flex h-9 items-center gap-2 rounded-sm border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-600 transition hover:border-[#0446DB]/30 hover:text-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
-          >
-            <Copy className="h-3.5 w-3.5" />
-            Copy All
-          </button>
-
-          <button
-            type="button"
-            onClick={closePopUp}
-            className="h-9 rounded-sm bg-[#0446DB] px-5 text-xs font-semibold text-white transition hover:bg-[#033BB9]"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
+      )}
+    </>
   );
-};
+}

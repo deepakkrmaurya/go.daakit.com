@@ -758,18 +758,17 @@ function BookOrders() {
                                 </div>
 
                                 {selectedStatus === "booked" && (
-                            <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                            <div className="overflow-hidden mt-4 rounded-sm border border-emerald-200 dark:border-emerald-500/20">
                             {/* SECTION HEADER */}
-                            <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                            <div className="border-b border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
                                 <div className="flex items-start justify-between gap-3">
                                 <div>
                                     <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-                                    Schedule Pickup
+                                     Schedule Self Pickup
                                     </h3>
 
                                     <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                                    Generate a pickup request for all selected booked
-                                    orders.
+                                   Schedule self-pickup for all selected orders.
                                     </p>
                                 </div>
 
@@ -784,12 +783,11 @@ function BookOrders() {
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-                                    Generate Bulk Pickup Request
+                                    Schedule Self Pickup for Selected Orders
                                     </p>
 
                                     <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                                    Selected booked orders will be sent for pickup
-                                    scheduling.
+                                     selected orders will be included in the self-pickup schedule.
                                     </p>
                                 </div>
 
@@ -816,9 +814,8 @@ function BookOrders() {
                                         order_ids
                                     );
                                     }}
-                                    className="h-10 w-full shrink-0 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5] disabled:cursor-not-allowed disabled:bg-neutral-300 dark:disabled:bg-neutral-700 sm:w-auto"
-                                >
-                                    Schedule Pickup
+                                     className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-emerald-600 px-5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"                                >
+                                     Schedule Self Pickup
                                 </Button>
                                 </div>
                             </div>
@@ -857,7 +854,7 @@ function BookOrders() {
                             </div>
 
                             {/* ================= FOOTER ================= */}
-                            <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+                            <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 my-0 dark:border-neutral-800 dark:bg-neutral-950/30">
                                 <AlertDialogCancel 
                                  onClick={()=>{
                                      clearAllState()
@@ -1260,7 +1257,7 @@ function BookOrders() {
                                                         className="border px-2 py-1 rounded-md"
                                                         required
                                                     >
-                                                        <option value="" disabled>Select Vendorr</option>
+                                                        <option value="" disabled>Select Vendor</option>
                                                         {vendor.map((vendor) => (
                                                             <option key={vendor.vendor_id} value={vendor.vendor_id}>
                                                                 {vendor.vendor_id} : {vendor.vendor_name}

@@ -97,7 +97,7 @@ const Page404 = lazy(() => import("./components/Page404"));
 const OrderSuccess = lazy(() => import("./components/OrderSuccess"));
 const HubList = lazy(() => import("./components/vendor_components/hub/HubList"));
 const CreateHub = lazy(() => import("./components/vendor_components/hub/CreateHub"));
-const OrderHistory = lazy(() => import("./components/admin/OrderHistory"));
+const OrderHistory = lazy(() => import("./components/admin/order/OrderHistory"));
 const PriceDetails = lazy(() => import("./components/merchant_component/PriceDetails"));
 const MerchantRecharge = lazy(() => import("./components/merchant_component/Recharge"));
 const PriceCalculate = lazy(() => import("./components/merchant_component/PriceCalculate"));
@@ -122,7 +122,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { jwtDecode } from "jwt-decode";
 import { UserRoles } from "@/utils/UserRole";
 import BookOrders from "./components/admin/order/BookOrders";
-import NewMappingOrders from "./components/admin/NewMappingOrders";
+import NewMappingOrders from "./components/admin/order/NewMappingOrders";
 import AssignmentConsole from "./components/User/AssignmentConsole";
 import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
 import { ScrollToTop } from "./components/UiComponents/ScrollToTop";
@@ -247,7 +247,7 @@ function App() {
         { path: "role-permission", element: <Suspense fallback={<LoadingFallback />}><RolePermission /></Suspense> },
         { path: "add-user", element: <Suspense fallback={<LoadingFallback />}><CreateAdmin /></Suspense> },
         { path: "bookOrders", element: <Suspense fallback={<LoadingFallback />}><BookOrders /></Suspense> },
-        { path: "orderNewMappings", element: <Suspense fallback={<LoadingFallback />}><NewMappingOrders /></Suspense> },
+        // { path: "orderNewMappings", element: <Suspense fallback={<LoadingFallback />}><NewMappingOrders /></Suspense> },
         { path: "billingandinvoices", element: <Suspense fallback={<LoadingFallback />}><BillingAndInvoices /></Suspense> },
         { path: "dev/analytics", element: <Suspense fallback={<LoadingFallback />}><DevAnalytics /></Suspense> },
         { path: "onboarding/distribution-center", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterOnboarding /></Suspense> },
@@ -467,7 +467,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <InspectController />
+      {/* <InspectController /> */}
 
       <RouterProvider router={appRouter}>
         <ScrollToTop />

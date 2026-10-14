@@ -55,17 +55,13 @@ import {
 } from "@/components/ui/dialog"
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
-function NewMappingOrders() {
-
+function NewMappingOrders({orders}) {
   const [isOpenIndividualVendorMap, setIsOpenIndividualVendorMap] = useState("");
   const [fetchBulkAssignmentVendor, setFetchBulkAssignmentVendor] = useState(false);
   const [selectedBulkOrders, setSelectedBulkOrders] = useState([]);
   const [assignmentState, setAssignmentState] = useState("");
   const [vendor, setVendor] = useState([]);
-  const [isOpenIndividualVendorAssignmnet, setIsOpenIndividualVendorAssignmnet] = useState("");
-  const [copySuccess, setCopySuccess] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [orders, setOrders] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(25);
@@ -122,9 +118,9 @@ function NewMappingOrders() {
         },
       });
 
-      setOrders(res.data.data.records || []);
+      // setOrders(res.data.data.records || []);
 
-      setTotalPages(res.data?.data?.pagination.totalPages || 1)
+      // setTotalPages(res.data?.data?.pagination.totalPages || 1)
     } catch (err) {
 
       toast.error(err.response?.data?.message || err.message || "An error occurred while fetching orders.");
@@ -373,7 +369,7 @@ useEffect(() => {
     
     {
       loadingPage ? (
-         <div className=" w-full h-[90vh] flex justify-center items-center">
+         <div className=" w-full  flex justify-center items-center">
                   <div>
                     <Loader2 className="h-8 w-8 animate-spin mx-auto" />
                     <p className="mt-2"> Loading Order Details...</p>
@@ -382,7 +378,7 @@ useEffect(() => {
       ):(
         <>
         
-    <div className="bg-[#f5f8fb] h-screen">
+    <div className="bg-[#f5f8fb]">
       <div className=" left-0  z-10  dark:bg-neutral-900 py-4 md:py-6  ">
         <div className="  mx-auto px-8  ">
           {/* Mobile Layout */}
@@ -392,7 +388,7 @@ useEffect(() => {
               <h1 className="text-xl font-bold dark:text-white">New Mapped Orders</h1>
 
               <div className="flex items-center gap-2">
-                <Drawer direction="right" open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                {/* <Drawer direction="right" open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                   <DrawerTrigger asChild>
                     <Button variant="outline"
                       className="bg-white text-[#0446DB] font-medium px-5 py-2.5 rounded-lg shadow hover:bg-indigo-100 hover:shadow-lg transition flex items-center gap-2"
@@ -533,7 +529,7 @@ useEffect(() => {
                       </DrawerFooter>
                     </form>
                   </DrawerContent>
-                </Drawer>
+                </Drawer> */}
               </div>
             </div>
           </div>
@@ -546,10 +542,10 @@ useEffect(() => {
           <TableHeader>
             <TableRow>
               <TableHead>AWB NUMBER</TableHead>
-              <TableHead>NEW VENDOR ID</TableHead>
+              <TableHead>NEW VENDOR NAME</TableHead>
               <TableHead>NEW VENDOR REMARKS</TableHead>
               <TableHead>NEW VENDOR STATUS</TableHead>
-              <TableHead>OLD VENDOR ID</TableHead>
+              <TableHead>OLD VENDOR NAME</TableHead>
               <TableHead>OLD VENDOR REMARKS</TableHead>
               <TableHead>OLD VENDOR STATUS</TableHead>
               <TableHead>ORDER STATUS</TableHead>
@@ -566,21 +562,21 @@ useEffect(() => {
                   <p className="mt-2">Loading orders...</p>
                 </TableCell>
               </TableRow>
-            ) : orders.length === 0 ? (
+            ) : orders?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={10} className="text-center py-10">
                   No orders found
                 </TableCell>
               </TableRow>
             ) : (
-              orders.map((order) => {
+              orders?.map((order) => {
                 return (
                   <TableRow key={order.id}>
                     <TableCell>
                       {order.awb_number}
                     </TableCell>
                     <TableCell>
-                      {order.new_vendor_id ? order.new_vendor_id : "-"}
+                      {order.new_vendor_id ? order.new_vendor_name : "-"}
                     </TableCell>
                     <TableCell>
                       {order.new_vendor_remarks ? order.new_vendor_remarks : "-"}
@@ -589,7 +585,7 @@ useEffect(() => {
                       {order.new_vendor_status ? order.new_vendor_status : "-"}
                     </TableCell>
                     <TableCell>
-                      {order.old_vendor_id ? order.old_vendor_id : "-"}
+                      {order.old_vendor_id ? order.old_vendor_name : "-"}
                     </TableCell>
                     <TableCell>
                       {order.old_vendor_remarks ? order.old_vendor_remarks : "-"}

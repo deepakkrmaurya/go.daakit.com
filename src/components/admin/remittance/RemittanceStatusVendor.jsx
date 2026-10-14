@@ -45,15 +45,18 @@ import {
   LockKeyhole,
   EyeOff,
   Eye,
+  ArrowLeft,
 } from "lucide-react";
 
 import AxiosInstance from "../../../Helper/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 const PAGE_PASSWORD = "DaakitFinance@30092026#0212";
 const PAGE_UNLOCK_KEY = "vendor_remittance_unlocked_at";
 const PAGE_UNLOCK_TIME = 5 * 60 * 1000;
 function RemittanceStatusVendor() {
+  const navigate = useNavigate();
   // =========================================================
   // STATES
   // =========================================================
@@ -493,10 +496,10 @@ function RemittanceStatusVendor() {
         <AlertDialog open={!isPageUnlocked}>
         <AlertDialogContent
           onEscapeKeyDown={(e) => e.preventDefault()}
-          overlayClassName="left-0 md:left-64"
+          overlayClassName="left-0"
           className="
-            left-1/2
-            w-[calc(100%-32px)]
+            
+            
             max-w-[400px]
             -translate-x-1/2
             rounded-sm
@@ -505,7 +508,7 @@ function RemittanceStatusVendor() {
             p-0
             shadow-xl
 
-            md:left-[calc(50%+8rem)]
+            
 
             dark:border-gray-700
             dark:bg-gray-900
@@ -513,9 +516,28 @@ function RemittanceStatusVendor() {
         >
           <div className="p-6">
             <AlertDialogHeader className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-                <LockKeyhole className="h-5 w-5" />
-              </div>
+              
+<div className="relative mb-4 flex w-full items-center ">
+  {/* Lock Icon - Center */}
+  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+    <LockKeyhole className="h-5 w-5" />
+  </div>
+
+  {/* Back Button - Right */}
+  <button
+    type="button"
+    onClick={() => navigate(-1)}
+    className="absolute right-0 flex items-center gap-1.5
+      rounded-sm px-2 py-1.5 text-sm font-medium
+      text-gray-600 transition-colors
+      hover:bg-blue-50 hover:text-[#0446DB]
+      dark:text-gray-300 dark:hover:bg-gray-800"
+  >
+    <ArrowLeft className="h-4 w-4" />
+    Back
+  </button>
+</div>
+
 
               <AlertDialogTitle className="text-center text-xl font-semibold text-gray-900 dark:text-white">
                 Verify Access

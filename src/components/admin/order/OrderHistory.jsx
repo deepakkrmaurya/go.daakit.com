@@ -28,15 +28,17 @@ import {
   ShieldCheck,
   UserCheck,
   IndianRupee,
-  Loader2
+  Loader2,
+  GitMerge
 } from "lucide-react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { FaRupeeSign } from "react-icons/fa";
+import NewMappingOrders from "./NewMappingOrders";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
 export default function OrderHistory() {
-
+   
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState("");
@@ -135,12 +137,12 @@ export default function OrderHistory() {
   };
 
   const [searchParams] = useSearchParams();
-  const awbFromUrl = searchParams.get("awb");
+  const awbFromUrl = searchParams.get("awb_number");
   useEffect(() => {
 
-    if (searchParams.get("awb")) {
-      setOrderId(searchParams.get("awb"));
-      getHistory(searchParams.get("awb"));
+    if (searchParams.get("awb_number")) {
+      setOrderId(searchParams.get("awb_number"));
+      getHistory(searchParams.get("awb_number"));
     }
   }, [awbFromUrl]);
 
@@ -389,6 +391,16 @@ export default function OrderHistory() {
                         Rider Assignment 
                       </span>
                     </button>
+                    <button
+                      onClick={() => setActiveTab("newMappedOrder")}
+                      className={`py-4 px-1 font-medium text-sm border-b-2 transition-colors ${activeTab === "newMappedOrder" ? "border-[#0446DB] text-[#0446DB]" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+                    >
+                      <span className="flex whitespace-nowrap items-center gap-2">
+                        <GitMerge className="w-4 h-4" />
+                        New Mappings
+                      </span>
+                    </button>
+                    
                     {
                       history?.cod_remittance.length > 0 && (
                         <button
@@ -402,6 +414,7 @@ export default function OrderHistory() {
                         </button>
                       )
                     }
+
                   </nav>
                 </div>
 
@@ -733,6 +746,32 @@ export default function OrderHistory() {
                                 </p>
                               </div>
                             )}
+
+
+                          </div>
+
+
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {activeTab === "newMappedOrder" && (
+                    <div className="space-y-4">
+                      
+                      {activeTab === "newMappedOrder" && (
+                        <div className="space-y-6">
+                          {/* COD Remittance Header with Stats */}
+
+
+
+
+                          {/* COD Remittance Table */}
+                          <div className="bg-white rounded-sm  border border-gray-200 overflow-hidden">
+                           
+                           <NewMappingOrders 
+                             orders = {history?.new_order_mappings}
+                           />
 
 
                           </div>

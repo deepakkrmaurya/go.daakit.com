@@ -31,14 +31,15 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, EyeOff, Filter, Landmark, Loader2, LockKeyhole, Upload } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowLeft, Download, Eye, EyeOff, Filter, Landmark, Loader2, LockKeyhole, Upload } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 const PAGE_PASSWORD = "DaakitFinance@30092026#0212";
 const PAGE_UNLOCK_KEY = "cod_remittance_unlocked_at";
 const PAGE_UNLOCK_TIME = 5 * 60 * 1000;
 function CODRemittances() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
@@ -426,9 +427,28 @@ const handlePageUnlock = (e) => {
   >
     <div className="p-6">
       <AlertDialogHeader className="flex flex-col items-center text-center">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-          <LockKeyhole className="h-5 w-5" />
-        </div>
+        
+<div className="relative mb-4 flex w-full items-center justify-center">
+  {/* Lock Icon - Center */}
+  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+    <LockKeyhole className="h-5 w-5" />
+  </div>
+
+  {/* Back Button - Right */}
+  <button
+    type="button"
+    onClick={() => navigate(-1)}
+    className="absolute right-0 flex items-center gap-1.5
+      rounded-sm px-2 py-1.5 text-sm font-medium
+      text-gray-600 transition-colors
+      hover:bg-blue-50 hover:text-[#0446DB]
+      dark:text-gray-300 dark:hover:bg-gray-800"
+  >
+    <ArrowLeft className="h-4 w-4" />
+    Back
+  </button>
+</div>
+
 
         <AlertDialogTitle className="text-center text-xl font-semibold text-gray-900 dark:text-white">
           Verify Access
@@ -495,7 +515,7 @@ const handlePageUnlock = (e) => {
       </form>
     </div>
   </AlertDialogContent>
-</AlertDialog>
+    </AlertDialog>
       {loadingPage ? (
         <>
           <div className=" w-full h-[90vh] flex justify-center items-center">

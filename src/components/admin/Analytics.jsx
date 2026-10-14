@@ -16,6 +16,7 @@ import {
   RefreshCw,
   X,
   Check,
+  Download,
 } from "lucide-react";
 
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
@@ -98,25 +99,11 @@ export default function Analytics() {
   const scopedOrders = hasActiveScope
     ? filteredStats?.order_status_counts
     : null;
-  const totalOrdersKpi =
-    Number(
-      scopedOrders
-        ? scopedOrders.total_orders
-        : analytics?.overall_orders?.total_orders,
-    ) || 0;
-  const deliveredOrdersKpi =
-    Number(scopedOrders ? scopedOrders.delivered : liveOrders?.["delivered"]) ||
-    0;
-  const ndrOrdersKpi =
-    Number(scopedOrders ? scopedOrders.ndr : liveOrders?.["ndr"]) || 0;
 
-  const rtoOrdersKpi =
-    Number(
-      scopedOrders
-        ? scopedOrders.rto_delivered
-        : (liveOrders?.["rto delivered"] ?? liveOrders?.["rto_delivered"]),
-    ) || 0;
-  
+   const totalOrdersKpi =  Number(analytics?.overall_orders?.total_orders) || 0;
+  const deliveredOrdersKpi =  Number(liveOrders?.["delivered"]) || 0
+  const ndrOrdersKpi =  Number(liveOrders?.["ndr"]) || 0;
+  const rtoOrdersKpi =  Number(liveOrders?.["rto delivered"])  || 0
   const excludedStatuses = [
   "ndr",
   "lost",
@@ -755,7 +742,7 @@ const timer = setInterval(() => {
 
                         prevValue={200}
 
-                        newValue={totalOrdersKpi.toLocaleString("en-IN")}
+                        newValue={totalOrdersKpi || 0}
 
                         className=""
 
@@ -791,10 +778,9 @@ const timer = setInterval(() => {
 
                     <span className="font-semibold">
 
-                      {percentOfOrders(deliveredOrdersKpi)}%
+                      {100}%
 
                     </span>
-
                   </div>
 
 
@@ -807,7 +793,7 @@ const timer = setInterval(() => {
 
                       style={{
 
-                        width: `${percentOfOrders(deliveredOrdersKpi)}%`,
+                        width: `${percentOfOrders(totalOrdersKpi)}%`,
 
                       }}
 
@@ -1480,20 +1466,19 @@ const timer = setInterval(() => {
                         <tr>
                           {[
                             "Merchant",
-                            "Total",
-                            "Non Cancelled Orders",
-                            "Delivered",
-                            "Cancelled",
-                            "Lost",
                             "Booked",
                             "Pending Pickup",
                             "Picked",
                             "In Transit",
                             "Out For Delivery",
+                            "Delivered",
                             "NDR",
                             "Undelivered",
                             "RTO In Iransit",
                             "RTO Delivered",
+                            // "Cancelled",
+                            // "Lost",
+                            // "Action"
                           ].map((h) => (
                             <th
                               key={h}
@@ -1524,25 +1509,40 @@ const timer = setInterval(() => {
                                 </span>
                               </td>
                               {[
-                                "total_orders_placed",
-                                "non_cancelled_orders",
-                                "delivered_orders",
-                                "cancelled_orders",
-                                "lost_orders",
                                 "booked_orders",
                                 "pending_pickup_orders",
                                 "picked_orders",
                                 "in_transit_orders",
                                 "out_for_delivery_orders",
+                                "delivered_orders",
                                 "ndr_orders",
                                 "undelivered_orders",
                                 "rto_in_transit_orders",
                                 "rto_delivered_orders",
+                                // "cancelled_orders",
+                                // "lost_orders",
                               ].map((k) => (
                                 <td key={k} className="px-3 py-3 tabular-nums">
                                   {formatCount(row[k])}
                                 </td>
                               ))}
+                              
+                          {/* <td className="px-3 py-3 tabular-nums">
+                            <button
+                              type="button"
+                              // onClick={() => handleDownload(item)}
+                              className="inline-flex items-center gap-2 rounded-md
+                                bg-blue-50 px-3 py-1.5 text-xs font-semibold
+                                text-[#0446DB] transition-colors
+                                hover:bg-blue-100
+                                dark:bg-blue-500/10 dark:text-blue-400
+                                dark:hover:bg-blue-500/20"
+                            >
+                              <Download className="h-4 w-4" />
+                              Download
+                            </button>
+                          </td> */}
+
                             </tr>
                           );
                         })}
