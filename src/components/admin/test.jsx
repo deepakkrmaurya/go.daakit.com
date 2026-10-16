@@ -1,714 +1,3352 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import Loader from "../Loader.jsx";
-import { toast } from "react-toastify";
-import { ArrowLeft, Eye, EyeOff, Loader2, LockKeyhole } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { useNavigate } from "react-router-dom";
-const baseURL = import.meta.env.VITE_BASE_URL;
-const PAGE_PASSWORD = "DaakitFinance@30092026#0212";
-const PAGE_UNLOCK_KEY = "merchant_remittance_unlocked_at";
-const PAGE_UNLOCK_TIME = 5 * 60 * 1000;
-export default function MerchantRemittances() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState("history");
-  // const [merchanntId,setMerchanrId]=useState('')
-  const [allMerchants, setAllMerchants] = useState([]);
-  const [merchant, setMerchant] = useState("");
-  const [stats, setStats] = useState(null);
+<div className="flex h-[calc(100dvh-200px)] min-h-[350px] w-full flex-col overflow-hidden rounded-sm border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+              <div className="min-h-0 flex-1 overflow-auto overscroll-contain bg-[#f5f8fb] dark:bg-neutral-900/50">
+                <div className="min-w-max">
+                  <div >
+                    <Table>
+                      <TableHeader className="sticky top-0 z-20 bg-gray-100 dark:bg-neutral-800">
+                        <TableRow>
+                          {selectedStatus === "booked" ||
+                          selectedStatus === "pending pickup" ||
+                          selectedStatus === "rto in transit" ||
+                          selectedStatus === "picked" ||
+                          selectedStatus === "in transit" ||
+                          selectedStatus === "undelivered" ||
+                          selectedStatus === "undelivered assigned" ||
+                          selectedStatus === "out for delivery" ? (
+                            <TableHead className=" px-2 font-semibold py-3">
+                              <div>
+                                <span>
+                                  <input
+                                    type="checkbox"
+                                    className="w-4 h-4 text-indigo-600 rounded border-gray-300"
+                                    checked={
+                                      selectedBulkOrders.length ===
+                                      orders.filter(
+                                        (o) =>
+                                          o.tpc_awb_number === null &&
+                                          o.rider_preference === "daakit",
+                                      ).length
+                                    }
+                                    onChange={toggleSelectAll}
+                                  />
+                                </span>
+                              </div>
+                            </TableHead>
+                          ) : (
+                            <>
+                              <TableHead className="text-left px-2 font-semibold py-3">-</TableHead>
+                            </>
+                          )}
 
-  const [popupData, setPopupData] = useState(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [advanceFilters, setAdvanceFilters] = useState({
-    startDate: "",
-    endDate: "",
-    awb_number: "",
-  });
+                          <TableHead className="text-left px-2 font-semibold py-3">
+                            ORDER ID
+                          </TableHead>
+                          <TableHead className="text-left uppercase px-2 font-semibold py-3">
+                            
+                          Seller Details
+                          </TableHead>
 
-  // lock
-const [isPageUnlocked, setIsPageUnlocked] = useState(false);
-const [pagePassword, setPagePassword] = useState("");
-const [passwordError, setPasswordError] = useState("");
-const [showPagePassword, setShowPagePassword] = useState(false);
+                          {(selectedStatus === "pending pickup" ||
+                            selectedStatus === "out for delivery" ||
+                            selectedStatus === "delivered" ||
+                            selectedStatus === "picked" ||
+                            selectedStatus === "in transit" ||
+                            selectedStatus === "undelivered assigned") && (
+                            <>
+                              <TableHead className="text-left px-2 font-semibold py-3">RIDER ID/VENDOR ID</TableHead>
+                            </>
+                          )}
 
-useEffect(() => {
-  const checkPageLock = () => {
-    const unlockedAt = Number(
-      sessionStorage.getItem(PAGE_UNLOCK_KEY) || 0
-    );
+                          <TableHead className="text-left px-2 font-semibold py-3">CONSIGNEE ADDRESS</TableHead>
+                          <TableHead className="text-left px-2 font-semibold py-3">PACKAGE DETAILS</TableHead>
 
-    const isValid =
-      unlockedAt > 0 &&
-      Date.now() - unlockedAt < PAGE_UNLOCK_TIME;
-
-    if (isValid) {
-      setIsPageUnlocked(true);
-    } else {
-      sessionStorage.removeItem(PAGE_UNLOCK_KEY);
-      setIsPageUnlocked(false);
-    }
-  };
-
-  checkPageLock();
-
-  const interval = setInterval(checkPageLock, 1000);
-
-  return () => clearInterval(interval);
-}, []);
-
-const handlePageUnlock = (e) => {
-  e.preventDefault();
-
-  if (pagePassword !== PAGE_PASSWORD) {
-    setPasswordError("Incorrect password. Please try again.");
-    return;
-  }
-
-  sessionStorage.setItem(
-    PAGE_UNLOCK_KEY,
-    String(Date.now())
-  );
-
-  setIsPageUnlocked(true);
-  setPagePassword("");
-  setPasswordError("");
-};
-// lock
-
-  const [filterUpdate, setFilterUpdate] = useState(false);
-  const getMerchants = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${baseURL}/api/admin/getAllMerchants`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      setAllMerchants(res.data.merchants);
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Error fetching merchants",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getMerchantStats = async (id) => {
-    setMerchant(id);
-
-    setLoading(true);
-    try {
-      const res = await axios.get(
-        `${baseURL}/api/admin/getMerchantRemittanceSummary/${id || merchant}`,
-        {
-          params: {
-            start_date: advanceFilters.startDate,
-            end_date: advanceFilters.endDate,
-            awb_numbers: advanceFilters.awb_number,
-          },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-
-      setStats(res.data);
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Error while fetching the merchant's stat",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (filterUpdate) {
-      getMerchantStats();
-    }
-  }, [filterUpdate]);
-
-  const handleChange = async (e) => {
-    setLoading(true);
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const res = await axios.post(
-        `${baseURL}/api/admin/uploadMerchantRemittance`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-      toast.success("File uploaded successfully");
-      getMerchants();
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Error while uploading file to take action on bulk orders",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const downloadMerchantRemittanceSampleFile = async () => {
-    try {
-      const res = await axios.get(
-        `${baseURL}/api/admin/downloadMerchantRemittanceSampleFile`,
-        {
-          responseType: "blob",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "RemittanceSampleFile.csv");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {}
-  };
-
-  // advance filter
-
-  function toCapitalizeEachWord(str) {
-    return str
-      .split(" ")
-      .map((word) => {
-        if (!word) return "";
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-      })
-      .join(" ");
-  }
-
-  const resetAdvanceFilters = async () => {
-    const today = new Date();
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-    setAdvanceFilters((prev) => ({
-      endDate: today.toISOString().split("T")[0],
-      startDate: oneMonthAgo.toISOString().split("T")[0],
-      awb_number: "",
-    }));
-  };
-
-  useEffect(() => {
-    resetAdvanceFilters();
-  }, []);
-  // advance filter
-
-  const openPopUp = (remmitance) => {
-    setPopupData(remmitance);
-  };
-
-  const closePopUp = () => {
-    setPopupData(null);
-  };
-
-  useEffect(() => {
-    getMerchants();
-  }, []);
-
-  const [loadingPage, setLoadingPage] = useState(true);
-
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setLoadingPage(false);
-  }, 2000);
-
-  return () => clearTimeout(timer);
-}, []);
-
-  return (
-    <>
-    <AlertDialog open={!isPageUnlocked}>
-  <AlertDialogContent
-    onEscapeKeyDown={(e) => e.preventDefault()}
-    className="w-[calc(100%-32px)] max-w-[400px] rounded-sm border border-gray-200 bg-white p-0 shadow-xl dark:border-gray-700 dark:bg-gray-900"
-  >
-    <div className="p-6">
-      <AlertDialogHeader className="flex flex-col items-center text-center">
-        
-<div className="relative mb-4 flex w-full items-center ">
-  {/* Lock Icon - Center */}
-  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-    <LockKeyhole className="h-5 w-5" />
-  </div>
-
-  {/* Back Button - Right */}
-  <button
-    type="button"
-    onClick={() => navigate(-1)}
-    className="absolute right-0 flex items-center gap-1.5
-      rounded-sm px-2 py-1.5 text-sm font-medium
-      text-gray-600 transition-colors
-      hover:bg-blue-50 hover:text-[#0446DB]
-      dark:text-gray-300 dark:hover:bg-gray-800"
-  >
-    <ArrowLeft className="h-4 w-4" />
-    Back
-  </button>
-</div>
-
-
-        <AlertDialogTitle className="text-center text-xl font-semibold text-gray-900 dark:text-white">
-          Verify Access
-        </AlertDialogTitle>
-
-        <AlertDialogDescription className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
-          Enter your password to access Remittances
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-
-      <form onSubmit={handlePageUnlock} className="mt-6">
-        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Password
-        </label>
-
-        <div className="relative">
-          <input
-            type={showPagePassword ? "text" : "password"}
-            value={pagePassword}
-            onChange={(e) => {
-              setPagePassword(e.target.value);
-              setPasswordError("");
-            }}
-            autoFocus
-            autoComplete="off"
-            placeholder="Enter access password"
-            className={`h-11 w-full rounded-sm border bg-white px-3 pr-11 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 dark:bg-gray-800 dark:text-white ${
-              passwordError
-                ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
-                : "border-gray-300 focus:border-[#0446DB] focus:ring-2 focus:ring-blue-500/10 dark:border-gray-700"
-            }`}
-          />
-
-          <button
-            type="button"
-            onClick={() => setShowPagePassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-700 dark:hover:text-gray-200"
-          >
-            {showPagePassword ? (
-              <EyeOff className="h-[18px] w-[18px]" />
-            ) : (
-              <Eye className="h-[18px] w-[18px]" />
-            )}
-          </button>
-        </div>
-
-        {passwordError && (
-          <p className="mt-2 text-xs font-medium text-red-500">
-            {passwordError}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={!pagePassword.trim()}
-          className="mt-5 h-11 w-full rounded-sm bg-[#0446DB] text-sm font-medium text-white transition-colors hover:bg-[#0339b5] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Continue
-        </button>
-
-        <p className="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
-          Access expires automatically after 5 minutes
-        </p>
-      </form>
-    </div>
-  </AlertDialogContent>
-    </AlertDialog>
-      {loadingPage ? (
-        <div className=" w-full h-[90vh] flex justify-center items-center">
-          <div>
-            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-            <p className="mt-2"> Loading Merchant Remittances Details...</p>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen">
-          {/* Top Heading Stripe */}
-          <div className="mb-0  dark:bg-gray-900 py-[24px]   px-[24px]">
-            <div className="flex flex-wrap items-center justify-between">
-              {/* Heading */}
-              <h1 className="text-2xl dark:text-white">Merchant Remittances</h1>
-              <div>
-                <button
-                  onClick={() => downloadMerchantRemittanceSampleFile()}
-                  className={`bg-white text-[#0446DB] font-medium px-5 py-2 rounded-sm shadow hover:bg-indigo-100 transition mr-2`}
-                >
-                  Sample CSV
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* filter right side */}
-          <div
-            className={`fixed top-0 rounded-tl-4xl right-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
-              isFilterOpen ? "translate-x-0" : "translate-x-full"
-            }`}
-          >
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-xl font-semibold">Advance Filters</h2>
-
-              <button
-                onClick={() => {
-                  setIsFilterOpen(false);
-                }}
-                className="text-gray-500 hover:text-black text-2xl font-bold"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="p-4">
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="flex flex-wrap items-end gap-4"
-              >
-                {/* Start Date */}
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    value={advanceFilters.startDate}
-                    onChange={(e) =>
-                      setAdvanceFilters((prev) => ({
-                        ...prev,
-                        startDate: e.target.value,
-                      }))
-                    }
-                    className="border px-3 py-1 rounded-md text-sm"
-                  />
-                </div>
-
-                {/* End Date */}
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    value={advanceFilters.endDate}
-                    onChange={(e) =>
-                      setAdvanceFilters((prev) => ({
-                        ...prev,
-                        endDate: e.target.value,
-                      }))
-                    }
-                    className="border px-3 py-1 rounded-md text-sm"
-                  />
-                </div>
-
-                {/* NDR ID */}
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">
-                    AWB Number
-                  </label>
-                  <input
-                    type="text"
-                    value={advanceFilters.awb_number}
-                    onChange={(e) =>
-                      setAdvanceFilters((prev) => ({
-                        ...prev,
-                        awb_number: e.target.value,
-                      }))
-                    }
-                    placeholder="Integer Only"
-                    className="border px-3 py-1 rounded-md text-sm"
-                  />
-                </div>
-
-                {/* Update Button */}
-                <div>
-                  <button
-                    onClick={() => {
-                      setFilterUpdate((prev) => !prev);
-                      setIsFilterOpen(false);
-                    }}
-                    className="bg-[#0446DB]  text-white px-4 py-2 rounded-md hover:bg-indigo-800 transition text-sm mx-2"
-                  >
-                    Filter
-                  </button>
-                  <button
-                    onClick={() => {
-                      resetAdvanceFilters();
-                      setFilterUpdate((prev) => !prev);
-                      setIsFilterOpen(false);
-                    }}
-                    className="bg-[#0446DB] text-white px-4 py-2 rounded-md hover:bg-indigo-800 transition text-sm mx-2"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-          {/* filter right side */}
-
-          <div className="mx-1 z-10 bg-white dark:bg-gray-900 rounded-md">
-            {/* Status */}
-            <div className="max-w-full px-4  relative z-10">
-              <div className="flex flex-wrap justify-center gap-2 mb-6">
-                <button
-                  onClick={() => setSelectedStatus("history")}
-                  className={`mt-4 px-6 py-2 rounded-md border transition font-medium shadow-sm ${
-                    selectedStatus === "history"
-                      ? "bg-[#0446DB] text-white"
-                      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  Remittance History
-                </button>
-                <button
-                  onClick={() => setSelectedStatus("upload")}
-                  className={`mt-4 px-6 py-2 rounded-md border transition font-medium shadow-sm ${
-                    selectedStatus === "upload"
-                      ? "bg-[#0446DB] text-white"
-                      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  Upload Remittance
-                </button>
-              </div>
-
-              {selectedStatus === "upload" && (
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-sm shadow-md border border-gray-200 space-y-4">
-                  <label className="block text-gray-700 dark:text-white font-semibold">
-                    Remittance File
-                  </label>
-                  <input
-                    type="file"
-                    name="bulk_remittance"
-                    onChange={handleChange}
-                    accept=".csv"
-                    className="block w-full text-sm dark:text-white text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-white file:bg-[#0446DB] file:hover:bg-indigo-600 cursor-pointer"
-                  />
-                </div>
-              )}
-
-              {selectedStatus === "history" && (
-                <>
-                  <div>
-                    <div className="bg-white dark:bg-gray-900 p-6 rounded-sm shadow-md border border-gray-200 mb-2">
-                      {allMerchants?.length > 0 ? (
-                        <div>
-                          <label className="block dark:text-white text-gray-700 font-semibold mb-1">
-                            Select Merchant
-                          </label>
-                          <select
-                            required
-                            value={merchant}
-                            onChange={(e) => getMerchantStats(e.target.value)}
-                            className="w-full px-4 dark:text-white py-2 dark:bg-gray-800 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          >
-                            <option value="" disabled>
-                              Select Merchant
-                            </option>
-                            {allMerchants.map((mch) => (
-                              <option key={mch.id} value={mch.id}>
-                                {mch.name} - {mch.email}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      ) : (
-                        <>No merchant registered</>
-                      )}
-                    </div>
-
-                    {merchant && (
-                      <div className="bg-white dark:bg-gray-900 p-6 rounded-sm shadow-md border border-gray-200">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-sm shadow-sm border border-gray-100">
-                            <span className="text-gray-600 font-medium">
-                              Total COD
-                            </span>
-                            <span className="text-xl font-bold text-[#0446DB]">
-                              ₹{Number(stats?.total_cod).toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-sm shadow-sm border border-gray-100">
-                            <span className="text-gray-600 font-medium">
-                              Remaining
-                            </span>
-                            <span className="text-xl font-bold text-yellow-600">
-                              ₹
-                              {Number(
-                                stats?.remaining_cod_amount,
-                              ).toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex flex-col justify-center items-center bg-gray-50 p-4 rounded-sm shadow-sm border border-gray-100">
-                            <span className="text-gray-600 font-medium">
-                              Paid
-                            </span>
-                            <span className="text-xl font-bold text-green-600">
-                              ₹
-                              {Number(
-                                stats?.total_paid_remittance_amount,
-                              ).toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex justify-end mt-1">
-                    <button
-                      onClick={() => setIsFilterOpen(true)}
-                      className="bg-[#0446DB] text-white font-medium px-5 py-2 rounded shadow hover:bg-indigo-100 transition"
-                    >
-                      Filter
-                    </button>
-                  </div>
-
-                  {stats?.remittance_records.length > 0 && (
-                    <div className="overflow-x-auto mt-1 rounded-sm shadow-md border border-gray-200">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-[#0446DB] text-white">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider">
-                              ID
-                            </th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider">
-                              Amount
-                            </th>
-                            <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-                              REMITTANCE AMOUNT
-                            </th>
-                            <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-                              FREIGHT DEDUCTION
-                            </th>
-                            <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-                              {"convenience fee".toLocaleUpperCase()}
-                            </th>
-                            <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-                              AWB Number
-                            </th>
-                            <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-                              UTR Number
-                            </th>
-                            <th className="px-6 py-3 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wider">
-                              UPLOAD DATE
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-100">
-                          {stats?.remittance_records.map((remittance) => (
-                            <tr
-                              key={remittance.id}
-                              className="hover:bg-gray-50"
+                          {/* <TableHead className="text-center px-2 font-semibold py-3">ASSIGNMENT/RIDER</TableHead> */}
+                          {/* <TableHead className="text-center px-2 font-semibold py-3">MAPPED/VENDOR</TableHead> */}
+                          <TableHead className="text-left px-2 font-semibold py-3">STATUS</TableHead>
+                          {selectedStatus === "booked" && (
+                            <TableHead className="text-left px-2 font-semibold py-3">ELIGIBLE VENDORS</TableHead>
+                          )}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {loading ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={10}
+                              className="text-center py-10"
                             >
-                              <td className="px-6 py-4 text-sm text-gray-800">
-                                {remittance.id}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-800">
-                                {remittance.amount}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-800">
-                                {remittance.remittance_amount}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-800">
-                                {remittance.freight_deductions}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-800">
-                                {remittance.convenience_fee}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-800">
-                                {remittance.awb_number.split(",").length ===
-                                1 ? (
-                                  <>{remittance.awb_number}</>
+                              <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                              <p className="mt-2">Loading orders...</p>
+                            </TableCell>
+                          </TableRow>
+                        ) : orders.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={10}
+                              className="text-center py-10"
+                            >
+                              No orders found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          orders?.map((order) => {
+                            let isSelected;
+                            if (selectedStatus === "booked") {
+                              isSelected = selectedBulkOrders.some(
+                                (o) => o.id === order.id,
+                              );
+                            } else if (selectedStatus === "pending pickup") {
+                              isSelected = selectedBulkOrders.some(
+                                (o) => o.id === order.id,
+                              );
+                            } else if (selectedStatus === "rto in transit") {
+                              isSelected = selectedBulkOrders.some(
+                                (o) => o.id === order.id,
+                              );
+                            }
+
+                            return (
+                              <TableRow
+                                key={order.id}
+                                className="hover:bg-gray-50 text-left dark:hover:bg-gray-800 border-b overflow-x-scroll"
+                              >
+                                {/* Select */}
+                                {(selectedStatus === "booked" &&
+                                  order?.rider_preference == "daakit" &&
+                                  order.tpc_awb_number == null) ||
+                                (selectedStatus === "pending pickup" &&
+                                  order?.rider_preference == "daakit" &&
+                                  order.tpc_awb_number == null) ? (
+                                  <td className="py-2 text-center">
+                                    {(() => {
+                                      const currentIsMapped =
+                                        order?.mapped_with !== null &&
+                                        order?.mapped_with !== undefined;
+
+                                      const firstSelectedIsMapped =
+                                        selectedBulkOrders.length > 0
+                                          ? selectedBulkOrders[0]
+                                              ?.mapped_with !== null &&
+                                            selectedBulkOrders[0]
+                                              ?.mapped_with !== undefined
+                                          : null;
+
+                                      const isDifferentMappingType =
+                                        selectedStatus === "pending pickup" &&
+                                        selectedBulkOrders.length > 0 &&
+                                        firstSelectedIsMapped !==
+                                          currentIsMapped;
+
+                                      if (isDifferentMappingType) {
+                                        return (
+                                          <span
+                                            className="text-sm font-medium text-gray-400 dark:text-gray-500"
+                                            title={
+                                              firstSelectedIsMapped
+                                                ? "Only mapped orders can be selected"
+                                                : "Only unmapped orders can be selected"
+                                            }
+                                          >
+                                            --
+                                          </span>
+                                        );
+                                      }
+
+                                      return (
+                                        <input
+                                          type="checkbox"
+                                          checked={isSelected}
+                                          onChange={(e) => {
+                                            const isChecked = e.target.checked;
+
+                                            if (
+                                              selectedStatus === "booked" ||
+                                              selectedStatus ===
+                                                "pending pickup"
+                                            ) {
+                                              if (isChecked) {
+                                                if (
+                                                  selectedStatus ===
+                                                    "pending pickup" &&
+                                                  selectedBulkOrders.length > 0
+                                                ) {
+                                                  const firstIsMapped =
+                                                    selectedBulkOrders[0]
+                                                      ?.mapped_with !== null &&
+                                                    selectedBulkOrders[0]
+                                                      ?.mapped_with !==
+                                                      undefined;
+
+                                                  const thisIsMapped =
+                                                    order?.mapped_with !==
+                                                      null &&
+                                                    order?.mapped_with !==
+                                                      undefined;
+
+                                                  if (
+                                                    firstIsMapped !==
+                                                    thisIsMapped
+                                                  ) {
+                                                    return;
+                                                  }
+                                                }
+
+                                                setSelectedBulkOrders(
+                                                  (prev) => {
+                                                    const alreadySelected =
+                                                      prev.some(
+                                                        (o) =>
+                                                          o.id === order.id,
+                                                      );
+
+                                                    if (alreadySelected) {
+                                                      return prev;
+                                                    }
+
+                                                    const updated = [
+                                                      ...prev,
+                                                      order,
+                                                    ];
+
+                                                    return updated;
+                                                  },
+                                                );
+
+                                                setBulkOrderWeight(
+                                                  (prev) =>
+                                                    Number(prev) +
+                                                    Number(
+                                                      order?.total_weight || 0,
+                                                    ),
+                                                );
+                                              } else {
+                                                setSelectedBulkOrders(
+                                                  (prev) => {
+                                                    const updated = prev.filter(
+                                                      (o) => o.id !== order.id,
+                                                    );
+
+                                                    const order_ids =
+                                                      updated.map((o) => o.id);
+
+                                                    // Booked ka existing logic
+                                                    if (
+                                                      selectedStatus ===
+                                                      "booked"
+                                                    ) {
+                                                      fetchVendor(order_ids);
+                                                    }
+
+                                                    return updated;
+                                                  },
+                                                );
+
+                                                setBulkOrderWeight((prev) =>
+                                                  Math.max(
+                                                    0,
+                                                    Number(prev) -
+                                                      Number(
+                                                        order?.total_weight ||
+                                                          0,
+                                                      ),
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          }}
+                                          className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
+                                        />
+                                      );
+                                    })()}
+                                  </td>
+                                ) : selectedStatus === "picked" &&
+                                  order?.pickup_stage === "at_central_hub" &&
+                                  order?.rider_preference == "daakit" ? (
+                                  <td className="px-6 py-4 text-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedBulkOrders.some(
+                                        (item) => item.id === order.id,
+                                      )}
+                                      onChange={(e) =>
+                                        handleBulkOrderSelect(
+                                          order,
+                                          e.target.checked,
+                                        )
+                                      }
+                                      className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
+                                    />
+                                  </td>
+                                ) : selectedStatus === "rto in transit" &&
+                                  order?.rider_preference == "daakit" ? (
+                                  <>
+                                    <td className="px-6 py-4 text-center">
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={(e) => {
+                                          const isChecked = e.target.checked;
+
+                                          if (
+                                            selectedStatus === "rto in transit"
+                                          ) {
+                                            if (isChecked) {
+                                              setSelectedBulkOrders((prev) => {
+                                                const updated = [
+                                                  ...prev,
+                                                  order,
+                                                ];
+                                                const order_ids = updated.map(
+                                                  (o) => o.id,
+                                                );
+                                                return updated;
+                                              });
+
+                                              setBulkOrderWeight(
+                                                (prev) =>
+                                                  Number(prev) +
+                                                  Number(order.total_weight),
+                                              );
+                                            } else {
+                                              setSelectedBulkOrders((prev) => {
+                                                const updated = prev.filter(
+                                                  (o) => o.id !== order.id,
+                                                );
+                                                const order_ids = updated.map(
+                                                  (o) => o.id,
+                                                );
+                                                return updated;
+                                              });
+
+                                              setBulkOrderWeight(
+                                                (prev) =>
+                                                  Number(prev) -
+                                                  Number(order.total_weight), // ✅ fixed bug
+                                              );
+                                            }
+                                          }
+                                        }}
+                                        className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
+                                      />
+                                    </td>
+                                  </>
+                                ) : [
+                                    "in transit",
+                                    "out for delivery",
+                                    "undelivered",
+                                    'rto out for delivery',
+                                    "undelivered assigned",
+                                    "rto undelivered"
+                                  ].includes(selectedStatus) &&
+                                  order?.rider_preference == "daakit" ? (
+                                  <>
+                                    <td className="px-6 py-4 text-center">
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedBulkOrders.some(
+                                          (item) => item.id === order.id,
+                                        )}
+                                        onChange={(e) => {
+                                          const isChecked = e.target.checked;
+
+                                          if (selectedStatus == "picked") {
+                                            if (
+                                              order.pickup_stage !== null &&
+                                              order.pickup_stage !== "at_vendor"
+                                            ) {
+                                              toast.error(
+                                                'Pickup stage must be empty or "at_vendor" before marking the order in transit',
+                                              );
+
+                                              return;
+                                            }
+                                          }
+
+                                          if (isChecked) {
+                                            setSelectedBulkOrders((prev) => {
+                                              const updated = [...prev, order];
+                                              const order_ids = updated.map(
+                                                (o) => {
+                                                  return o.id;
+                                                },
+                                              );
+                                              return updated;
+                                            });
+
+                                            setBulkOrderWeight(
+                                              (prev) =>
+                                                Number(prev) +
+                                                Number(order.total_weight),
+                                            );
+                                          } else {
+                                            setSelectedBulkOrders((prev) => {
+                                              const updated = prev.filter(
+                                                (o) => o.id !== order.id,
+                                              );
+                                              const order_ids = updated.map(
+                                                (o) => o.id,
+                                              );
+                                              return updated;
+                                            });
+
+                                            setBulkOrderWeight(
+                                              (prev) =>
+                                                Number(prev) -
+                                                Number(order.total_weight), // ✅ fixed bug
+                                            );
+                                          }
+                                        }}
+                                        className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
+                                      />
+                                    </td>
+                                  </>
+                                ) : canMarkInTransit &&
+                                  selectedStatus == "picked" &&
+                                  order?.rider_preference == "daakit" ? (
+                                  <>
+                                    <td className="px-6 py-4 text-center">
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedBulkOrders.some(
+                                          (item) => item.id === order.id,
+                                        )}
+                                        onChange={(e) => {
+                                          const isChecked = e.target.checked;
+
+                                          if (selectedStatus == "picked") {
+                                            if (
+                                              order.pickup_stage !== null &&
+                                              order.pickup_stage !== "at_vendor"
+                                            ) {
+                                              toast.error(
+                                                'Pickup stage must be empty or "at_vendor" before marking the order in transit',
+                                              );
+
+                                              return;
+                                            }
+                                          }
+
+                                          if (isChecked) {
+                                            setSelectedBulkOrders((prev) => {
+                                              const updated = [...prev, order];
+                                              const order_ids = updated.map(
+                                                (o) => {
+                                                  return o.id;
+                                                },
+                                              );
+                                              return updated;
+                                            });
+
+                                            setBulkOrderWeight(
+                                              (prev) =>
+                                                Number(prev) +
+                                                Number(order.total_weight),
+                                            );
+                                          } else {
+                                            setSelectedBulkOrders((prev) => {
+                                              const updated = prev.filter(
+                                                (o) => o.id !== order.id,
+                                              );
+                                              const order_ids = updated.map(
+                                                (o) => o.id,
+                                              );
+                                              return updated;
+                                            });
+
+                                            setBulkOrderWeight(
+                                              (prev) =>
+                                                Number(prev) -
+                                                Number(order.total_weight),
+                                            );
+                                          }
+                                        }}
+                                        className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
+                                      />
+                                    </td>
+                                  </>
                                 ) : (
                                   <>
-                                    <button
-                                      onClick={() => openPopUp(remittance)}
-                                      className="hover:cursor-pointer"
-                                    >
-                                      {`${remittance.awb_number.split(",")[0]}...`}
-                                    </button>
+                                    <TableCell className="px-6 py-4 text-center">
+                                      -
+                                    </TableCell>
                                   </>
                                 )}
-                              </td>
 
-                              <td className="px-6 py-4 text-sm text-gray-800">
-                                {remittance.utr_number}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-800">
-                                {new Date(remittance.created_at).toLocaleString(
-                                  "en-IN",
-                                  {
-                                    timeZone: "Asia/Kolkata",
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                  },
+                                {/* Order ID */}
+                                <TableCell className=" py-2 text-left whitespace-pre-line">
+                                  <p className="text-sm text-gray-500 dark:text-white">
+                                    {new Date(order.created_at).toLocaleString(
+                                      "en-IN",
+                                      {
+                                        timeZone: "Asia/Kolkata",
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      },
+                                    )}
+                                     <span
+                                      className={`ml-2 inline-flex mb-1 items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-xs font-semibold ${
+                                        order?.rider_preference === "daakit"
+                                          ? "border-blue-500 bg-blue-50/50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                                          : "border-emerald-500 bg-emerald-50/50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+                                      }`}
+                                    >
+                                      {order?.rider_preference === "daakit"
+                                        ? "DDN"
+                                        : "BYOB"}
+                                    </span>
+                                  </p>
+                                  <p className="text-left text-gray-800 flex items-center">
+                                    
+                                   
+                                    <Link
+                                      to={`/admin/order-history?awb_number=${encodeURIComponent(order.awb_number)}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="underline text-[#0446DB] hover:text-blue-500"
+                                    >
+                                      {order.awb_number}
+                                    </Link>
+
+                                    <button
+                                      className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          order.awb_number,
+                                        );
+                                        setCopySuccess(order.awb_number);
+                                        setTimeout(() => {
+                                          setCopySuccess(null);
+                                        }, 2000);
+                                      }}
+                                    >
+                                      {copySuccess === order.awb_number ? (
+                                        <CiCircleCheck />
+                                      ) : (
+                                        <FaRegCopy />
+                                      )}
+                                    </button>
+
+                                    <Dialog className="w-5xl">
+                                      <DialogTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          className="text-xs ml-1 font-medium  text-red-600  inline-block cursor-pointer "
+                                        >
+                                          <span>
+                                            <TbFileInfo />
+                                          </span>
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="sm:max-w-4xl">
+                                        <DialogHeader>
+                                          <DialogTitle>
+                                            Order Details
+                                          </DialogTitle>
+                                        </DialogHeader>
+
+                                        <div className="bg-white p-6  space-y-3 text-gray-700">
+                                          {/* Basic Info */}
+                                          <h3 className="font-semibold text-[#0446DB] mb-2">
+                                            Basic Details
+                                          </h3>
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                              <strong>Order ID:</strong>{" "}
+                                              {order.merchant_order_id}
+                                              <button
+                                                className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
+                                                onClick={() => {
+                                                  navigator.clipboard.writeText(
+                                                    order.merchant_order_id,
+                                                  );
+                                                  setCopySuccess(
+                                                    order.merchant_order_id,
+                                                  );
+                                                  setTimeout(() => {
+                                                    setCopySuccess(null);
+                                                  }, 2000);
+                                                }}
+                                              >
+                                                {copySuccess ===
+                                                order.merchant_order_id ? (
+                                                  <CiCircleCheck />
+                                                ) : (
+                                                  <FaRegCopy />
+                                                )}
+                                              </button>
+                                            </div>
+                                            <div>
+                                              <strong>AWB No:</strong>{" "}
+                                              {order.awb_number}
+                                              <button
+                                                className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
+                                                onClick={() => {
+                                                  navigator.clipboard.writeText(
+                                                    order.awb_number,
+                                                  );
+                                                  setCopySuccess(
+                                                    order.awb_number,
+                                                  );
+                                                  setTimeout(() => {
+                                                    setCopySuccess(null);
+                                                  }, 2000);
+                                                }}
+                                              >
+                                                {copySuccess ===
+                                                order.awb_number ? (
+                                                  <CiCircleCheck />
+                                                ) : (
+                                                  <FaRegCopy />
+                                                )}
+                                              </button>
+                                            </div>
+                                            <div>
+                                              <strong>Order Type:</strong>{" "}
+                                              {order.order_type === "cod"
+                                                ? "COD"
+                                                : "Prepaid"}
+                                            </div>
+                                            <div>
+                                              <strong>Order Specific:</strong>{" "}
+                                              {order.order_specific}
+                                            </div>
+                                            <div>
+                                              <strong>Order Status:</strong>{" "}
+                                              {toCapitalizeEachWord(
+                                                order.status,
+                                              )}
+                                            </div>
+                                            <div>
+                                              <strong>Total Amount:</strong> ₹
+                                              {Number(
+                                                order.total_amount,
+                                              ).toLocaleString()}
+                                            </div>
+                                            <div>
+                                              <strong>Order Weight:</strong>{" "}
+                                              {Number(
+                                                order.total_weight,
+                                              ).toLocaleString()}
+                                              g
+                                            </div>
+                                            <div>
+                                              <strong>Charge Weight:</strong>{" "}
+                                              {Number(
+                                                order.charged_weight,
+                                              ).toLocaleString()}
+                                              g
+                                            </div>
+                                            <div>
+                                              <strong>
+                                                Number of Packets:
+                                              </strong>{" "}
+                                              {order.number_of_boxes}
+                                            </div>
+                                          </div>
+
+                                          <div className="pt-4 border-t">
+                                            <div className="flex justify-between items-center mb-2">
+                                              <h3 className="font-semibold text-[#0446DB]">
+                                                Delivery Details
+                                              </h3>
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                  if (
+                                                    editingDeliveryId ===
+                                                    order.id
+                                                  ) {
+                                                    // Save logic here - you'll need to create an API endpoint
+                                                    handleUpdateDeliveryDetails(
+                                                      {
+                                                        order_id: order.id,
+                                                        delivery_details:
+                                                          deliveryFormData,
+                                                      },
+                                                    );
+                                                  } else {
+                                                    setEditingDeliveryId(
+                                                      order.id,
+                                                    );
+                                                    setDeliveryFormData({
+                                                      delivery_contact_name:
+                                                        order.delivery_contact_name,
+                                                      delivery_address_line:
+                                                        order.delivery_address_line,
+                                                      delivery_city:
+                                                        order.delivery_city,
+                                                      delivery_state:
+                                                        order.delivery_state,
+                                                      delivery_pincode:
+                                                        order.delivery_pincode,
+                                                    });
+                                                  }
+                                                }}
+                                                className="text-xs"
+                                              >
+                                                {editingDeliveryId === order.id
+                                                  ? "Save"
+                                                  : "Edit"}
+                                              </Button>
+                                            </div>
+
+                                            {editingDeliveryId === order.id ? (
+                                              <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    Customer Name
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      deliveryFormData.delivery_contact_name
+                                                    }
+                                                    onChange={(e) =>
+                                                      setDeliveryFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          delivery_contact_name:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    Address
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      deliveryFormData.delivery_address_line
+                                                    }
+                                                    onChange={(e) =>
+                                                      setDeliveryFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          delivery_address_line:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    City
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      deliveryFormData.delivery_city
+                                                    }
+                                                    onChange={(e) =>
+                                                      setDeliveryFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          delivery_city:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    State
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      deliveryFormData.delivery_state
+                                                    }
+                                                    onChange={(e) =>
+                                                      setDeliveryFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          delivery_state:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    Pincode
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      deliveryFormData.delivery_pincode
+                                                    }
+                                                    onChange={(e) =>
+                                                      setDeliveryFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          delivery_pincode:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div className="flex items-end">
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                      setEditingDeliveryId(null)
+                                                    }
+                                                    className="text-red-500"
+                                                  >
+                                                    Cancel
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                  <strong>
+                                                    Customer Name:
+                                                  </strong>{" "}
+                                                  {order.delivery_contact_name}
+                                                </div>
+                                                <div>
+                                                  <strong>Address:</strong>{" "}
+                                                  {order.delivery_address_line}
+                                                </div>
+                                                <div>
+                                                  <strong>City:</strong>{" "}
+                                                  {`${order.delivery_city}, ${order.delivery_state} - ${order.delivery_pincode}` ||
+                                                    "N/A"}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+
+                                          {/* Pickup Details */}
+                                          <div className="pt-4 border-t">
+                                            <div className="flex justify-between items-center mb-2">
+                                              <h3 className="font-semibold text-[#0446DB]">
+                                                Pickup Details
+                                              </h3>
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                  if (
+                                                    editingPickupId === order.id
+                                                  ) {
+                                                    // Save logic here
+                                                    handleUpdateDeliveryDetails(
+                                                      {
+                                                        order_id: order.id,
+                                                        pickup_details:
+                                                          pickupFormData,
+                                                      },
+                                                    );
+                                                  } else {
+                                                    setEditingPickupId(
+                                                      order.id,
+                                                    );
+                                                    setPickupFormData({
+                                                      pickup_contact_name:
+                                                        order.pickup_contact_name ||
+                                                        "",
+                                                      pickup_phone:
+                                                        order.pickup_phone ||
+                                                        "",
+                                                      pickup_address_line:
+                                                        order.pickup_address_line ||
+                                                        "",
+                                                      pickup_city:
+                                                        order.pickup_city || "",
+                                                      pickup_state:
+                                                        order.pickup_state ||
+                                                        "",
+                                                      pickup_pincode:
+                                                        order.pickup_pincode ||
+                                                        "",
+                                                    });
+                                                  }
+                                                }}
+                                                className="text-xs"
+                                              >
+                                                {editingPickupId === order.id
+                                                  ? "Save"
+                                                  : "Edit"}
+                                              </Button>
+                                            </div>
+
+                                            {editingPickupId === order.id ? (
+                                              <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    Name
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      pickupFormData.pickup_contact_name
+                                                    }
+                                                    onChange={(e) =>
+                                                      setPickupFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          pickup_contact_name:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    Phone No
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      pickupFormData.pickup_phone
+                                                    }
+                                                    onChange={(e) =>
+                                                      setPickupFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          pickup_phone:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    Address
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      pickupFormData.pickup_address_line
+                                                    }
+                                                    onChange={(e) =>
+                                                      setPickupFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          pickup_address_line:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    City
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      pickupFormData.pickup_city
+                                                    }
+                                                    onChange={(e) =>
+                                                      setPickupFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          pickup_city:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    State
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      pickupFormData.pickup_state
+                                                    }
+                                                    onChange={(e) =>
+                                                      setPickupFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          pickup_state:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs text-gray-600 mb-1">
+                                                    Pincode
+                                                  </label>
+                                                  <input
+                                                    type="text"
+                                                    value={
+                                                      pickupFormData.pickup_pincode
+                                                    }
+                                                    onChange={(e) =>
+                                                      setPickupFormData(
+                                                        (prev) => ({
+                                                          ...prev,
+                                                          pickup_pincode:
+                                                            e.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                    className="w-full border rounded-md px-2 py-1 text-sm"
+                                                  />
+                                                </div>
+                                                <div className="flex items-end">
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                      setEditingPickupId(null)
+                                                    }
+                                                    className="text-red-500"
+                                                  >
+                                                    Cancel
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                  <strong>Name:</strong>{" "}
+                                                  {order.pickup_contact_name ||
+                                                    "N/A"}
+                                                </div>
+                                                <div>
+                                                  <strong>
+                                                    Pickup Phone No:
+                                                  </strong>{" "}
+                                                  {`${order.pickup_phone}` ||
+                                                    "N/A"}
+                                                </div>
+                                                <div>
+                                                  <strong>Address:</strong>{" "}
+                                                  {order.pickup_address_line ||
+                                                    "N/A"}
+                                                </div>
+                                                <div>
+                                                  <strong>City:</strong>{" "}
+                                                  {`${order.pickup_city}, ${order.pickup_state} - ${order.pickup_pincode}` ||
+                                                    "N/A"}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        <DialogFooter>
+                                          <DialogClose asChild>
+                                            <button
+                                              onClick={() => {
+                                                navigate(
+                                                  `/admin/order-history?awb=${order?.awb_number}`,
+                                                );
+                                              }}
+                                              className="bg-green-500 mr-2 text-white px-4 py-2 rounded hover:bg-indigo-800 transition"
+                                            >
+                                              Get History
+                                            </button>
+                                          </DialogClose>
+                                          <DialogClose asChild>
+                                            <Button
+                                              onClick={() => {
+                                                clearAllState();
+                                              }}
+                                              variant="outline"
+                                            >
+                                              Cancel
+                                            </Button>
+                                          </DialogClose>
+                                        </DialogFooter>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </p>
+                                  
+                                  {order.tpc_awb_number && (
+                                    <p>
+                                      {order.tpc_awb_number}
+                                      <button
+                                        className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(
+                                            order.tpc_awb_number,
+                                          );
+                                          setCopySuccess(order.tpc_awb_number);
+                                          setTimeout(() => {
+                                            setCopySuccess(null);
+                                          }, 2000);
+                                        }}
+                                      >
+                                        {copySuccess ===
+                                        order.tpc_awb_number ? (
+                                          <CiCircleCheck />
+                                        ) : (
+                                          <FaRegCopy />
+                                        )}
+                                      </button>
+                                    </p>
+                                  )}
+
+                                  
+
+                                  
+                                  <p className="text-sm whitespace-nowrap text-gray-400 dark:text-white">
+                                    MOID:{" "}
+                                    {order.merchant_order_id?.length <= 20
+                                      ? order.merchant_order_id
+                                      : `${order.merchant_order_id.slice(
+                                          0,
+                                          16,
+                                        )}...`}
+                                    <button
+                                      className="pl-2 text-lg text-gray-600 dark:text-white hover:text-[#0446DB] transition"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          order.merchant_order_id,
+                                        );
+                                        setCopySuccess(order.merchant_order_id);
+                                        setTimeout(() => {
+                                          setCopySuccess(null);
+                                        }, 2000);
+                                      }}
+                                    >
+                                      {copySuccess ===
+                                      order.merchant_order_id ? (
+                                        <CiCircleCheck />
+                                      ) : (
+                                        <FaRegCopy />
+                                      )}
+                                    </button>
+                                   
+                                  </p>
+                                </TableCell>
+
+
+
+
+                                {/* SELLER DETAILS */}
+                                <TableCell className=" py-2">
+                                    <div className="flex flex-col gap-1.5 text-sm">
+                                      <p className="text-gray-700 dark:text-gray-300">
+                                        <span className="font-medium text-gray-900 dark:text-white">
+                                          Merchant ID:
+                                        </span>{" "}
+                                        {order?.merchant_id ?? "N/A"}
+                                      </p>
+
+                                      {order?.brand_name && (
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                          <span className="font-medium text-gray-900 dark:text-white">
+                                            Brand Name:
+                                          </span>{" "}
+                                          {order.brand_name}
+                                        </p>
+                                      )}
+
+                                      {order?.merchant_company_name && (
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                          <span className="font-medium text-gray-900 dark:text-white">
+                                            Company Name:
+                                          </span>{" "}
+                                          {order.merchant_company_name}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </TableCell>
+
+
+
+                                {(selectedStatus === "pending pickup" ||
+                                  selectedStatus === "out for delivery" ||
+                                  selectedStatus === "delivered" ||
+                                  selectedStatus === "picked" ||
+                                  selectedStatus === "in transit" ||
+                                  selectedStatus ===
+                                    "undelivered assigned") && (
+                                  <>
+                                    <TableCell className="text-left ">
+                                      
+
+                                      {order.mapped_dc_id !== null ? (
+                                        <>DC_{order.mapped_dc_id}</>
+                                      ) : order.rider_vendor_id === null &&
+                                        order.rider_merchant_id === null &&
+                                        order.mapped_with === null ? (
+                                        <>
+                                          {order.rider_id !== null
+                                            ? "DKT_"
+                                            : ""}
+                                          {order.rider_id}
+                                        </>
+                                      ) : (
+                                        <>
+                                          {order.rider_id !== null
+                                            ? `FP_${order.rider_vendor_id}_`
+                                            : order.rider_merchant_id
+                                              ? `M${order.rider_merchant_id}_R`
+                                              : order.mapped_with
+                                                ? `FP_${order.mapped_with}`
+                                                : "DKT_"}
+
+                                          {order.rider_id}
+                                        </>
+                                      )}
+
+                                      {selectedStatus === "picked" && (
+                                        <p>
+                                          {order.pickup_stage ===
+                                          "at_central_hub"
+                                            ? "At Central Hub"
+                                            : "At Vendor Hub"}
+                                        </p>
+                                      )}
+
+                                      {/* {
+                                        order.mapped_with === null && (
+                                          <>
+                                           -
+                                          </>
+                                        )
+                                      } */}
+                                    </TableCell>
+                                  </>
                                 )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </>
+
+                                {/* Address */}
+                                <TableCell className=" py-2 whitespace-pre-line">
+                                  <p className="font-medium text-gray-800 dark:text-white">
+                                    {order.delivery_contact_name}
+                                  </p>
+                                  <HoverCard>
+                                    <HoverCardTrigger>
+                                      {order.delivery_address_line.slice(0, 30)}
+                                      ...
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="bg-[#0446DB] text-white">
+                                      {order.delivery_address_line},{" "}
+                                      {order.delivery_city},{" "}
+                                      {order.delivery_state} -{" "}
+                                      {order.delivery_pincode}
+                                    </HoverCardContent>
+                                  </HoverCard>
+                                  <p className="text-xs text-gray-500 dark:text-white">
+                                    {order.delivery_city},{" "}
+                                    {order.delivery_state} -{" "}
+                                    {order.delivery_pincode}
+                                  </p>
+
+                                  <p className="text-xs text-gray-400">
+                                    {order.delivery_country}
+                                  </p>
+                                </TableCell>
+
+                                {/* Package Details */}
+                                <TableCell className=" py-2">
+                                  <p>
+                                    {selectedStatus !== "cancelled" && (
+                                      <span className=" whitespace-nowrap dark:text-white">
+                                        EDD:{" "}
+                                        
+                                        {order.EDD}
+                                      </span>
+                                    )}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium text-gray-800 dark:text-white">
+                                      Weight:
+                                    </span>{" "}
+                                    <span className="dark:text-white">
+                                      {Number(
+                                        order.total_weight,
+                                      ).toLocaleString()}
+                                      g
+                                    </span>
+                                    {selectedStatus !== "cancelled" && (
+                                      <span
+                                        className={`ml-2 px-2 py-0.5  rounded-full text-sm font-semibold shadow-sm ${
+                                          order.order_specific?.slice(0, 3) ===
+                                          "NDD"
+                                            ? "text-green-800 bg-green-100 border border-green-300"
+                                            : order.order_specific?.slice(
+                                                  0,
+                                                  3,
+                                                ) === "SDD"
+                                              ? "text-yellow-800 bg-yellow-100 border border-yellow-300"
+                                              : "text-red-800 bg-red-100 border border-red-300 animate-blink"
+                                        }`}
+                                      >
+                                        {order.order_specific?.slice(0, 3) ===
+                                        "NDD"
+                                          ? "NDD"
+                                          : order.order_specific?.slice(
+                                                0,
+                                                3,
+                                              ) === "SDD"
+                                            ? "SDD"
+                                            : order.order_specific?.slice(
+                                                  0,
+                                                  6,
+                                                ) === "Turant"
+                                              ? "Turant"
+                                              : order.order_specific}
+                                      </span>
+                                    )}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium dark:text-white text-gray-800">
+                                      Dimensions:
+                                    </span>{" "}
+                                    <span className=" dark:text-white">
+                                      {order.package_length}x
+                                      {order.package_breadth}x
+                                      {order.package_height}
+                                    </span>
+                                  </p>
+                                </TableCell>
+
+                                {/* Assignment */}
+                                {/* {selectedStatus === "All" ? (
+                                  <>
+                                    <TableCell className="px-6 py-4 text-center">
+                                      {order.status === "booked" ||
+                                      order.status === "undelivered" ? (
+                                        <>
+                                          {!(
+                                            isOpenIndividualAssignmnet ===
+                                            order.id
+                                          ) ? (
+                                            <span className="px-3 py-1 rounded-full whitespace-nowrap text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
+                                              Not Assigned
+                                            </span>
+                                          ) : (
+                                            <></>
+                                          )}
+                                        </>
+                                      ) : order.status === "pending pickup" ||
+                                        order.status === "in transit" ||
+                                        order.status === "picked" ||
+                                        order.status === "out for delivery" ||
+                                        order.status ===
+                                          "undelivered assigned" ? (
+                                        <>
+                                          {!(
+                                            isOpenIndividualAssignmnet ===
+                                            order.id
+                                          ) ? (
+                                            order.mapped_with !== null ? (
+                                              <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
+                                                Not Assigned
+                                              </span>
+                                            ) : (
+                                              <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600 mb-2 inline-block cursor-pointer">
+                                                Assigned
+                                              </span>
+                                            )
+                                          ) : (
+                                            <></>
+                                          )}
+                                        </>
+                                      ) : order.status === "cancelled" ? (
+                                        <span className="px-3 whitespace-nowrap py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                                          Order Canceled
+                                        </span>
+                                      ) : order.status === "delivered" ? (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Assigned
+                                        </span>
+                                      ) : order.status === "rto delivered" ? (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Return To Origin
+                                        </span>
+                                      ) : (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Assigned
+                                        </span>
+                                      )}
+                                    </TableCell>
+                                  </>
+                                ) : (
+                                  <>
+                                    <TableCell className="px-6 py-4 text-center">
+                                      {order.status === "booked" ||
+                                      order.status === "undelivered" ? (
+                                        <>
+                                          <span
+                                            onClick={() => {
+                                              if (
+                                                order.status ===
+                                                  "undelivered" &&
+                                                order.mapped_with !== null
+                                              ) {
+                                                return;
+                                              }
+                                              if (
+                                                order.tpc_awb_number !== null
+                                              ) {
+                                                return;
+                                              }
+                                            }}
+                                            className="px-3 py-1 rounded-full whitespace-nowrap text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer"
+                                          >
+                                            Not Assigned
+                                          </span>
+                                        </>
+                                      ) : order.status === "picked" &&
+                                        order.rider_id == null ? (
+                                        <>
+                                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
+                                            Not Assignedd
+                                          </span>
+                                        </>
+                                      ) : order.status === "pending pickup" ||
+                                        order.status === "in transit" ||
+                                        order.status === "picked" ||
+                                        order.status ===
+                                          "undelivered assigned" ? (
+                                        <>
+                                          {!(
+                                            isOpenIndividualAssignmnet ===
+                                            order.id
+                                          ) ? (
+                                            order.mapped_with !== null ||
+                                            order.rider_id == null ? (
+                                              <span
+                                                onClick={() => {
+                                                  if (
+                                                    order.rider_preference ===
+                                                    "self"
+                                                  ) {
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.status ===
+                                                    "in transit"
+                                                  ) {
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.tpc_awb_number !==
+                                                    null
+                                                  ) {
+                                                    return;
+                                                  }
+                                                  if (order.rider_id == null) {
+                                                    return;
+                                                  }
+
+                                                  setIsOpenIndividualAssignmnet(
+                                                    order.id,
+                                                  );
+                                                }}
+                                                className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer"
+                                              >
+                                                Not Assigned
+                                              </span>
+                                            ) : (
+                                              <span
+                                                onClick={() => {
+                                                  if (
+                                                    order.rider_preference ===
+                                                    "self"
+                                                  ) {
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.status ===
+                                                    "in transit"
+                                                  ) {
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.tpc_awb_number !==
+                                                    null
+                                                  ) {
+                                                    return;
+                                                  }
+                                                  setIsOpenIndividualAssignmnet(
+                                                    order.id,
+                                                  );
+                                                }}
+                                                className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600 mb-2 inline-block cursor-pointer"
+                                              >
+                                                Assigned
+                                              </span>
+                                            )
+                                          ) : (
+                                            <form
+                                              onSubmit={(e) => {
+                                                e.preventDefault();
+                                                cancelRiderAssignment(order.id);
+                                                setIsOpenIndividualAssignmnet(
+                                                  "",
+                                                );
+                                              }}
+                                              className="flex items-center gap-2"
+                                            >
+                                              <button
+                                                type="submit"
+                                                className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                              >
+                                                Cancel Rider Assignment
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="text-xs  text-gray-500 hover:underline"
+                                                onClick={() =>
+                                                  setIsOpenIndividualAssignmnet(
+                                                    "",
+                                                  )
+                                                }
+                                              >
+                                                Close
+                                              </button>
+                                            </form>
+                                          )}
+                                        </>
+                                      ) : order.status === "cancelled" ? (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                                          Order Canceled
+                                        </span>
+                                      ) : order.status === "delivered" ? (
+                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Assignment Completed
+                                        </span>
+                                      ) : order.status === "rto in transit" ? (
+                                        <>
+                                          <span className="px-3 py-1 rounded-full whitespace-nowrap text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
+                                            Not Assigned
+                                          </span>
+                                        </>
+                                      ) : order.status === "rto delivered" ? (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Return To Origin
+                                        </span>
+                                      ) : (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Assigned
+                                        </span>
+                                      )}
+                                    </TableCell>
+                                  </>
+                                )} */}
+
+                                {/* Map */}
+                                {/* {selectedStatus === "All" ? (
+                                  <>
+                                    <td className="px-6 py-4 text-center">
+                                      {order.mapped_with === null ? (
+                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-red-100 text-red-600">
+                                          Not Mapped
+                                        </span>
+                                      ) : order.status === "cancelled" ? (
+                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-red-100 text-red-600">
+                                          Order Canceled
+                                        </span>
+                                      ) : order.status === "delivered" ? (
+                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Order Delivered
+                                        </span>
+                                      ) : order.status === "rto delivered" ? (
+                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Return To Origin
+                                        </span>
+                                      ) : order.mapped_with !== null ? (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Mapped
+                                        </span>
+                                      ) : (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Mapped
+                                        </span>
+                                      )}
+                                    </td>
+                                  </>
+                                ) : (
+                                  <>
+                                    <TableCell className="px-6 py-4 text-center">
+                                      {order.status === "booked" ? (
+                                        <>
+                                          {!(
+                                            isOpenIndividualVendorAssignmnet ===
+                                            order.id
+                                          ) ? (
+                                            <span
+                                              onClick={() => {
+                                                if (
+                                                  order.tpc_awb_number !== null
+                                                ) {
+                                                  return;
+                                                }
+                                                fetchVendor(order.id);
+                                                if (
+                                                  order.rider_preference ===
+                                                  "daakit"
+                                                ) {
+                                                  setIsOpenIndividualVendorAssignmnet(
+                                                    order.id,
+                                                  );
+                                                  setIsOpenIndividualAssignmnet(
+                                                    "",
+                                                  );
+                                                }
+                                              }}
+                                              className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer"
+                                            >
+                                              Not Mapped
+                                            </span>
+                                          ) : (
+                                            <form
+                                              onSubmit={(e) => {
+                                                e.preventDefault();
+                                                const selectedVendor =
+                                                  assignmentState;
+                                                if (!selectedVendor) {
+                                                  toast.warn(
+                                                    "Please select a vendor",
+                                                  );
+                                                  return;
+                                                }
+                                                assignVendor(
+                                                  order.id,
+                                                  selectedVendor,
+                                                );
+                                                setIsOpenIndividualAssignmnet(
+                                                  "",
+                                                );
+                                              }}
+                                              className="flex items-center gap-2"
+                                            >
+                                              <select
+                                                value={assignmentState}
+                                                onChange={(e) =>
+                                                  setAssignmentState(
+                                                    e.target.value,
+                                                  )
+                                                }
+                                                className="border px-2 py-1 rounded-md"
+                                                required
+                                              >
+                                                <option value="" disabled>
+                                                  Select Vendor
+                                                </option>
+                                                {vendor.map((vendor) => (
+                                                  <option
+                                                    key={vendor.vendor_id}
+                                                    value={vendor.vendor_id}
+                                                  >
+                                                    {vendor.vendor_id} :{" "}
+                                                    {vendor.vendor_name}
+                                                  </option>
+                                                ))}
+                                              </select>
+                                              <button
+                                                type="submit"
+                                                className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                              >
+                                                Assign
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="text-xs text-gray-500 hover:underline"
+                                                onClick={() =>
+                                                  setIsOpenIndividualVendorAssignmnet(
+                                                    "",
+                                                  )
+                                                }
+                                              >
+                                                Close
+                                              </button>
+                                            </form>
+                                          )}
+                                        </>
+                                      ) : order.status === "pending pickup" ||
+                                        order.status === "out for delivery" ||
+                                        order.status ===
+                                          "undelivered assigned" ? (
+                                        <>
+                                          {!(
+                                            isOpenIndividualAssignmnetMap ===
+                                            order.id
+                                          ) ? (
+                                            order.mapped_with !== null ? (
+                                              <span
+                                                onClick={() => {
+                                                  if (
+                                                    order.status ===
+                                                      "out for delivery" ||
+                                                    order.status ===
+                                                      "undelivered assigned"
+                                                  ) {
+                                                    return;
+                                                  }
+
+                                                  setIsOpenIndividualAssignmnetMap(
+                                                    order.id,
+                                                  );
+                                                }}
+                                                className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600 mb-2 inline-block cursor-pointer"
+                                              >
+                                                Mapped
+                                              </span>
+                                            ) : order.mapped_with == null ? (
+                                              <>
+                                                <AlertDialog>
+                                                  <AlertDialogTrigger asChild>
+                                                    <Button
+                                                      type="button"
+                                                      onClick={() => {
+                                                        const order_ids = [
+                                                          order.id,
+                                                        ];
+
+                                                        setFetchBulkAssignmentVendor(
+                                                          true,
+                                                        );
+                                                        fetchVendor(order_ids);
+                                                      }}
+                                                      className="cursor-pointer rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-600 transition-colors hover:bg-green-200"
+                                                    >
+                                                      Map Vendor
+                                                    </Button>
+                                                  </AlertDialogTrigger>
+
+                                                  <AlertDialogContent className="!max-w-md overflow-hidden rounded-md border border-gray-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+                                                   
+                                                    <AlertDialogHeader className="border-b border-gray-100 px-5 py-4 text-left dark:border-neutral-800">
+                                                      <AlertDialogTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                                                        Map Orders to Vendor
+                                                      </AlertDialogTitle>
+
+                                                      <AlertDialogDescription className="mt-1 text-sm text-gray-500 dark:text-neutral-400"></AlertDialogDescription>
+                                                    </AlertDialogHeader>
+
+                                                
+                                                    <div className="px-5 py-5">
+                                                      <label className="mb-2 block text-xs font-semibold text-gray-700 dark:text-neutral-300">
+                                                        Select Vendor
+                                                      </label>
+
+                                                      <select
+                                                        value={assignmentState}
+                                                        onChange={(e) =>
+                                                          setAssignmentState(
+                                                            e.target.value,
+                                                          )
+                                                        }
+                                                        className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-blue-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:ring-blue-500/10"
+                                                      >
+                                                        <option value="">
+                                                          Select Vendor
+                                                        </option>
+
+                                                        {vendor?.map(
+                                                          (vendorItem) => (
+                                                            <option
+                                                              key={
+                                                                vendorItem.vendor_id
+                                                              }
+                                                              value={
+                                                                vendorItem.vendor_id
+                                                              }
+                                                            >
+                                                              {
+                                                                vendorItem.vendor_id
+                                                              }{" "}
+                                                              :{" "}
+                                                              {
+                                                                vendorItem.vendor_name
+                                                              }
+                                                            </option>
+                                                          ),
+                                                        )}
+                                                      </select>
+
+                                                      {fetchBulkAssignmentVendor &&
+                                                        vendor?.length ===
+                                                          0 && (
+                                                          <p className="mt-2 text-xs text-gray-500 dark:text-neutral-400">
+                                                            Loading available
+                                                            vendors...
+                                                          </p>
+                                                        )}
+                                                    </div>
+
+                                                  
+                                                    <AlertDialogFooter className="border-t border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+                                                      <AlertDialogCancel className=" cursor-pointer rounded-md">
+                                                        Cancel
+                                                      </AlertDialogCancel>
+
+                                                      <Button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                          if (
+                                                            !assignmentState
+                                                          ) {
+                                                            toast.warn(
+                                                              "Please select a vendor",
+                                                            );
+                                                            return;
+                                                          }
+
+                                                          const order_ids = [
+                                                            order.id,
+                                                          ];
+
+                                                          await assignVendor(
+                                                            order_ids,
+                                                            assignmentState,
+                                                          );
+
+                                                          setSelectedBulkOrders(
+                                                            [],
+                                                          );
+                                                          setBulkOrderWeight(0);
+                                                          setFetchBulkAssignmentVendor(
+                                                            false,
+                                                          );
+                                                          setAssignmentState(
+                                                            "",
+                                                          );
+                                                        }}
+                                                        className=" cursor-pointer rounded-md bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-[#0339b5]"
+                                                      >
+                                                        Map Vendors
+                                                      </Button>
+                                                    </AlertDialogFooter>
+                                                  </AlertDialogContent>
+                                                </AlertDialog>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium  bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
+                                                  Not Mapped
+                                                </span>
+                                              </>
+                                            )
+                                          ) : (
+                                            <form
+                                              onSubmit={(e) => {
+                                                e.preventDefault();
+                                                cancelVendorAssignment(
+                                                  order.id,
+                                                );
+                                                setIsOpenIndividualAssignmnet(
+                                                  "",
+                                                );
+                                              }}
+                                              className="flex items-center gap-2"
+                                            >
+                                              <button
+                                                type="submit"
+                                                className="bg-[#0446DB] whitespace-nowrap text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                              >
+                                                Cancel Vendor Assignment
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="text-xs bg-red-500/20 px-2 py-1 rounded text-red-500 text-gray-500 hover:underline"
+                                                onClick={() =>
+                                                  setIsOpenIndividualAssignmnetMap(
+                                                    "",
+                                                  )
+                                                }
+                                              >
+                                                Close
+                                              </button>
+                                            </form>
+                                          )}
+                                        </>
+                                      ) : order.status === "picked" &&
+                                        order?.mapped_with === null ? (
+                                        <>
+                                          <span className="px-3 whitespace-nowrap py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                                            Not Mapped
+                                          </span>
+                                        </>
+                                      ) : order.status === "cancelled" ? (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                                          Order Canceled
+                                        </span>
+                                      ) : order.status === "undelivered" ? (
+                                        <>
+                                          {checkVendorMapping !== null &&
+                                          !checkVendorMapping?.canChangeMapping &&
+                                          isOpenIndividualVendorMap ===
+                                            order.id ? (
+                                            <>
+                                              <form
+                                                onSubmit={(e) => {
+                                                  e.preventDefault();
+                                                  revokeVendorMapping(order.id);
+                                                }}
+                                                className="flex items-center gap-2"
+                                              >
+                                                <button
+                                                  type="submit"
+                                                  className="bg-[#0446DB] whitespace-nowrap text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                                >
+                                                  Revoke Vendor Mapping
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="text-xs bg-red-500/20 px-2 py-1 rounded text-red-500 text-gray-500 hover:underline"
+                                                  onClick={() => {
+                                                    setCheckVendorMapping({
+                                                      canChangeMapping: true,
+                                                      currentAction: "grant",
+                                                    });
+                                                    setIsOpenIndividualVendorMap(
+                                                      "",
+                                                    );
+                                                  }}
+                                                >
+                                                  Close
+                                                </button>
+                                              </form>
+                                            </>
+                                          ) : isOpenIndividualVendorMap ===
+                                            order.id ? (
+                                            <>
+                                              <form
+                                                onSubmit={(e) => {
+                                                  e.preventDefault();
+                                                  const selectedVendor =
+                                                    assignmentState;
+                                                  if (!selectedVendor) {
+                                                    toast.warn(
+                                                      "Please select a vendor",
+                                                    );
+                                                    return;
+                                                  }
+                                                  changeVendorMapping(
+                                                    order.id,
+                                                    selectedVendor,
+                                                  );
+                                                  setIsOpenIndividualVendorMap(
+                                                    "",
+                                                  );
+                                                }}
+                                                className="flex items-center gap-2"
+                                              >
+                                                <select
+                                                  value={assignmentState}
+                                                  onChange={(e) =>
+                                                    setAssignmentState(
+                                                      e.target.value,
+                                                    )
+                                                  }
+                                                  className="border px-2 py-1 rounded-md"
+                                                  required
+                                                >
+                                                  <option value="" disabled>
+                                                    Select Vendor
+                                                  </option>
+                                                  {vendor.map((vendor) => (
+                                                    <option
+                                                      key={vendor.vendor_id}
+                                                      value={vendor.vendor_id}
+                                                    >
+                                                      {vendor.vendor_id} :{" "}
+                                                      {vendor.vendor_name}
+                                                    </option>
+                                                  ))}
+                                                </select>
+                                                <button
+                                                  type="submit"
+                                                  className="bg-[#0446DB] whitespace-nowrap text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                                >
+                                                  Change Mapping
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="text-xs text-gray-500 hover:underline"
+                                                  onClick={() =>
+                                                    setIsOpenIndividualVendorMap(
+                                                      "",
+                                                    )
+                                                  }
+                                                >
+                                                  Close
+                                                </button>
+                                              </form>
+                                            </>
+                                          ) : (
+                                            <span
+                                              onClick={() => {
+                                                if (
+                                                  order.status === "undelivered"
+                                                ) {
+                                                  checkVendorMappingStatus(
+                                                    order.id,
+                                                  );
+                                                  fetchVendor(order.id);
+                                                 
+                                                  setIsOpenIndividualVendorMap(
+                                                    order.id,
+                                                  );
+                                                
+                                                }
+                                              }}
+                                              className="px-3 py-1 cursor-pointer rounded-full text-xs font-medium bg-green-100 text-green-600"
+                                            >
+                                              Mapped
+                                            </span>
+                                          )}
+                                        </>
+                                      ) : order.status === "delivered" ||
+                                        order.status === "undelivered" ||
+                                        order.status === "rto in transit" ? (
+                                        <>
+                                          {order.mapped_with === null ? (
+                                            <span className="px-3 whitespace-nowrap py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                                              Not Mapped
+                                            </span>
+                                          ) : isOpenIndividualVendorMap ===
+                                            order.id ? (
+                                            <>
+                                              <form
+                                                onSubmit={(e) => {
+                                                  e.preventDefault();
+                                                  const selectedVendor =
+                                                    assignmentState;
+                                                  if (!selectedVendor) {
+                                                    toast.warn(
+                                                      "Please select a vendor",
+                                                    );
+                                                    return;
+                                                  }
+                                                  changeVendorMapping(
+                                                    order.id,
+                                                    selectedVendor,
+                                                  );
+                                                  setIsOpenIndividualVendorMap(
+                                                    "",
+                                                  );
+                                                }}
+                                                className="flex items-center gap-2"
+                                              >
+                                                <select
+                                                  value={assignmentState}
+                                                  onChange={(e) =>
+                                                    setAssignmentState(
+                                                      e.target.value,
+                                                    )
+                                                  }
+                                                  className="border px-2 py-1 rounded-md"
+                                                  required
+                                                >
+                                                  <option value="" disabled>
+                                                    Select Vendor
+                                                  </option>
+                                                  {vendor.map((vendor) => (
+                                                    <option
+                                                      key={vendor.vendor_id}
+                                                      value={vendor.vendor_id}
+                                                    >
+                                                      {vendor.vendor_id} :{" "}
+                                                      {vendor.vendor_name}
+                                                    </option>
+                                                  ))}
+                                                </select>
+                                                <button
+                                                  type="submit"
+                                                  className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                                >
+                                                  Assign
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="text-xs text-gray-500 hover:underline"
+                                                  onClick={() =>
+                                                    setIsOpenIndividualVendorMap(
+                                                      "",
+                                                    )
+                                                  }
+                                                >
+                                                  Close
+                                                </button>
+                                              </form>
+                                            </>
+                                          ) : (
+                                            <span
+                                              onClick={() => {
+                                                if (
+                                                  order.status === "undelivered"
+                                                ) {
+                                                  fetchVendor(order.id);
+                                                  setIsOpenIndividualVendorMap(
+                                                    order.id,
+                                                  );
+                                                  setIsOpenIndividualAssignmnetMap(
+                                                    "",
+                                                  );
+                                                }
+                                              }}
+                                              className="px-3 py-1 cursor-pointer rounded-full text-xs font-medium bg-green-100 text-green-600"
+                                            >
+                                              Mapped
+                                            </span>
+                                          )}
+                                        </>
+                                      ) : order.status === "rto delivered" ? (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Return To Origin
+                                        </span>
+                                      ) : order.mapped_with !== null ? (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Mapped
+                                        </span>
+                                      ) : order.status === "in transit" ? (
+                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-red-100 text-red-600">
+                                          Not Mapped
+                                        </span>
+                                      ) : (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Assigned
+                                        </span>
+                                      )}
+                                    </TableCell>
+                                  </>
+                                )} */}
+
+                                {/* Status */}
+                                {selectedStatus === "All" ? (
+                                  <>
+                                    {/* only view ststus */}
+                                    <TableCell className=" py-2 text-center">
+                                      {order.status === "cancelled" ||
+                                      order.status === "undelivered" ||
+                                      order.status === "delivered" ||
+                                      order.status === "ndr" ||
+                                      order.status === "rto delivered" ? (
+                                        <span
+                                          className={`px-3 py-1 rounded-full whitespace-nowrap text-xs font-semibold inline-block ${
+                                            order.status === "cancelled"
+                                              ? "bg-red-100 text-red-600"
+                                              : order.status === "undelivered"
+                                                ? "bg-red-100 text-green-600"
+                                                : order.status === "delivered"
+                                                  ? "bg-green-100 text-green-600"
+                                                  : "bg-yellow-100 text-yellow-600"
+                                          } `}
+                                        >
+                                          {order.status === "rto delivered"
+                                            ? "RTO Delivered"
+                                            : order.status === "ndr"
+                                              ? "NDR"
+                                              : toCapitalizeEachWord(
+                                                  order.status,
+                                                )}
+                                        </span>
+                                      ) : (
+                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-semibold inline-block bg-blue-100 text-blue-600">
+                                          {order.status === "rto in transit"
+                                            ? "RTO In Transit"
+                                            : toCapitalizeEachWord(
+                                                order.status,
+                                              )}
+                                        </span>
+                                      )}
+                                    </TableCell>
+                                  </>
+                                ) : (
+                                  <>
+                                    <TableCell className=" py-2 text-left">
+                                      {order.status === "cancelled" ||
+                                      // order.status === "undelivered" ||
+                                      order.status === "delivered" ||
+                                      order.status === "ndr" ||
+                                      order.status === "rto delivered" ? (
+                                        <span
+                                          className={`px-3 py-1 rounded-full text-xs font-semibold inline-block ${
+                                            order.status === "cancelled"
+                                              ? "bg-red-100 text-red-600"
+                                              : order.status === "undelivered"
+                                                ? "bg-red-100 text-green-600"
+                                                : order.status === "delivered"
+                                                  ? "bg-green-100 text-green-600"
+                                                  : "bg-yellow-100 text-yellow-600"
+                                          } `}
+                                        >
+                                          {order.status === "rto delivered"
+                                            ? "RTO Delivered"
+                                            : order.status === "ndr"
+                                              ? "NDR"
+                                              : toCapitalizeEachWord(
+                                                  order.status,
+                                                )}
+                                        </span>
+                                      ) : (
+                                        <>
+                                          {editingStatusId === order.id ? (
+                                            <form
+                                              onSubmit={async (e) => {
+                                                e.preventDefault();
+
+                                                const newStatus =
+                                                  e.target.elements.status
+                                                    .value;
+
+                                                if (
+                                                  selectedStatus ===
+                                                    "rto in transit" &&
+                                                  newStatus == "rto delivered"
+                                                ) {
+                                             
+                        
+                                                  await rtoDelivered([
+                                                    order.id,
+                                                  ]);
+                                                  return;
+                                                }
+
+                                                if (
+                                                  newStatus ==
+                                                  "cancel rider assignment"
+                                                ) {
+                                                  cancelRiderAssignments([
+                                                    order.id,
+                                                  ]);
+                                                }
+
+                                                await changeOrderStatus({
+                                                  order_ids: [order.id],
+                                                  newStatus,
+                                                });
+                                              }}
+                                            >
+                                              <div className="flex items-center gap-2">
+                                                <select
+                                                  name="status"
+                                                  defaultValue={order.status}
+                                                  onChange={(e) => {
+                                                    setAssignmentState(
+                                                      e.target.value,
+                                                    );
+                                                  }}
+                                                  className="text-xs border border-gray-300 rounded-md px-2 py-1"
+                                                  required
+                                                >
+                                                  <option value="">
+                                                    Change Status
+                                                  </option>
+                                                  {order.status ===
+                                                    "booked" && (
+                                                    <>
+                                                      <option value="cancelled">
+                                                        Cancelled
+                                                      </option>
+                                                    </>
+                                                  )}
+                                                  {order.status ===
+                                                    "picked" && (
+                                                    <>
+                                                      <option value="in transit">
+                                                        In Transit
+                                                      </option>
+                                                    </>
+                                                  )}
+                                                  {order.status ===
+                                                    "undelivered" && (
+                                                    <>
+                                                      <option value="undelivered assigned">
+                                                        Undelivered Assigned
+                                                      </option>
+                                                      <option value="lost">
+                                                        Lost
+                                                      </option>
+                                                    </>
+                                                  )}
+                                                  {order.status ===
+                                                    "pending pickup" && (
+                                                    <>
+                                                      <option value="in transit">
+                                                        In Transit
+                                                      </option>
+                                                      <option value="cancelled">
+                                                        Cancelled
+                                                      </option>
+                                                    </>
+                                                  )}
+                                                  {order.status ===
+                                                    "in transit" && (
+                                                    <>
+                                                      <option value="out for delivery">
+                                                        Mark Out For Delivery
+                                                      </option>
+                                                      <option value="lost">
+                                                        Mark Lost
+                                                      </option>
+                                                    </>
+                                                  )}
+                                                  {order.status ===
+                                                    "out for delivery"  && (
+                                                      <>
+                                                        <option value="delivered">
+                                                          Delivered
+                                                        </option>
+                                                        <option value="ndr">
+                                                          NDR
+                                                        </option>
+                                                        <option value="lost">
+                                                          Lost
+                                                        </option>
+                                                      </>
+                                                    )}
+
+                                                    {
+                                                      order.status ==
+                                                      "rto out for delivery" && (
+                                                        <>
+                                                        <option value="rto delivered">
+                                                         RTO Delivered
+                                                        </option>
+                                                        <option value="ndr">
+                                                          NDR
+                                                        </option>
+                                                        </>
+                                                      )
+                                                    }
+                                                  {order.status ===
+                                                    "rto in transit" && (
+                                                    <>
+                                                      {/* <option value="rto delivered">
+                                                        RTO Delivered
+                                                      </option> */}
+                                                      <option value="rto out for delivery">
+                                                        RTO Out For Delivery
+                                                      </option>
+                                                      <option value="lost">
+                                                        Lost
+                                                      </option>
+                                                    </>
+                                                  )}
+                                                  {order.status ===
+                                                    "rto undelivered" && (
+                                                    <>
+                                                      <option value="rto out for delivery">
+                                                        RTO Out For Delivery
+                                                      </option>
+                                                      
+                                                      <option value="lost">
+                                                        Lost
+                                                      </option>
+                                                    </>
+                                                  )}
+                                                  {order.status ===
+                                                    "undelivered assigned" && (
+                                                    <>
+                                                      <option value="out for delivery">
+                                                        Mark Out For Delivery
+                                                      </option>
+                                                      <option value="cancel rider assignment">
+                                                        Cancel Rider Assignemnt
+                                                      </option>
+                                                      <option value="lost">
+                                                        Mark Lost
+                                                      </option>
+                                                    </>
+                                                  )}
+                                                </select>
+                                                {assignmentState == "ndr" && (
+                                                  <>
+                                                    <Dialog className="w-5xl">
+                                                      <DialogTrigger asChild>
+                                                        <Button
+                                                          variant="outline"
+                                                          className="text-sm font-medium rounded-sm border py-0.5 bg-[#0446DB] hover:text-[#FFF] text-white border-[#0446DB]  hover:bg-[#0446DB] inline-block cursor-pointer"
+                                                        >
+                                                          <span>
+                                                            Mark as NDR
+                                                          </span>
+                                                        </Button>
+                                                      </DialogTrigger>
+                                                      <DialogContent className="">
+                                                        <DialogHeader>
+                                                          <DialogTitle>
+                                                            NDR
+                                                          </DialogTitle>
+                                                        </DialogHeader>
+
+                                                        <div>
+                                                          <label
+                                                            htmlFor="delivery_reason"
+                                                            className="block mb-1 mt-2"
+                                                          >
+                                                            Undelivered Reason
+                                                          </label>
+                                                          <select
+                                                            name="delivery_reason"
+                                                            id="delivery_reason"
+                                                            onChange={(e) => {
+                                                              setRemarks(
+                                                                e.target.value,
+                                                              );
+                                                              setRescheduleDate(
+                                                                "",
+                                                              );
+                                                              setSub_remarks(
+                                                                "",
+                                                              );
+                                                            }}
+                                                            className=" border w-full py-2 px-2 rounded"
+                                                          >
+                                                            <option value="">
+                                                              -- Select Reason
+                                                              --
+                                                            </option>
+                                                            {
+                                                              (assignmentState == "ndr" && selectedStatus == 'out for delivery') && (
+                                                                <>
+                                                                
+                                                            <option value="Address Incorrect / Incomplete">
+                                                              Address Incorrect
+                                                              / Incomplete
+                                                            </option>
+                                                            <option value="Customer Requested Reschedule">
+                                                              Customer Requested
+                                                              Reschedule
+                                                            </option>
+                                                            <option value="Customer Refused / Cancelled">
+                                                              Customer Refused /
+                                                              Cancelled
+                                                            </option>
+                                                            <option value="Delivery Attempted – Not Reachable">
+                                                              Delivery Attempted
+                                                              – Not Reachable
+                                                            </option>
+                                                            <option value="Delivery Attempted – No Response">
+                                                              Delivery Attempted
+                                                              – No Response
+                                                            </option>
+                                                            <option value="Wrong Pincode / Address">
+                                                              Wrong Pincode /
+                                                              Address
+                                                            </option>
+                                                            <option value="Wrong Contact Details">
+                                                              Wrong Contact
+                                                              Details
+                                                            </option>
+                                                            <option value="Vehicle / Weather / Road Issue">
+                                                              Vehicle / Weather
+                                                              / Road Issue
+                                                            </option>
+                                                            <option value="Package Damaged">
+                                                              Package Damaged
+                                                            </option>
+                                                                </>
+                                                              )
+                                                            }
+
+                                                           
+
+                                                            {
+                                                              selectedStatus == 'rto out for delivery' && (
+                                                                <>
+                                                              {[
+                                                                { label: "Origin Unavailable" },
+                                                                { label: "Origin Closed" },
+                                                                { label: "Origin Refused" },
+                                                                { label: "Contact Person Unavailable" },
+                                                                { label: "Origin Not Reachable" },
+                                                                { label: "Address Not Found" },
+                                                                { label: "Delivery Attempt Failed" },
+                                                                { label: "Other" },
+                                                              ].map((e) => (
+                                                                <option key={e.label} value={e.label}>
+                                                                  {e.label}
+                                                                </option>
+                                                              ))}
+
+                                                              gjhgjhgjhg
+                                                                </>
+                                                              )
+                                                            }
+                                                          </select>
+
+                                                          {remarks ==
+                                                            "Customer Requested Reschedule" && (
+                                                            <>
+                                                              <div>
+                                                                <label
+                                                                  htmlFor=""
+                                                                  className="block mb-1 mt-2"
+                                                                >
+                                                                  Reschedule
+                                                                  Date
+                                                                </label>
+                                                                <input
+                                                                  type="date"
+                                                                  value={
+                                                                    rescheduleDate
+                                                                  }
+                                                                  onClick={(
+                                                                    e,
+                                                                  ) =>
+                                                                    e.target.showPicker?.()
+                                                                  }
+                                                                  onChange={(
+                                                                    e,
+                                                                  ) =>
+                                                                    setRescheduleDate(
+                                                                      e.target
+                                                                        .value,
+                                                                    )
+                                                                  }
+                                                                  className=" border w-full py-2 px-2 rounded"
+                                                                />
+                                                              </div>
+                                                            </>
+                                                          )}
+                                                          {remarks ==
+                                                            "Customer Requested Reschedule" && (
+                                                            <>
+                                                              <label
+                                                                htmlFor=""
+                                                                className="block mb-1 mt-2 "
+                                                              >
+                                                                Sub Remark
+                                                              </label>
+                                                              <select
+                                                                onChange={(
+                                                                  e,
+                                                                ) => {
+                                                                  setSub_remarks(
+                                                                    e.target
+                                                                      .value,
+                                                                  );
+                                                                }}
+                                                                className="border w-full py-2 px-2 rounded"
+                                                              >
+                                                                <option value="">
+                                                                  -- Select
+                                                                  Reason --
+                                                                </option>
+                                                                <option value="Unavailable at Location">
+                                                                  Unavailable at
+                                                                  Location
+                                                                </option>
+                                                                <option value="Out of Station">
+                                                                  Out of Station
+                                                                </option>
+                                                                <option value="COD Amount Not Ready">
+                                                                  COD Amount Not
+                                                                  Ready
+                                                                </option>
+                                                                <option value="Require Different Time Slot">
+                                                                  Require
+                                                                  Different Time
+                                                                  Slot
+                                                                </option>
+                                                                <option value="Other">
+                                                                  Other
+                                                                </option>
+                                                              </select>
+                                                            </>
+                                                          )}
+                                                          {remarks ==
+                                                            "Customer Refused / Cancelled" && (
+                                                            <>
+                                                              <label
+                                                                htmlFor=""
+                                                                className="block mb-1 mt-2 "
+                                                              >
+                                                                Sub Remark
+                                                              </label>
+                                                              <select
+                                                                onChange={(
+                                                                  e,
+                                                                ) => {
+                                                                  setSub_remarks(
+                                                                    e.target
+                                                                      .value,
+                                                                  );
+                                                                }}
+                                                                className="border w-full py-2 px-2 rounded"
+                                                              >
+                                                                <option value="">
+                                                                  -- Select
+                                                                  Reason --
+                                                                </option>
+                                                                <option value="Duplicate Order">
+                                                                  Duplicate
+                                                                  Order
+                                                                </option>
+                                                                <option value="Order Placed by Mistake">
+                                                                  Order Placed
+                                                                  by Mistake
+                                                                </option>
+                                                                <option value="COD Amount Not Ready">
+                                                                  COD Amount Not
+                                                                  Ready
+                                                                </option>
+                                                                <option value="Better Price Elsewhere">
+                                                                  Better Price
+                                                                  Elsewhere
+                                                                </option>
+                                                                <option value="Other">
+                                                                  Other
+                                                                </option>
+                                                              </select>
+                                                            </>
+                                                          )}
+
+                                                          <div>
+                                                            <label
+                                                              htmlFor="remark"
+                                                              className="block mb-1 mt-2"
+                                                            >
+                                                              Remark (Optional)
+                                                            </label>
+                                                            <input
+                                                              type="text"
+                                                              value={
+                                                                detailed_remarks
+                                                              }
+                                                              placeholder="Enter remark"
+                                                              onChange={(e) =>
+                                                                setdetailed_remarks(
+                                                                  e.target
+                                                                    .value,
+                                                                )
+                                                              }
+                                                              className=" border w-full py-2 px-2 rounded"
+                                                            />
+                                                          </div>
+                                                        </div>
+
+                                                        <Button
+                                                          onClick={async () => {
+                                                            // const order_ids = selectedBulkOrders.map((o) => o.id);
+                                                            await changeOrderStatus(
+                                                              {
+                                                                order_ids: [
+                                                                  order.id,
+                                                                ],
+                                                                newStatus:
+                                                                  order.status ==
+                                                                  "rto out for delivery"
+                                                                    ? "rto undelivered"
+                                                                    : assignmentState,
+                                                                remarks:
+                                                                  remarks,
+                                                                sub_remarks:
+                                                                  sub_remarks,
+                                                                detailed_remarks:
+                                                                  detailed_remarks,
+                                                                rescheduled_date:
+                                                                  rescheduleDate,
+                                                                rider_id: "",
+                                                              },
+                                                            );
+                                                          }}
+                                                          className={
+                                                            "bg-[#0446DB]"
+                                                          }
+                                                        >
+                                                          Submit
+                                                        </Button>
+
+                                                        <DialogFooter>
+                                                          <DialogClose asChild>
+                                                            <Button
+                                                              onClick={() => {
+                                                                clearAllState();
+                                                              }}
+                                                              variant="outline"
+                                                            >
+                                                              Cancel
+                                                            </Button>
+                                                          </DialogClose>
+                                                        </DialogFooter>
+                                                      </DialogContent>
+                                                    </Dialog>
+                                                  </>
+                                                )}
+                                                {(assignmentState ==
+                                                  "undelivered assigned" ||
+                                                  assignmentState ==
+                                                    "in transit") && (
+                                                  <>
+                                                    <Dialog className="w-5xl">
+                                                      <DialogTrigger asChild>
+                                                        <Button
+                                                          variant="outline"
+                                                          className="text-sm font-medium rounded-sm border  bg-[#0446DB] hover:text-[#FFF] text-white border-[#0446DB]  hover:bg-[#0446DB] inline-block cursor-pointer"
+                                                        >
+                                                          <span>
+                                                            Select Rider
+                                                          </span>
+                                                        </Button>
+                                                      </DialogTrigger>
+                                                      <DialogContent className="">
+                                                        <DialogHeader>
+                                                          <DialogTitle>
+                                                            Select a Rider
+                                                          </DialogTitle>
+                                                        </DialogHeader>
+
+                                                        <div>
+                                                          <label
+                                                            htmlFor="delivery_reason"
+                                                            className="block mb-1 mt-2"
+                                                          >
+                                                            Select Rider
+                                                          </label>
+                                                          <select
+                                                            name="delivery_reason"
+                                                            id="delivery_reason"
+                                                            onChange={(e) => {
+                                                              setRiderID(
+                                                                e.target.value,
+                                                              );
+                                                            }}
+                                                            className=" border w-full py-2 px-2 rounded"
+                                                          >
+                                                            <option value="">
+                                                              -- Select Rider --
+                                                            </option>
+                                                            {riders.map(
+                                                              (rider) => (
+                                                                <option
+                                                                  key={rider.id}
+                                                                  value={
+                                                                    rider.id
+                                                                  }
+                                                                >
+                                                                  {rider.id} :{" "}
+                                                                  {rider.name}
+                                                                </option>
+                                                              ),
+                                                            )}
+                                                          </select>
+                                                        </div>
+                                                        <Button
+                                                          onClick={async () => {
+                                                            await changeOrderStatus(
+                                                              {
+                                                                order_ids: [
+                                                                  order.id,
+                                                                ],
+                                                                newStatus:
+                                                                  assignmentState ==
+                                                                  "in transit"
+                                                                    ? "in transit"
+                                                                    : "undelivered assigned",
+                                                                rider_id:
+                                                                  riderID,
+                                                              },
+                                                            );
+                                                          }}
+                                                          className={
+                                                            "bg-[#0446DB]"
+                                                          }
+                                                        >
+                                                          Submit
+                                                        </Button>
+
+                                                        <DialogFooter>
+                                                          <DialogClose asChild>
+                                                            <Button
+                                                              onClick={() => {
+                                                                clearAllState();
+                                                              }}
+                                                              variant="outline"
+                                                            >
+                                                              Cancel
+                                                            </Button>
+                                                          </DialogClose>
+                                                        </DialogFooter>
+                                                      </DialogContent>
+                                                    </Dialog>
+                                                  </>
+                                                )}
+
+                                                {assignmentState &&
+                                                  assignmentState !== "ndr" &&
+                                                  assignmentState !==
+                                                    "in transit" &&
+                                                  assignmentState !==
+                                                    "undelivered assigned" && (
+                                                    <button
+                                                      type="submit"
+                                                      className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                                    >
+                                                      Update
+                                                    </button>
+                                                  )}
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setEditingStatusId(null);
+                                                    clearAllState();
+                                                  }}
+                                                  className="text-xs text-gray-500 hover:underline"
+                                                >
+                                                  Close
+                                                </button>
+                                              </div>
+                                            </form>
+                                          ) : (
+                                            <>
+                                              <span
+                                                onClick={() => {
+                                                  if (
+                                                    order.rider_preference ===
+                                                    "self"
+                                                  ) {
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.status == "in transit"
+                                                  ) {
+                                                    setEditingStatusId(
+                                                      order.id,
+                                                    );
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.status ==
+                                                    "undelivered assigned"
+                                                  ) {
+                                                    setEditingStatusId(
+                                                      order.id,
+                                                    );
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.status ==
+                                                      "out for delivery" ||
+                                                    order.status ==
+                                                      "rto out for delivery"
+                                                  ) {
+                                                    setEditingStatusId(
+                                                      order.id,
+                                                    );
+                                                    return;
+                                                  }
+                                                  if (
+                                                    (order.status ===
+                                                      "undelivered" ||
+                                                      order.status ===
+                                                        "picked") &&
+                                                    order.mapped_with &&
+                                                    (order.pickup_stage ===
+                                                      null ||
+                                                      order.pickup_stage ===
+                                                        "at_vendor")
+                                                  ) {
+                                                    const vendor_ids = [
+                                                      order?.mapped_with,
+                                                    ];
+                                                    fetchRider(vendor_ids);
+                                                    setEditingStatusId(
+                                                      order.id,
+                                                    );
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.status ===
+                                                      "pending pickup" &&
+                                                    order.tpc_awb_number !==
+                                                      null
+                                                  ) {
+                                                    return;
+                                                  }
+                                                  if (
+                                                    selectedStatus ===
+                                                    "rto in transit"
+                                                  ) {
+                                                    setEditingStatusId(
+                                                      order.id,
+                                                    );
+                                                    return;
+                                                  }
+                                                  
+                                                  if (selectedStatus ==="rto in transit" || selectedStatus=='rto undelivered') {
+                                                    
+                                                    setEditingStatusId(
+                                                      order.id,
+                                                    );
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.tpc_awb_number !==
+                                                    null
+                                                  ) {
+                                                    return;
+                                                  }
+                                                  if (
+                                                    order.rider_preference ===
+                                                    "daakit"
+                                                  ) {
+                                                    if (
+                                                      order.mapped_with !== null
+                                                    ) {
+                                                      return;
+                                                    } else if (
+                                                      order.status === "booked"
+                                                    ) {
+                                                      setEditingStatusId(
+                                                        order.id,
+                                                      );
+                                                    }
+                                                    // setEditingStatusId(order.id)
+                                                  }
+                                                }}
+                                                className="px-3 py-1 rounded-full whitespace-nowrap text-xs font-semibold inline-block bg-blue-100 text-blue-600 cursor-pointer"
+                                              >
+                                                {order.status ===
+                                                "rto in transit"
+                                                  ? `RTO In Transit`
+                                                  : toCapitalizeEachWord(
+                                                      order.status,
+                                                    )}
+                                              </span>
+                                            </>
+                                          )}
+                                        </>
+                                      )}
+                                    </TableCell>
+                                  </>
+                                )}
+                                {/* eligible_vendors */}
+                                {/* {selectedStatus === "booked" && (
+                                  <TableCell className="px-6 py-1 whitespace-pre-line">
+                                    
+                                    {order?.tpc_awb_number !== null ? (
+                                      <>
+                                        <p className="font-medium   text-center px-3 whitespace-nowrap py-1 rounded-full ">
+                                          -
+                                        </p>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <p className="font-medium bg-orange-100 text-orange-700 text-center px-3 whitespace-nowrap py-1 rounded-full dark:bg-orange-900 dark:text-orange-200">
+                                          {order?.tpc_awb_number !== null
+                                            ? "-"
+                                            : order?.eligible_vendors
+                                                ?.split(",")
+                                                .join(" | ")}
+                                        </p>
+                                      </>
+                                    )}
+                                  </TableCell>
+                                )} */}
+
+                                {selectedStatus === "booked" && (
+                                  <TableCell className="max-w-[220px] py-2">
+                                    {order?.tpc_awb_number != null ? (
+                                      <span className="block text-left text-gray-400">-</span>
+                                    ) : (() => {
+                                      const vendors = String(order?.eligible_vendors || "")
+                                        .split(",")
+                                        .map((v) => v.trim())
+                                        .filter(Boolean);
+
+                                      if (!vendors.length) {
+                                        return (
+                                          <span className="block text-center text-gray-400">-</span>
+                                        );
+                                      }
+
+                                      return (
+                                        <HoverCard openDelay={150} closeDelay={150}>
+                                          <HoverCardTrigger asChild>
+                                            <div className="max-w-[200px] cursor-pointer">
+                                              <div className="flex items-center gap-2 rounded-md border border-orange-200 bg-orange-50 px-3 py-2 text-orange-700 transition-all duration-200 hover:border-orange-400 hover:bg-orange-100 hover:shadow-sm dark:border-orange-900 dark:bg-orange-950/40 dark:text-orange-300">
+                                                <Building2 className="h-4 w-4 shrink-0" />
+
+                                                <span className="min-w-0 flex-1 truncate text-xs font-medium">
+                                                  {vendors.join(" | ")}
+                                                </span>
+
+                                                <span className="shrink-0 rounded-full bg-orange-200 px-1.5 py-0.5 text-[10px] font-semibold dark:bg-orange-900">
+                                                  {vendors.length}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          </HoverCardTrigger>
+
+                                          <HoverCardContent
+                                            side="top"
+                                            align="start"
+                                            sideOffset={8}
+                                            className="z-50 w-[320px] rounded-xl border border-gray-200 bg-white p-0 shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                                          >
+                                            {/* Header */}
+                                            <div className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                                              <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-50 text-orange-600 dark:bg-orange-950">
+                                                    <Users className="h-4 w-4" />
+                                                  </div>
+
+                                                  <div>
+                                                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                      Eligible Vendors
+                                                    </h4>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                      Available vendor list
+                                                    </p>
+                                                  </div>
+                                                </div>
+
+                                                <span className="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700 dark:bg-orange-950 dark:text-orange-300">
+                                                  {vendors.length} Total
+                                                </span>
+                                              </div>
+                                            </div>
+
+                                            {/* Vendor List */}
+                                            <div className="max-h-[250px] space-y-1 overflow-y-auto p-2">
+                                              {vendors.map((vendor, index) => (
+                                                <div
+                                                  key={`${vendor}-${index}`}
+                                                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                >
+                                                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gray-100 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                                                    {index + 1}
+                                                  </span>
+
+                                                  <span className="min-w-0 flex-1 break-words text-sm font-medium text-gray-700 dark:text-gray-200">
+                                                    {vendor}
+                                                  </span>
+
+                                                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
+                                                </div>
+                                              ))}
+                                            </div>
+
+                                            {/* Footer */}
+                                            <div className="border-t border-gray-100 px-4 py-2.5 dark:border-gray-800">
+                                              <p className="text-center text-xs text-gray-400">
+                                                {vendors.length} eligible vendor
+                                                {vendors.length !== 1 ? "s" : ""} found
+                                              </p>
+                                            </div>
+                                          </HoverCardContent>
+                                        </HoverCard>
+                                      );
+                                    })()}
+                                  </TableCell>
+                                )}
+                              </TableRow>
+                            );
+                          })
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </div>
+
+              {totalPages > 1 && (
+                <div className="z-10  flex  justify-between shrink-0 border-t border-gray-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+                  <div className="text-sm text-gray-600">
+                    Page {page} of {totalPages}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={page === totalPages}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label>Rows per page:</Label>
+                    <select
+                      className="border rounded-md px-2 py-1"
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setPage(1);
+                      }}
+                    >
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value={200}>200</option>
+                    </select>
+                  </div>
+                </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
-      {/* 👇 Popup Modal */}
-      {popupData && (
-        <div className="fixed inset-0 bg-[rgba(46,46,46,0.5)] flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-sm shadow-lg w-96 max-h-[70vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-4">AWB Numbers</h2>
-            <ul className="list-disc pl-5 space-y-1">
-              {popupData.awb_numbers.split(",").map((awb, idx) => (
-                <li key={idx} className="text-gray-700">
-                  {awb}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={closePopUp}
-              className="mt-4 px-4 py-2 bg-[#0446DB] text-white rounded hover:bg-indigo-600"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
 
 
+
+
+
+
+
+
+
+                                     ) : order.status === "undelivered" ? (
+                                        <>
+                                          {checkVendorMapping !== null &&
+                                          !checkVendorMapping?.canChangeMapping &&
+                                          isOpenIndividualVendorMap ===
+                                            order.id ? (
+                                            <>
+                                              <form
+                                                onSubmit={(e) => {
+                                                  e.preventDefault();
+                                                  revokeVendorMapping(order.id);
+                                                }}
+                                                className="flex items-center gap-2"
+                                              >
+                                                <button
+                                                  type="submit"
+                                                  className="bg-[#0446DB] whitespace-nowrap text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                                >
+                                                  Revoke Vendor Mapping
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="text-xs bg-red-500/20 px-2 py-1 rounded text-red-500 text-gray-500 hover:underline"
+                                                  onClick={() => {
+                                                    setCheckVendorMapping({
+                                                      canChangeMapping: true,
+                                                      currentAction: "grant",
+                                                    });
+                                                    setIsOpenIndividualVendorMap(
+                                                      "",
+                                                    );
+                                                  }}
+                                                >
+                                                  Close
+                                                </button>
+                                              </form>
+                                            </>
+                                          ) : isOpenIndividualVendorMap ===
+                                            order.id ? (
+                                            <>
+                                              <form
+                                                onSubmit={(e) => {
+                                                  e.preventDefault();
+                                                  const selectedVendor =
+                                                    assignmentState;
+                                                  if (!selectedVendor) {
+                                                    toast.warn(
+                                                      "Please select a vendor",
+                                                    );
+                                                    return;
+                                                  }
+                                                  changeVendorMapping(
+                                                    order.id,
+                                                    selectedVendor,
+                                                  );
+                                                  setIsOpenIndividualVendorMap(
+                                                    "",
+                                                  );
+                                                }}
+                                                className="flex items-center gap-2"
+                                              >
+                                                <select
+                                                  value={assignmentState}
+                                                  onChange={(e) =>
+                                                    setAssignmentState(
+                                                      e.target.value,
+                                                    )
+                                                  }
+                                                  className="border px-2 py-1 rounded-md"
+                                                  required
+                                                >
+                                                  <option value="" disabled>
+                                                    Select Vendor
+                                                  </option>
+                                                  {vendor.map((vendor) => (
+                                                    <option
+                                                      key={vendor.vendor_id}
+                                                      value={vendor.vendor_id}
+                                                    >
+                                                      {vendor.vendor_id} :{" "}
+                                                      {vendor.vendor_name}
+                                                    </option>
+                                                  ))}
+                                                </select>
+                                                <button
+                                                  type="submit"
+                                                  className="bg-[#0446DB] whitespace-nowrap text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                                >
+                                                  Change Mapping
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="text-xs text-gray-500 hover:underline"
+                                                  onClick={() =>
+                                                    setIsOpenIndividualVendorMap(
+                                                      "",
+                                                    )
+                                                  }
+                                                >
+                                                  Close
+                                                </button>
+                                              </form>
+                                            </>
+                                          ) : (
+                                            <span
+                                              onClick={() => {
+                                                if (
+                                                  order.status === "undelivered"
+                                                ) {
+                                                  checkVendorMappingStatus(
+                                                    order.id,
+                                                  );
+                                                  fetchVendor(order.id);
+                                                 
+                                                  setIsOpenIndividualVendorMap(
+                                                    order.id,
+                                                  );
+                                                
+                                                }
+                                              }}
+                                              className="px-3 py-1 cursor-pointer rounded-full text-xs font-medium bg-green-100 text-green-600"
+                                            >
+                                              Mapped
+                                            </span>
+                                          )}
+                                        </>
+                                      ) : order.status === "delivered" ||
+                                        order.status === "undelivered" ||
+                                        order.status === "rto in transit" ? (
+                                        <>
+                                          {order.mapped_with === null ? (
+                                            <span className="px-3 whitespace-nowrap py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                                              Not Mapped
+                                            </span>
+                                          ) : isOpenIndividualVendorMap ===
+                                            order.id ? (
+                                            <>
+                                              <form
+                                                onSubmit={(e) => {
+                                                  e.preventDefault();
+                                                  const selectedVendor =
+                                                    assignmentState;
+                                                  if (!selectedVendor) {
+                                                    toast.warn(
+                                                      "Please select a vendor",
+                                                    );
+                                                    return;
+                                                  }
+                                                  changeVendorMapping(
+                                                    order.id,
+                                                    selectedVendor,
+                                                  );
+                                                  setIsOpenIndividualVendorMap(
+                                                    "",
+                                                  );
+                                                }}
+                                                className="flex items-center gap-2"
+                                              >
+                                                <select
+                                                  value={assignmentState}
+                                                  onChange={(e) =>
+                                                    setAssignmentState(
+                                                      e.target.value,
+                                                    )
+                                                  }
+                                                  className="border px-2 py-1 rounded-md"
+                                                  required
+                                                >
+                                                  <option value="" disabled>
+                                                    Select Vendor
+                                                  </option>
+                                                  {vendor.map((vendor) => (
+                                                    <option
+                                                      key={vendor.vendor_id}
+                                                      value={vendor.vendor_id}
+                                                    >
+                                                      {vendor.vendor_id} :{" "}
+                                                      {vendor.vendor_name}
+                                                    </option>
+                                                  ))}
+                                                </select>
+                                                <button
+                                                  type="submit"
+                                                  className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
+                                                >
+                                                  Assign
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="text-xs text-gray-500 hover:underline"
+                                                  onClick={() =>
+                                                    setIsOpenIndividualVendorMap(
+                                                      "",
+                                                    )
+                                                  }
+                                                >
+                                                  Close
+                                                </button>
+                                              </form>
+                                            </>
+                                          ) : (
+                                            <span
+                                              onClick={() => {
+                                                if (
+                                                  order.status === "undelivered"
+                                                ) {
+                                                  fetchVendor(order.id);
+                                                  setIsOpenIndividualVendorMap(
+                                                    order.id,
+                                                  );
+                                                  setIsOpenIndividualAssignmnetMap(
+                                                    "",
+                                                  );
+                                                }
+                                              }}
+                                              className="px-3 py-1 cursor-pointer rounded-full text-xs font-medium bg-green-100 text-green-600"
+                                            >
+                                              Mapped
+                                            </span>
+                                          )}
+                                        </>
+                                      ) : order.status === "rto delivered" ? (
+                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                          Return To Origin
+                                        </span>
+                                      )

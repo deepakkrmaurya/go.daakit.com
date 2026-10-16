@@ -484,7 +484,7 @@ const timer = setInterval(() => {
         <div className="min-h-screen w-full">
           {/* Header Section */}
           <div className="relative dark:bg-neutral-800">
-            <div className="relative z-10  mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <div className="relative z-10  mx-auto py-2">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 {/* Heading */}
                 <div className="text-center lg:text-left">
@@ -1594,538 +1594,155 @@ const timer = setInterval(() => {
 
 
 
-                {/* {filteredStats && (() => {
-  const orders = filteredStats?.order_status_counts || {};
-  const remittance = Array.isArray(filteredStats?.cod_remittance_counts)
-    ? filteredStats.cod_remittance_counts
-    : [];
+                
 
-  const filters = filteredStats?.filters || {};
-  const totalOrders = Math.max(0, Number(orders.total_orders) || 0);
-
-  const totalCOD = remittance.reduce(
-    (sum, item) => sum + Math.max(0, Number(item?.count) || 0),
-    0
-  );
-
-  const orderStatusConfig = {
-    pending_pickup: {
-      label: "Pending Pickup",
-      dot: "bg-yellow-400",
-      bar: "bg-yellow-400",
-    },
-    picked: {
-      label: "Picked",
-      dot: "bg-blue-500",
-      bar: "bg-blue-500",
-    },
-    in_transit: {
-      label: "In Transit",
-      dot: "bg-violet-500",
-      bar: "bg-violet-500",
-    },
-    out_for_delivery: {
-      label: "Out For Delivery",
-      dot: "bg-orange-500",
-      bar: "bg-orange-500",
-    },
-    delivered: {
-      label: "Delivered",
-      dot: "bg-green-500",
-      bar: "bg-green-500",
-    },
-    ndr: {
-      label: "NDR",
-      dot: "bg-rose-500",
-      bar: "bg-rose-500",
-    },
-    undelivered: {
-      label: "Undelivered",
-      dot: "bg-red-500",
-      bar: "bg-red-500",
-    },
-    undelivered_assigned: {
-      label: "Undelivered Assigned",
-      dot: "bg-slate-400",
-      bar: "bg-slate-400",
-    },
-    rto_in_transit: {
-      label: "RTO In Transit",
-      dot: "bg-blue-600",
-      bar: "bg-blue-600",
-    },
-    rto_delivered: {
-      label: "RTO Delivered",
-      dot: "bg-teal-500",
-      bar: "bg-teal-500",
-    },
-    lost: {
-      label: "Lost",
-      dot: "bg-slate-500",
-      bar: "bg-slate-500",
-    },
-  };
-
-  const codStatusConfig = {
-    received: {
-      dot: "bg-green-500",
-      bar: "bg-green-500",
-    },
-    initiated: {
-      dot: "bg-blue-500",
-      bar: "bg-blue-500",
-    },
-    adjusted: {
-      dot: "bg-purple-600",
-      bar: "bg-purple-600",
-    },
-    pending: {
-      dot: "bg-orange-500",
-      bar: "bg-orange-500",
-    },
-  };
-
-  const orderRows = Object.entries(orders).filter(
-    ([status]) => status !== "total_orders"
-  );
-
-  const percentage = (count, total) => {
-    if (total <= 0) return 0;
-    return Math.min(
-      100,
-      Math.max(0, ((Number(count) || 0) / total) * 100)
-    );
-  };
-
-  return (
-    <div className="my-6 space-y-5 ">
-
-      
-
-     
-      <div className="overflow-hidden rounded-sm border border-gray-300 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-5">
-          <div className="flex gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-              <svg
-                width="23"
-                height="23"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="m3 17 6-6 4 3 8-9" />
-                <path d="M15 5h6v6" />
-                <path d="M4 21v-4M9 21v-6M14 21v-4M19 21v-8" />
-              </svg>
-            </div>
-
-            
-
-<div className="flex w-full flex-wrap items-center justify-between gap-3">
-  <div className="flex-1 text-left">
-    <p className="text-base font-bold text-slate-900 dark:text-white">
-      Order Status Counts
-    </p>
-
-    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-      Detailed overview of orders by current status
-    </p>
-  </div>
-
-  {appliedScope?.vendor_id && (
-    <p className="rounded-sm border border-dashed border-orange-300 bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-500 dark:border-orange-500/30 dark:bg-orange-500/10">
-      Fleet Partner: {selectedVendorName}
-    </p>
-  )}
-</div>
-
-
-          </div>
-
-          <div className="flex items-center gap-3 rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 dark:border-blue-500/20 dark:bg-blue-500/10">
-            <span className="text-xs text-slate-500 dark:text-slate-300">
-              Total Orders
-            </span>
-            <span className="text-xl font-bold tabular-nums text-[#0446DB] dark:text-blue-400">
-              {formatCount(totalOrders)}
-            </span>
-          </div>
-        </div>
-
-        <div className="px-4 pb-4 sm:px-5">
-          <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-neutral-700">
-            <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-
-              <thead className="bg-slate-100/90 dark:bg-neutral-800">
-                <tr className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  <th className="w-[35%] px-4 py-3">Order Status</th>
-                  <th className="w-[15%] px-4 py-3 text-right">Orders</th>
-                  <th className="w-[15%] px-4 py-3 text-right">
-                    % of Total
-                  </th>
-                  <th className="w-[35%] px-4 py-3">Visual</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
-                {orderRows.map(([status, count]) => {
-                  const config = orderStatusConfig[status] || {
-                    label: status.replaceAll("_", " "),
-                    dot: "bg-slate-400",
-                    bar: "bg-slate-400",
+                {filteredStats && (() => {
+                  const orders = filteredStats?.order_status_counts || {};
+                  const remittance = Array.isArray(filteredStats?.cod_remittance_counts)
+                    ? filteredStats.cod_remittance_counts
+                    : [];
+                  const totalOrders = Math.max(0, Number(orders.total_orders) || 0);
+                  const totalCOD = remittance.reduce(
+                    (sum, item) => sum + Math.max(0, Number(item?.count) || 0), 0
+                  );
+                  const orderStatusConfig = {
+                    pending_pickup: { label: 'Pending Pickup', dot: 'bg-yellow-400', bar: 'bg-yellow-400' },
+                    picked: { label: 'Picked', dot: 'bg-blue-500', bar: 'bg-blue-500' },
+                    in_transit: { label: 'In Transit', dot: 'bg-violet-500', bar: 'bg-violet-500' },
+                    out_for_delivery: { label: 'Out For Delivery', dot: 'bg-orange-500', bar: 'bg-orange-500' },
+                    delivered: { label: 'Delivered', dot: 'bg-green-500', bar: 'bg-green-500' },
+                    ndr: { label: 'NDR', dot: 'bg-rose-500', bar: 'bg-rose-500' },
+                    undelivered: { label: 'Undelivered', dot: 'bg-red-500', bar: 'bg-red-500' },
+                    undelivered_assigned: { label: 'Undelivered Assigned', dot: 'bg-slate-400', bar: 'bg-slate-400' },
+                    rto_in_transit: { label: 'RTO In Transit', dot: 'bg-blue-600', bar: 'bg-blue-600' },
+                    rto_delivered: { label: 'RTO Delivered', dot: 'bg-teal-500', bar: 'bg-teal-500' },
+                    lost: { label: 'Lost', dot: 'bg-slate-500', bar: 'bg-slate-500' },
                   };
-
-                  const percent = percentage(count, totalOrders);
-
-                  return (
-                    <tr
-                      key={status}
-                      className="transition-colors hover:bg-blue-50/40 dark:hover:bg-neutral-800/60"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`h-3.5 w-3.5 shrink-0 rounded-full ${config.dot}`}
-                          />
-                          <span className="font-medium text-slate-800 dark:text-slate-200">
-                            {config.label}
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900 dark:text-white">
-                        {formatCount(count)}
-                      </td>
-
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">
-                        {percent.toFixed(1)}%
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${config.bar}`}
-                              style={{ width: `${percent}%` }}
-                            />
-                          </div>
-                          <span className="w-12 text-right text-xs tabular-nums text-slate-600 dark:text-slate-300">
-                            {percent.toFixed(1)}%
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-
-                {orderRows.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400"
-                    >
-                      No order statistics available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-     
-      <div className="overflow-hidden rounded-sm border border-gray-300 bg-white  dark:border-neutral-800 dark:bg-neutral-900">
-
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-              <svg
-                width="23"
-                height="23"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <ellipse cx="12" cy="5" rx="8" ry="3" />
-                <path d="M4 5v5c0 1.7 3.6 3 8 3s8-1.3 8-3V5" />
-                <path d="M4 10v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5" />
-                <path d="M4 15v4c0 1.7 3.6 3 8 3s8-1.3 8-3v-4" />
-              </svg>
-            </div>
-
-            
-<div className="flex w-full flex-wrap items-center justify-between gap-3">
-  <div className="flex-1 text-left">
-    <h4 className="text-base font-bold text-slate-900 dark:text-white">
-      COD Remittance Status
-    </h4>
-
-    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-      Overview of COD remittance records by status
-    </p>
-  </div>
-
-  {appliedScope?.vendor_id && (
-    <p className="rounded-sm border border-dashed border-orange-300 bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-500 dark:border-orange-500/30 dark:bg-orange-500/10">
-      Fleet Partner: {selectedVendorName}
-    </p>
-  )}
-</div>
-
-          </div>
-
-          <div className="flex items-center gap-3 rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 dark:border-blue-500/20 dark:bg-blue-500/10">
-            <span className="text-xs text-slate-500 dark:text-slate-300">
-              Total Records
-            </span>
-            <span className="text-xl font-bold tabular-nums text-[#0446DB] dark:text-blue-400">
-              {formatCount(totalCOD)}
-            </span>
-          </div>
-        </div>
-
-        <div className="px-4 pb-4 sm:px-5">
-          <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-neutral-700">
-            <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-
-              <thead className="bg-slate-100/90 dark:bg-neutral-800">
-                <tr className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  <th className="w-[35%] px-4 py-3">Status</th>
-                  <th className="w-[15%] px-4 py-3 text-right">Count</th>
-                  <th className="w-[15%] px-4 py-3 text-right">
-                    % of Total
-                  </th>
-                  <th className="w-[35%] px-4 py-3">Visual</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
-                {remittance.map((item, index) => {
-                  const status = String(item?.status || "unknown").toLowerCase();
-
-                  const config = codStatusConfig[status] || {
-                    dot: "bg-slate-400",
-                    bar: "bg-slate-400",
+                  const codStatusConfig = {
+                    received: { dot: 'bg-green-500', bar: 'bg-green-500' },
+                    initiated: { dot: 'bg-blue-500', bar: 'bg-blue-500' },
+                    adjusted: { dot: 'bg-purple-600', bar: 'bg-purple-600' },
+                    pending: { dot: 'bg-orange-500', bar: 'bg-orange-500' },
                   };
-
-                  const percent = percentage(item?.count, totalCOD);
+                  const orderRows = Object.entries(orders).filter(([status]) => status !== 'total_orders');
+                  const percentage = (count, total) => total > 0
+                    ? Math.min(100, Math.max(0, ((Number(count) || 0) / total) * 100)) : 0;
 
                   return (
-                    <tr
-                      key={`${status}-${index}`}
-                      className="transition-colors hover:bg-blue-50/40 dark:hover:bg-neutral-800/60"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`h-3.5 w-3.5 shrink-0 rounded-full ${config.dot}`}
-                          />
-                          <span className="font-medium capitalize text-slate-800 dark:text-slate-200">
-                            {status.replaceAll("_", " ")}
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900 dark:text-white">
-                        {formatCount(item?.count)}
-                      </td>
-
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">
-                        {percent.toFixed(1)}%
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${config.bar}`}
-                              style={{ width: `${percent}%` }}
-                            />
+                    <div className="my-6 grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+                      {/* ORDER STATUS COUNTS */}
+                      <div className="min-w-0 overflow-hidden rounded-sm border border-gray-300 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+                        <div className="flex flex-wrap items-start justify-between gap-3 px-5 py-5">
+                          <div className="flex min-w-0 flex-1 items-start gap-3">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+                              <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="m3 17 6-6 4 3 8-9" /><path d="M15 5h6v6" /><path d="M4 21v-4M9 21v-6M14 21v-4M19 21v-8" />
+                              </svg>
+                            </div>
+                            <div className="min-w-0 flex-1 text-left">
+                              <h4 className="text-base font-bold text-slate-900 dark:text-white">Order Status Counts</h4>
+                              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Detailed overview of orders by current status</p>
+                              {appliedScope?.vendor_id && (
+                                <p className="mt-2 inline-block max-w-full break-words rounded-sm border border-dashed border-orange-300 bg-orange-50 px-3 py-1.5 text-left text-xs font-semibold text-orange-500 dark:border-orange-500/30 dark:bg-orange-500/10">
+                                  Fleet Partner: {selectedVendorName || `Vendor #${appliedScope.vendor_id}`}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <span className="w-12 text-right text-xs tabular-nums text-slate-600 dark:text-slate-300">
-                            {percent.toFixed(1)}%
-                          </span>
+                          <div className="flex shrink-0 items-center gap-3 rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 dark:border-blue-500/20 dark:bg-blue-500/10">
+                            <span className="text-xs text-slate-500 dark:text-slate-300">Total Orders</span>
+                            <span className="text-xl font-bold tabular-nums text-[#0446DB] dark:text-blue-400">{formatCount(totalOrders)}</span>
+                          </div>
                         </div>
-                      </td>
-                    </tr>
+                        <div className="px-4 pb-4 sm:px-5">
+                          <div className="h-[40vh] max-w-full overflow-auto overscroll-contain rounded-lg border border-slate-200 dark:border-neutral-700">
+                            <table className="w-full min-w-[620px] border-collapse text-left text-sm">
+                              <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-neutral-800">
+                                <tr className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                  <th className="w-[35%] px-4 py-3">Order Status</th>
+                                  <th className="w-[15%] px-4 py-3 text-right">Orders</th>
+                                  <th className="w-[15%] px-4 py-3 text-right">% of Total</th>
+                                  <th className="w-[35%] px-4 py-3">Visual</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
+                                {orderRows.map(([status, count]) => {
+                                  const config = orderStatusConfig[status] || { label: status.replaceAll('_', ' '), dot: 'bg-slate-400', bar: 'bg-slate-400' };
+                                  const percent = percentage(count, totalOrders);
+                                  return (
+                                    <tr key={status} className="transition-colors hover:bg-blue-50/40 dark:hover:bg-neutral-800/60">
+                                      <td className="px-4 py-3"><div className="flex items-center gap-3"><span className={`h-3.5 w-3.5 shrink-0 rounded-full ${config.dot}`} /><span className="font-medium text-slate-800 dark:text-slate-200">{config.label}</span></div></td>
+                                      <td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900 dark:text-white">{formatCount(count)}</td>
+                                      <td className="px-4 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">{percent.toFixed(1)}%</td>
+                                      <td className="px-4 py-3"><div className="flex items-center gap-3"><div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700"><div className={`h-full rounded-full transition-all duration-500 ${config.bar}`} style={{ width: `${percent}%` }} /></div><span className="w-12 text-right text-xs tabular-nums text-slate-600 dark:text-slate-300">{percent.toFixed(1)}%</span></div></td>
+                                    </tr>
+                                  );
+                                })}
+                                {orderRows.length === 0 && <tr><td colSpan={4} className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400">No order statistics available</td></tr>}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* COD REMITTANCE STATUS */}
+                      <div className="min-w-0 overflow-hidden rounded-sm border border-gray-300 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+                        <div className="flex flex-wrap items-start justify-between gap-3 px-5 py-5">
+                          <div className="flex min-w-0 flex-1 items-start gap-3">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+                              <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v5c0 1.7 3.6 3 8 3s8-1.3 8-3V5" /><path d="M4 10v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5" /><path d="M4 15v4c0 1.7 3.6 3 8 3s8-1.3 8-3v-4" />
+                              </svg>
+                            </div>
+                            <div className="min-w-0 flex-1 text-left">
+                              <h4 className="text-base font-bold text-slate-900 dark:text-white">COD Remittance Status</h4>
+                              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Overview of COD remittance records by status</p>
+                              {appliedScope?.vendor_id && (
+                                <p className="mt-2 inline-block max-w-full break-words rounded-sm border border-dashed border-orange-300 bg-orange-50 px-3 py-1.5 text-left text-xs font-semibold text-orange-500 dark:border-orange-500/30 dark:bg-orange-500/10">
+                                  Fleet Partner: {selectedVendorName || `Vendor #${appliedScope.vendor_id}`}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-3 rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 dark:border-blue-500/20 dark:bg-blue-500/10">
+                            <span className="text-xs text-slate-500 dark:text-slate-300">Total Records</span>
+                            <span className="text-xl font-bold tabular-nums text-[#0446DB] dark:text-blue-400">{formatCount(totalCOD)}</span>
+                          </div>
+                        </div>
+                        <div className="px-4 pb-4 sm:px-5">
+                          <div className="max-w-full overflow-x-auto rounded-lg border border-slate-200 dark:border-neutral-700">
+                            <table className="w-full h-[40vh] max-w-full overflow-auto overscroll-contain rounded-lg border border-slate-200 dark:border-neutral-700">
+                              <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-neutral-800">
+                                <tr className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                  <th className=" px-4 text-left py-3">Status</th>
+                                  <th className=" px-4 text-left py-3 ">Count</th>
+                                  <th className=" px-4 text-left py-3 ">% of Total</th>
+                                  <th className=" px-4 text-left py-3">Visual</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
+                                {remittance.map((item, index) => {
+                                  const status = String(item?.status || 'unknown').toLowerCase();
+                                  const config = codStatusConfig[status] || { dot: 'bg-slate-400', bar: 'bg-slate-400' };
+                                  const percent = percentage(item?.count, totalCOD);
+                                  return (
+                                    <tr key={`${status}-${index}`} className="transition-colors hover:bg-blue-50/40 dark:hover:bg-neutral-800/60">
+                                      <td className="px-4 text-left py-3"><div className="flex it gap-3"><span className={`h-3.5 w-3.5 shrink-0 rounded-full ${config.dot}`} /><span className="font-medium capitalize text-slate-800 dark:text-slate-200">{status.replaceAll('_', ' ')}</span></div></td>
+                                      <td className="px-4 text-left py-3  font-semibold tabular-nums text-slate-900 dark:text-white">{formatCount(item?.count)}</td>
+                                      <td className="px-4 text-left py-3  tabular-nums text-slate-600 dark:text-slate-300">{percent.toFixed(1)}%</td>
+                                      <td className="px-4 text-left py-3"><div className="flex it gap-3"><div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700"><div className={`h-full rounded-full transition-all duration-500 ${config.bar}`} style={{ width: `${percent}%` }} /></div><span className="w-12 text-right text-xs tabular-nums text-slate-600 dark:text-slate-300">{percent.toFixed(1)}%</span></div></td>
+                                    </tr>
+                                  );
+                                })}
+                                {remittance.length === 0 && <tr><td colSpan={4} className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400">No COD remittance records found</td></tr>}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   );
-                })}
-
-                {remittance.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400"
-                    >
-                      No COD remittance records found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-                })()} */}
-
-{filteredStats && (() => {
-  const orders = filteredStats?.order_status_counts || {};
-  const remittance = Array.isArray(filteredStats?.cod_remittance_counts)
-    ? filteredStats.cod_remittance_counts
-    : [];
-  const totalOrders = Math.max(0, Number(orders.total_orders) || 0);
-  const totalCOD = remittance.reduce(
-    (sum, item) => sum + Math.max(0, Number(item?.count) || 0), 0
-  );
-  const orderStatusConfig = {
-    pending_pickup: { label: 'Pending Pickup', dot: 'bg-yellow-400', bar: 'bg-yellow-400' },
-    picked: { label: 'Picked', dot: 'bg-blue-500', bar: 'bg-blue-500' },
-    in_transit: { label: 'In Transit', dot: 'bg-violet-500', bar: 'bg-violet-500' },
-    out_for_delivery: { label: 'Out For Delivery', dot: 'bg-orange-500', bar: 'bg-orange-500' },
-    delivered: { label: 'Delivered', dot: 'bg-green-500', bar: 'bg-green-500' },
-    ndr: { label: 'NDR', dot: 'bg-rose-500', bar: 'bg-rose-500' },
-    undelivered: { label: 'Undelivered', dot: 'bg-red-500', bar: 'bg-red-500' },
-    undelivered_assigned: { label: 'Undelivered Assigned', dot: 'bg-slate-400', bar: 'bg-slate-400' },
-    rto_in_transit: { label: 'RTO In Transit', dot: 'bg-blue-600', bar: 'bg-blue-600' },
-    rto_delivered: { label: 'RTO Delivered', dot: 'bg-teal-500', bar: 'bg-teal-500' },
-    lost: { label: 'Lost', dot: 'bg-slate-500', bar: 'bg-slate-500' },
-  };
-  const codStatusConfig = {
-    received: { dot: 'bg-green-500', bar: 'bg-green-500' },
-    initiated: { dot: 'bg-blue-500', bar: 'bg-blue-500' },
-    adjusted: { dot: 'bg-purple-600', bar: 'bg-purple-600' },
-    pending: { dot: 'bg-orange-500', bar: 'bg-orange-500' },
-  };
-  const orderRows = Object.entries(orders).filter(([status]) => status !== 'total_orders');
-  const percentage = (count, total) => total > 0
-    ? Math.min(100, Math.max(0, ((Number(count) || 0) / total) * 100)) : 0;
-
-  return (
-    <div className="my-6 grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
-      {/* ORDER STATUS COUNTS */}
-      <div className="min-w-0 overflow-hidden rounded-sm border border-gray-300 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex flex-wrap items-start justify-between gap-3 px-5 py-5">
-          <div className="flex min-w-0 flex-1 items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-              <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m3 17 6-6 4 3 8-9" /><path d="M15 5h6v6" /><path d="M4 21v-4M9 21v-6M14 21v-4M19 21v-8" />
-              </svg>
-            </div>
-            <div className="min-w-0 flex-1 text-left">
-              <h4 className="text-base font-bold text-slate-900 dark:text-white">Order Status Counts</h4>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Detailed overview of orders by current status</p>
-              {appliedScope?.vendor_id && (
-                <p className="mt-2 inline-block max-w-full break-words rounded-sm border border-dashed border-orange-300 bg-orange-50 px-3 py-1.5 text-left text-xs font-semibold text-orange-500 dark:border-orange-500/30 dark:bg-orange-500/10">
-                  Fleet Partner: {selectedVendorName || `Vendor #${appliedScope.vendor_id}`}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-3 rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 dark:border-blue-500/20 dark:bg-blue-500/10">
-            <span className="text-xs text-slate-500 dark:text-slate-300">Total Orders</span>
-            <span className="text-xl font-bold tabular-nums text-[#0446DB] dark:text-blue-400">{formatCount(totalOrders)}</span>
-          </div>
-        </div>
-        <div className="px-4 pb-4 sm:px-5">
-          <div className="max-w-full overflow-x-auto rounded-lg border border-slate-200 dark:border-neutral-700">
-            <table className="w-full min-w-[620px] border-collapse text-left text-sm">
-              <thead className="bg-slate-100/90 dark:bg-neutral-800">
-                <tr className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  <th className="w-[35%] px-4 py-3">Order Status</th>
-                  <th className="w-[15%] px-4 py-3 text-right">Orders</th>
-                  <th className="w-[15%] px-4 py-3 text-right">% of Total</th>
-                  <th className="w-[35%] px-4 py-3">Visual</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
-                {orderRows.map(([status, count]) => {
-                  const config = orderStatusConfig[status] || { label: status.replaceAll('_', ' '), dot: 'bg-slate-400', bar: 'bg-slate-400' };
-                  const percent = percentage(count, totalOrders);
-                  return (
-                    <tr key={status} className="transition-colors hover:bg-blue-50/40 dark:hover:bg-neutral-800/60">
-                      <td className="px-4 py-3"><div className="flex items-center gap-3"><span className={`h-3.5 w-3.5 shrink-0 rounded-full ${config.dot}`} /><span className="font-medium text-slate-800 dark:text-slate-200">{config.label}</span></div></td>
-                      <td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900 dark:text-white">{formatCount(count)}</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">{percent.toFixed(1)}%</td>
-                      <td className="px-4 py-3"><div className="flex items-center gap-3"><div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700"><div className={`h-full rounded-full transition-all duration-500 ${config.bar}`} style={{ width: `${percent}%` }} /></div><span className="w-12 text-right text-xs tabular-nums text-slate-600 dark:text-slate-300">{percent.toFixed(1)}%</span></div></td>
-                    </tr>
-                  );
-                })}
-                {orderRows.length === 0 && <tr><td colSpan={4} className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400">No order statistics available</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* COD REMITTANCE STATUS */}
-      <div className="min-w-0 overflow-hidden rounded-sm border border-gray-300 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex flex-wrap items-start justify-between gap-3 px-5 py-5">
-          <div className="flex min-w-0 flex-1 items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-              <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v5c0 1.7 3.6 3 8 3s8-1.3 8-3V5" /><path d="M4 10v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5" /><path d="M4 15v4c0 1.7 3.6 3 8 3s8-1.3 8-3v-4" />
-              </svg>
-            </div>
-            <div className="min-w-0 flex-1 text-left">
-              <h4 className="text-base font-bold text-slate-900 dark:text-white">COD Remittance Status</h4>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Overview of COD remittance records by status</p>
-              {appliedScope?.vendor_id && (
-                <p className="mt-2 inline-block max-w-full break-words rounded-sm border border-dashed border-orange-300 bg-orange-50 px-3 py-1.5 text-left text-xs font-semibold text-orange-500 dark:border-orange-500/30 dark:bg-orange-500/10">
-                  Fleet Partner: {selectedVendorName || `Vendor #${appliedScope.vendor_id}`}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-3 rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 dark:border-blue-500/20 dark:bg-blue-500/10">
-            <span className="text-xs text-slate-500 dark:text-slate-300">Total Records</span>
-            <span className="text-xl font-bold tabular-nums text-[#0446DB] dark:text-blue-400">{formatCount(totalCOD)}</span>
-          </div>
-        </div>
-        <div className="px-4 pb-4 sm:px-5">
-          <div className="max-w-full overflow-x-auto rounded-lg border border-slate-200 dark:border-neutral-700">
-            <table className="w-full min-w-[620px] border-collapse text-left text-sm">
-              <thead className="bg-slate-100/90 dark:bg-neutral-800">
-                <tr className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  <th className="w-[35%] px-4 py-3">Status</th>
-                  <th className="w-[15%] px-4 py-3 text-right">Count</th>
-                  <th className="w-[15%] px-4 py-3 text-right">% of Total</th>
-                  <th className="w-[35%] px-4 py-3">Visual</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
-                {remittance.map((item, index) => {
-                  const status = String(item?.status || 'unknown').toLowerCase();
-                  const config = codStatusConfig[status] || { dot: 'bg-slate-400', bar: 'bg-slate-400' };
-                  const percent = percentage(item?.count, totalCOD);
-                  return (
-                    <tr key={`${status}-${index}`} className="transition-colors hover:bg-blue-50/40 dark:hover:bg-neutral-800/60">
-                      <td className="px-4 py-3"><div className="flex items-center gap-3"><span className={`h-3.5 w-3.5 shrink-0 rounded-full ${config.dot}`} /><span className="font-medium capitalize text-slate-800 dark:text-slate-200">{status.replaceAll('_', ' ')}</span></div></td>
-                      <td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900 dark:text-white">{formatCount(item?.count)}</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">{percent.toFixed(1)}%</td>
-                      <td className="px-4 py-3"><div className="flex items-center gap-3"><div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700"><div className={`h-full rounded-full transition-all duration-500 ${config.bar}`} style={{ width: `${percent}%` }} /></div><span className="w-12 text-right text-xs tabular-nums text-slate-600 dark:text-slate-300">{percent.toFixed(1)}%</span></div></td>
-                    </tr>
-                  );
-                })}
-                {remittance.length === 0 && <tr><td colSpan={4} className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400">No COD remittance records found</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-})()}
+                })()}
 
 
               </div>

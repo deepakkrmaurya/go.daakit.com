@@ -753,9 +753,9 @@ const RegistrationPage = () => {
           </div>
         </div>
 
-        <div>
-          <label className="mb-2 block text-[11px] font-bold uppercase tracking-[.06em] text-gray-700">
-            Tech Based <span className="text-red-500">*</span>
+        <div className=" mt-3">
+          <label className=" block text-[11px] uppercase font-bold uppercase tracking-[.06em] text-gray-700">
+            service type <span className="text-red-500">*</span>
           </label>
 
           <div className="relative">

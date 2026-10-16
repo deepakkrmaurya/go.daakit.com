@@ -42,6 +42,7 @@ import {
   Truck,
   X,
 } from "lucide-react";
+import AxiosInstance from "../../../Helper/axiosInstance";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -199,8 +200,8 @@ export default function VendorMappedOrder() {
     setLoading(true);
 
     try {
-      const res = await axios.get(
-        `${baseURL}/api/vendor/getAllNewMappedOrders`,
+      const res = await AxiosInstance.get(
+        `/api/vendor/getAllNewMappedOrders`,
         {
           params: {
             page,
@@ -209,9 +210,7 @@ export default function VendorMappedOrder() {
             startDate: toApiDate(customFilters.startDate),
             endDate: toApiDate(customFilters.endDate),
           },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          
         }
       );
       console.log(res.data)
@@ -245,14 +244,10 @@ export default function VendorMappedOrder() {
     setActionLoadingId(order_id);
 
     try {
-      const res = await axios.post(
-        `${baseURL}/api/vendor/pickupOrderFromOldVendor`,
+      const res = await AxiosInstance.post(
+        `/api/vendor/pickupOrderFromOldVendor`,
         { order_id },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        
       );
 
       toast.success(res?.data?.message || "Order picked successfully");
@@ -274,14 +269,10 @@ export default function VendorMappedOrder() {
     setActionLoadingId(order_id);
 
     try {
-      const res = await axios.post(
-        `${baseURL}/api/vendor/handoverOrderToNewVendor`,
+      const res = await AxiosInstance.post(
+        `/api/vendor/handoverOrderToNewVendor`,
         { order_id },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        
       );
 
       toast.success(res?.data?.message || "Order handed over successfully");

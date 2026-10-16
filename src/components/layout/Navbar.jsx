@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ShieldCheck,
+  Weight,
 } from "lucide-react";
 
 import { useEffect, useState, useRef } from "react";
@@ -116,6 +117,11 @@ import AxiosInstance from "@/Helper/axiosInstance";
 import GlassSurface from "../UiComponents/GlassSurface";
 import { FiAlertTriangle, FiSettings } from "react-icons/fi";
 import OrderSearch from "../common/InputGroupDropdown";
+import { DashboardIcon, FinanceIcon, OperationIcon,MapOrderIcon,OrderIcon,RemittanceIcon,RiderLocationIcon ,RateListIcon ,
+  RatePerIcon,HubIcon,SupportIcon,TransactionIcon,RechargeIcon,
+  PricingPlanIcon,PricingCalcuIcon,ChnagePasswordIcon,SecurityKeyIcon,
+  LabelIcon,InsuranceIcon,SettingIcon
+} from "../common/svg/Icons";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -286,1115 +292,7 @@ function Navbar({ allowedRoles, children }) {
     }
   };
 
-  // useEffect(() => {
-
-  //   if (UserRoles.includes(localStorage.getItem("userType"))) {
-
-  //     getUserPermissions()
-
-  //   }
-
-  // }, [])
-
-  // Navigation items configuration for SidebarLink format
-
-  //   const getNavLinks = () => {
-
-  //     const navConfig = {admin: [
-
-  //         {
-
-  //           label: "Analytics",
-
-  //           href: "/admin/analytics",
-
-  //           icon: (
-
-  //             <IoAnalyticsOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //         },
-
-  //         {
-
-  //           label: "Operation",
-
-  //           href: "#",
-
-  //           icon: (
-
-  //             <TbPackage className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //           subItems: [
-
-  //             {
-
-  //               label: "Orders",
-
-  //               href: "/admin/order-details",
-
-  //               icon: <TbPackage className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "New Mapped Orders",
-
-  //               href: "/admin/orderNewMappings",
-
-  //               icon: <TbPackage className="h-4 w-4" />,
-
-  //             },
-
-  //           ],
-
-  //         },
-
-  //         {
-
-  //           label: "Order History",
-
-  //           href: "/admin/order-history",
-
-  //           icon: (
-
-  //             <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //         },
-
-  //         // {
-
-  //         //   label: "Route Planning",
-
-  //         //   href: "/admin/route-planning",
-
-  //         //   icon: <FaRoute className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
-
-  //         // },
-
-  //         {
-
-  //           label: "Rider's Live Location",
-
-  //           href: "/admin/map",
-
-  //           icon: (
-
-  //             <FaMapMarkedAlt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //         },
-
-  //         {
-
-  //           label: "NDR",
-
-  //           href: "/admin/ndr",
-
-  //           icon: (
-
-  //             <NoSymbolIcon className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //         },
-
-  //         {
-
-  //           label: "Merchant",
-
-  //           href: "/admin/merchant-details",
-
-  //           icon: (
-
-  //             <MdOutlineBusinessCenter className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //         },
-
-  //         // {
-
-  //         //   label: "Subscription Plans",
-
-  //         //   href: "/admin/subscription",
-
-  //         //   icon: <MdOutlineSubscriptions className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
-
-  //         // },
-
-  //         {
-
-  //           label: "Coupon",
-
-  //           href: "/admin/coupon",
-
-  //           icon: (
-
-  //             <RiCoupon2Fill className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //         },
-
-  //         {
-
-  //           label: "Pricing",
-
-  //           href: "/admin/pricing",
-
-  //           icon: (
-
-  //             <ImPriceTag className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //         },
-
-  //         {
-
-  //           label: "Finance",
-
-  //           href: "#",
-
-  //           icon: (
-
-  //             <FaIndianRupeeSign className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //           subItems: [
-
-  //             {
-
-  //               label: "Billing & Invoices",
-
-  //               href: "/admin/billingandinvoices",
-
-  //               icon: <BillingIcon />,
-
-  //             },
-
-  //             {
-
-  //               label: "COD Remittances",
-
-  //               href: "/admin/cod-remittances",
-
-  //               icon: <LuReceiptIndianRupee className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "Vendor Remittances",
-
-  //               href: "/admin/vendor-remittances",
-
-  //               icon: <FaHandshake className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "Merchant Remittances",
-
-  //               href: "/admin/merchant-remittances",
-
-  //               icon: <FaUserTie className="h-4 w-4" />,
-
-  //             },
-
-  //           ],
-
-  //         },
-
-  //         {
-
-  //           label: "Vendor",
-
-  //           href: "#",
-
-  //           icon: (
-
-  //             <FaHandshake className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //           subItems: [
-
-  //             {
-
-  //               label: "Vendor Stats",
-
-  //               href: "/admin/vendor-stats",
-
-  //               icon: <TbDeviceWatchStats className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "Vendor Riders",
-
-  //               href: "/admin/vendor-riders",
-
-  //               icon: <MdDirectionsBike className="h-4 w-4" />,
-
-  //             },
-
-  //           ],
-
-  //         },
-
-  //         {
-
-  //           label: "User",
-
-  //           href: "#",
-
-  //           icon: (
-
-  //             <FaUser className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //           subItems: [
-
-  //             {
-
-  //               label: "Add New User",
-
-  //               href: "/admin/add-user",
-
-  //               icon: <FaUserPlus className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "Add Role & Permission",
-
-  //               href: "/admin/role-permission",
-
-  //               icon: <MdAdminPanelSettings className="h-4 w-4" />,
-
-  //             },
-
-  //           ],
-
-  //         },
-
-  //       ],
-
-  //       user: [
-
-  //         ...(permissions.includes("DASHBOARD_VIEW") ||
-
-  //         permissions.includes("ADMIN_FULL_ACCESS")
-
-  //           ? [
-
-  //               {
-
-  //                 label: "Dashboard",
-
-  //                 href: "/user/analytics",
-
-  //                 icon: (
-
-  //                   <IoAnalyticsOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //               },
-
-  //             ]
-
-  //           : []),
-
-  //         ...(permissions.includes("ODR_VIEW") ||
-
-  //         permissions.includes("ADMIN_FULL_ACCESS")
-
-  //           ? [
-
-  //               {
-
-  //                 label: "All Orders",
-
-  //                 href: "/user/order-details",
-
-  //                 icon: (
-
-  //                   <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //               },
-
-  //             ]
-
-  //           : []),
-
-  //         ...(permissions.includes("NDR_VIEW") ||
-
-  //         permissions.includes("ADMIN_FULL_ACCESS")
-
-  //           ? [
-
-  //               {
-
-  //                 label: "NDR",
-
-  //                 href: "/user/ndr",
-
-  //                 icon: (
-
-  //                   <NoSymbolIcon className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //               },
-
-  //             ]
-
-  //           : []),
-
-  //       ],
-
-  //       vendor: [
-
-  //         {
-
-  //           label: "Dashboard",
-
-  //           href: "/vendor/analytics",
-
-  //           icon: (
-
-  //             <IoAnalyticsOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //         },
-
-  //         {
-
-  //           label: "Operation",
-
-  //           href: "#",
-
-  //           icon: (
-
-  //             <MdBuild className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //           subItems: [
-
-  //             {
-
-  //               label: "Orders",
-
-  //               href: "/vendor/rider-orders",
-
-  //               icon: <TbPackage className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "New Mapped Orders",
-
-  //               href: "/vendor/mapped-orders",
-
-  //               icon: <TbPackage className="h-4 w-4" />,
-
-  //             },
-
-  //           ],
-
-  //         },
-
-  //         {
-
-  //           label: "Finance",
-
-  //           href: "#",
-
-  //           icon: (
-
-  //             <MdAccountBalance className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //           subItems: [
-
-  //             {
-
-  //               label: "Remittance Record",
-
-  //               href: "/vendor/remittance-record",
-
-  //               icon: <ImStatsBars2 className="h-4 w-4" />,
-
-  //             },
-
-  //           ],
-
-  //         },
-
-  //         {
-
-  //           label: "Rider",
-
-  //           href: "#",
-
-  //           icon: (
-
-  //             <MdDirectionsBike className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //           subItems: [
-
-  //             {
-
-  //               label: "Riders",
-
-  //               href: "/vendor/riders",
-
-  //               icon: <MdDirectionsBike className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "COD Remittances",
-
-  //               href: "/vendor/cod-remittances",
-
-  //               icon: <FaIndianRupeeSign className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "Rider Onboarding",
-
-  //               href: "/vendor/rider-onboarding",
-
-  //               icon: <FaWpforms className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "Rider's Live Location",
-
-  //               href: "/vendor/map",
-
-  //               icon: <FaMapMarkedAlt className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "Rate List",
-
-  //               href: "/vendor/rider_rate/list",
-
-  //               icon: <LuReceiptIndianRupee className="h-4 w-4" />,
-
-  //             },
-
-  //             {
-
-  //               label: "Rider Performance",
-
-  //               href: "/vendor/shipment-tracking",
-
-  //               icon: <CiDeliveryTruck className="h-4 w-4" />,
-
-  //             },
-
-  //           ],
-
-  //         },
-
-  //         {
-
-  //           label: "Hub",
-
-  //           href: "#",
-
-  //           icon: (
-
-  //             <MdWarehouse className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //           subItems: [
-
-  //             {
-
-  //               label: "Hub List",
-
-  //               href: "/vendor/hub_list",
-
-  //               icon: <FaTruck className="h-4 w-4" />,
-
-  //             },
-
-  //           ],
-
-  //         },
-
-  //         {
-
-  //           label: "Support",
-
-  //           href: "/vendor/support",
-
-  //           icon: (
-
-  //             <LifeBuoy className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //           ),
-
-  //         },
-
-  //       ],
-
-  //       merchant:decoded.tech_based !== "1"? [
-  //                { label: "Dashboard",href: "/merchant/analytics",icon: (<IoAnalyticsOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />),
-  // },
-
-  //               {
-
-  //                 label: "Operation",
-
-  //                 href: "#",
-
-  //                 icon: (
-
-  //                   <MdBuild className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //                 subItems: [
-
-  //                   {
-
-  //                     label: "All Orders",
-
-  //                     href: "/merchant/order-details",
-
-  //                     icon: <TbPackage className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Orders list",
-
-  //                     href: "/merchant/order-draft",
-
-  //                     icon: <TbPackage className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "NDR",
-
-  //                     href: "/merchant/ndr",
-
-  //                     icon: <NoSymbolIcon className="h-4 w-4" />,
-
-  //                   },
-
-  //                 ],
-
-  //               },
-
-  //               {
-
-  //                 label: "CX",
-
-  //                 href: "/merchant/cx",
-
-  //                 icon: (
-
-  //                   <FaGears className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //               },
-
-  //               {
-
-  //                 label: "Finance",
-
-  //                 href: "#",
-
-  //                 icon: (
-
-  //                   <MdAccountBalance className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //                 subItems: [
-
-  //                   {
-
-  //                     label: "Billing",
-
-  //                     href: "/merchant/billing",
-
-  //                     icon: <BillingIcon className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Recharge",
-
-  //                     href: "/merchant/recharge",
-
-  //                     icon: <FaBolt className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Transaction",
-
-  //                     href: "/merchant/transaction",
-
-  //                     icon: <FaMoneyBillTransfer className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Remittances",
-
-  //                     href: "/merchant/remittance",
-
-  //                     icon: <MdSwapHoriz className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Pricing Plan",
-
-  //                     href: "/merchant/pricing/details",
-
-  //                     icon: <IndianRupee className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Pricing Calculator",
-
-  //                     href: "/merchant/pricing/calculate",
-
-  //                     icon: <IndianRupee className="h-4 w-4" />,
-
-  //                   },
-
-  //                 ],
-
-  //               },
-
-  //               {
-
-  //                 label: "Setting",
-
-  //                 href: "#",
-
-  //                 icon: (
-
-  //                   <MdOutlineSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //                 subItems: [
-
-  //                   {
-
-  //                     label: "Change Password",
-
-  //                     href: "/merchant/change-password",
-
-  //                     icon: <FaKey className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Security Key",
-
-  //                     href: "/merchant/security-key",
-
-  //                     icon: <FaShieldAlt className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Label Setting",
-
-  //                     href: "/merchant/label/setting",
-
-  //                     icon: <MdLabel className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Integration",
-
-  //                     href: "/merchant/integration",
-
-  //                     icon: <MdLink className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Insurance",
-
-  //                     href: "/merchant/insurance",
-
-  //                     icon: <DaakitShieldIcon className="h-4 w-4" />,
-
-  //                   },
-
-  //                 ],
-
-  //               },
-
-  //             ]
-
-  //           : [
-
-  //               {
-
-  //                 label: "Dashboard",
-
-  //                 href: "/techbased_merchant/analytics",
-
-  //                 icon: (
-
-  //                   <IoAnalyticsOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //               },
-
-  //               {
-
-  //                 label: "CX",
-
-  //                 href: "/techbased_merchant/cx",
-
-  //                 icon: (
-
-  //                   <FaGears className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //               },
-
-  //               {
-
-  //                 label: "Operation",
-
-  //                 href: "#",
-
-  //                 icon: (
-
-  //                   <MdBuild className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //                 subItems: [
-
-  //                   {
-
-  //                     label: "All Orders",
-
-  //                     href: "/techbased_merchant/order-details",
-
-  //                     icon: <TbPackage className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Orders list",
-
-  //                     href: "/techbased_merchant/order-draft",
-
-  //                     icon: <TbPackage className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "NDR",
-
-  //                     href: "/techbased_merchant/ndr",
-
-  //                     icon: <NoSymbolIcon className="h-4 w-4" />,
-
-  //                   },
-
-  //                 ],
-
-  //               },
-
-  //               {
-
-  //                 label: "Finance",
-
-  //                 href: "#",
-
-  //                 icon: (
-
-  //                   <MdAccountBalance className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //                 subItems: [
-
-  //                   {
-
-  //                     label: "Recharge & Subscription",
-
-  //                     href: "/techbased_merchant/recharge",
-
-  //                     icon: <FaBolt className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Transaction",
-
-  //                     href: "/techbased_merchant/transaction",
-
-  //                     icon: <FaMoneyBillTransfer className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Remittances",
-
-  //                     href: "/techbased_merchant/codemittances",
-
-  //                     icon: <MdSwapHoriz className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Pricing Plan",
-
-  //                     href: "/techbased_merchant/pricing/details",
-
-  //                     icon: <IndianRupee className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Pricing Calculator",
-
-  //                     href: "/techbased_merchant/pricing/calculate",
-
-  //                     icon: <IndianRupee className="h-4 w-4" />,
-
-  //                   },
-
-  //                 ],
-
-  //               },
-
-  //               {
-
-  //                 label: "Riders",
-
-  //                 href: "#",
-
-  //                 icon: (
-
-  //                   <MdDirectionsBike className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //                 subItems: [
-
-  //                   {
-
-  //                     label: "OnBoarding",
-
-  //                     href: "/techbased_merchant/rider/onboarding",
-
-  //                     icon: <FaUserTie className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Stats",
-
-  //                     href: "/techbased_merchant/rider/stats",
-
-  //                     icon: <TbDeviceWatchStats className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Live Location",
-
-  //                     href: "/techbased_merchant/rider/live_location",
-
-  //                     icon: <FaMapMarkedAlt className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "COD Remittances",
-
-  //                     href: "/techbased_merchant/cod_emittances",
-
-  //                     icon: <LuReceiptIndianRupee className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Rate List",
-
-  //                     href: "/techbased_merchant/rider_rate/list",
-
-  //                     icon: <LuReceiptIndianRupee className="h-4 w-4" />,
-
-  //                   },
-
-  //                 ],
-
-  //               },
-
-  //               {
-
-  //                 label: "Setting",
-
-  //                 href: "#",
-
-  //                 icon: (
-
-  //                   <MdOutlineSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //                 subItems: [
-
-  //                   {
-
-  //                     label: "Change Password",
-
-  //                     href: "/techbased_merchant/change-password",
-
-  //                     icon: <FaKey className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Security Key",
-
-  //                     href: "/techbased_merchant/security-key",
-
-  //                     icon: <FaShieldAlt className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Label Setting",
-
-  //                     href: "/techbased_merchant/label/setting",
-
-  //                     icon: <MdLabel className="h-4 w-4" />,
-
-  //                   },
-
-  //                   {
-
-  //                     label: "Integration",
-
-  //                     href: "/merchant/integration",
-
-  //                     icon: <MdLink className="h-4 w-4" />,
-
-  //                   },
-
-  //                 ],
-
-  //               },
-
-  //               {
-
-  //                 label: "Support",
-
-  //                 href: "/techbased_merchant/support",
-
-  //                 icon: (
-
-  //                   <LifeBuoy className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-
-  //                 ),
-
-  //               },
-
-  //             ],
-
-  //     };
-
-  //     const currentRole = allowedRoles?.includes("admin")
-
-  //       ? "admin"
-
-  //       : allowedRoles?.includes("vendor")
-
-  //         ? "vendor"
-
-  //         : allowedRoles?.includes("user")
-
-  //           ? "user"
-
-  //           : "merchant";
-
-  //     return navConfig[currentRole] || [];
-
-  //   };
+ 
 
   const getNavLinks = () => {
     const navConfig = {
@@ -1403,18 +301,18 @@ function Navbar({ allowedRoles, children }) {
           label: "Dashboard",
           href: "/admin/analytics",
           icon: (
-            <IoHomeOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <DashboardIcon/>
           ),
         },
         {
           label: "Operation",
           href: "#",
           icon: (
-            <TbPackage className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <OperationIcon />
           ),
           subItems: [
             {
-              label: "Order's Listing",
+              label: "Orders",
               href: "/admin/order-details",
               icon: <TbPackage className="h-4 w-4" />,
             },
@@ -1425,26 +323,25 @@ function Navbar({ allowedRoles, children }) {
               icon: <NoSymbolIcon className="h-4 w-4" />,
             },
             {
-              label: "MIS",
-              href: "/admin/weightMIS",
-              icon: <MdOutlineAssessment className="h-4 w-4" />,
+              label: "Weight (Reconciliation)",
+              href: "/admin/weight/reconciliation",
+              icon: <Weight className="h-4 w-4" />,
             },
-            {
-              label: "Discrepancies",
-              href: "/admin/dispute",
-              icon: <FiAlertTriangle className="h-4 w-4" />,
-            },
+            // {
+            //   label: "MIS",
+            //   href: "/admin/weightMIS",
+            //   icon: <MdOutlineAssessment className="h-4 w-4" />,
+            // },
+            // {
+            //   label: "Discrepancies",
+            //   href: "/admin/dispute",
+            //   icon: <FiAlertTriangle className="h-4 w-4" />,
+            // },
           ],
         },
 
         // { label: "Order History", href: "/admin/order-history", icon: <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-        {
-          label: "Rider's Live Location",
-          href: "/admin/map",
-          icon: (
-            <FaMapMarkedAlt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-          ),
-        },
+        
 
         {
           label: "OnBoarding",
@@ -1485,7 +382,7 @@ function Navbar({ allowedRoles, children }) {
           label: "Finance",
           href: "#",
           icon: (
-            <FaIndianRupeeSign className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <FinanceIcon />
           ),
           subItems: [
             {
@@ -1543,6 +440,13 @@ function Navbar({ allowedRoles, children }) {
               href: "/admin/role-permission",
               icon: <MdAdminPanelSettings className="h-4 w-4" />,
             },
+            {
+              label: "Rider's Live Location",
+              href: "/admin/map",
+              icon: (
+                <FaMapMarkedAlt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+              ),
+             },
           ],
         },
       ],
@@ -1593,7 +497,7 @@ function Navbar({ allowedRoles, children }) {
           label: "Dashboard",
           href: "/vendor/analytics",
           icon: (
-            <IoHomeOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <DashboardIcon />
           ),
         },
 
@@ -1601,18 +505,18 @@ function Navbar({ allowedRoles, children }) {
           label: "Operation",
           href: "#",
           icon: (
-            <MdBuild className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <OperationIcon />
           ),
           subItems: [
             {
               label: "Orders",
               href: "/vendor/rider-orders",
-              icon: <TbPackage className="h-4 w-4" />,
+              icon: <OrderIcon />,
             },
             {
               label: "New Mapped Orders",
               href: "/vendor/mapped-orders",
-              icon: <TbPackage className="h-4 w-4" />,
+              icon: <MapOrderIcon />,
             },
           ],
         },
@@ -1621,13 +525,13 @@ function Navbar({ allowedRoles, children }) {
           label: "Finance",
           href: "#",
           icon: (
-            <MdAccountBalance className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <FinanceIcon />
           ),
           subItems: [
             {
-              label: "Remittance Record",
+              label: "Remittances",
               href: "/vendor/remittance-record",
-              icon: <ImStatsBars2 className="h-4 w-4" />,
+              icon: <RemittanceIcon />,
             },
           ],
         },
@@ -1657,17 +561,17 @@ function Navbar({ allowedRoles, children }) {
             {
               label: "Rider's Live Location",
               href: "/vendor/map",
-              icon: <FaMapMarkedAlt className="h-4 w-4" />,
+              icon: <RiderLocationIcon />,
             },
             {
               label: "Rate List",
               href: "/vendor/rider_rate/list",
-              icon: <LuReceiptIndianRupee className="h-4 w-4" />,
+              icon: <RateListIcon />,
             },
             {
               label: "Rider Performance",
               href: "/vendor/shipment-tracking",
-              icon: <CiDeliveryTruck className="h-4 w-4" />,
+              icon: <RatePerIcon/>,
             },
           ],
         },
@@ -1682,7 +586,7 @@ function Navbar({ allowedRoles, children }) {
             {
               label: "Hub List",
               href: "/vendor/hub_list",
-              icon: <FaTruck className="h-4 w-4" />,
+              icon: <HubIcon/>,
             },
           ],
         },
@@ -1691,7 +595,7 @@ function Navbar({ allowedRoles, children }) {
           label: "Support",
           href: "/vendor/support",
           icon: (
-            <LifeBuoy className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <SupportIcon />
           ),
         },
       ],
@@ -1818,21 +722,20 @@ function Navbar({ allowedRoles, children }) {
         },
       ],
 
-      merchant:
-        decoded.tech_based !== "1"
+      merchant: decoded.tech_based !== "1"
           ? [
               {
                 label: "Dashboard",
                 href: "/merchant/analytics",
                 icon: (
-                  <IoHomeOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                  <DashboardIcon />
                 ),
               },
               {
                 label: "Operation",
                 href: "#",
                 icon: (
-                  <MdBuild className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                  <OperationIcon />
                 ),
                 subItems: [
                   {
@@ -1865,7 +768,7 @@ function Navbar({ allowedRoles, children }) {
                 label: "Finance",
                 href: "#",
                 icon: (
-                  <MdAccountBalance className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                  <FinanceIcon />
                 ),
                 subItems: [
                   {
@@ -1876,27 +779,27 @@ function Navbar({ allowedRoles, children }) {
                   {
                     label: "Recharge",
                     href: "/merchant/recharge",
-                    icon: <FaBolt className="h-4 w-4" />,
+                    icon: <RechargeIcon />,
                   },
                   {
                     label: "Transaction",
                     href: "/merchant/transaction",
-                    icon: <FaMoneyBillTransfer className="h-4 w-4" />,
+                    icon: <TransactionIcon />,
                   },
                   {
                     label: "Remittances",
                     href: "/merchant/remittance",
-                    icon: <MdSwapHoriz className="h-4 w-4" />,
+                    icon: <RemittanceIcon />,
                   },
                   {
                     label: "Pricing Plan",
                     href: "/merchant/pricing/details",
-                    icon: <IndianRupee className="h-4 w-4" />,
+                    icon: <PricingPlanIcon />,
                   },
                   {
                     label: "Pricing Calculator",
                     href: "/merchant/pricing/calculate",
-                    icon: <IndianRupee className="h-4 w-4" />,
+                    icon: <PricingCalcuIcon />,
                   },
                 ],
               },
@@ -1905,23 +808,23 @@ function Navbar({ allowedRoles, children }) {
                 label: "Setting",
                 href: "#",
                 icon: (
-                  <MdOutlineSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                  <SettingIcon />
                 ),
                 subItems: [
                   {
                     label: "Change Password",
                     href: "/merchant/change-password",
-                    icon: <FaKey className="h-4 w-4" />,
+                    icon: <ChnagePasswordIcon />,
                   },
                   {
                     label: "Security Key",
                     href: "/merchant/security-key",
-                    icon: <FaShieldAlt className="h-4 w-4" />,
+                    icon: <SecurityKeyIcon />,
                   },
                   {
                     label: "Label Setting",
                     href: "/merchant/label/setting",
-                    icon: <MdLabel className="h-4 w-4" />,
+                    icon: <LabelIcon />,
                   },
                   {
                     label: "Integration",
@@ -1931,7 +834,7 @@ function Navbar({ allowedRoles, children }) {
                   {
                     label: "Insurance",
                     href: "/merchant/insurance",
-                    icon: <DaakitShieldIcon className="h-4 w-4" />,
+                    icon: <InsuranceIcon />,
                   },
                 ],
               },
@@ -2833,7 +1736,15 @@ function Navbar({ allowedRoles, children }) {
 
                 {/* ACTIONS */}
                 <div>
-                  {/* <OrderSearch/> */}
+
+                 
+                  
+                  {
+                    decoded?.usertype=='admin' && (
+
+                      <OrderSearch/>
+                    )
+                  }
                 </div>
 
                 <div

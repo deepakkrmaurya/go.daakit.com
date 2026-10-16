@@ -1,9 +1,10 @@
 
 "use client";
 
-import React, { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+
 import {
   Search,
   ChevronDown,
@@ -28,10 +29,12 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import AxiosInstance from "../../Helper/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
-// Replace with your actual search API endpoint
+// Replace with your actual backend endpoint
 const SEARCH_API = "/api/orders";
 
 const searchOptions = [
@@ -40,11 +43,11 @@ const searchOptions = [
     value: "awb_number",
     icon: Package,
   },
-  {
-    label: "Order ID",
-    value: "order_id",
-    icon: Hash,
-  },
+  // {
+  //   label: "Order ID",
+  //   value: "order_id",
+  //   icon: Hash,
+  // },
 ];
 
 export default function OrderSearch() {
@@ -55,15 +58,26 @@ export default function OrderSearch() {
   const [orders, setOrders] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
 
+  const requestRef = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      requestRef.current?.abort();
+    };
+  }, []);
+
   const selectedOption =
-    searchOptions.find(
-      (item) => item.value === searchType
-    ) || searchOptions[0];
+    searchOptions.find((item) => item.value === searchType) ||
+    searchOptions[0];
 
   const SelectedIcon = selectedOption.icon;
+  const trimmedValue = searchValue.trim();
 
-  // Validate search input
-  const validateSearch = (value) => {
+  // -----------------------------
+  // Validation
+  // -----------------------------
+  const validateSearch = (value, type = searchType) => {
     const trimmed = value.trim();
 
     if (!trimmed) {
@@ -74,22 +88,31 @@ export default function OrderSearch() {
       return "Maximum 100 characters allowed";
     }
 
-    if (searchType === "order_id") {
+    if (type === "order_id") {
       if (!/^\d+$/.test(trimmed)) {
         return "Order ID must contain numbers only";
       }
     }
 
-    if (searchType === "awb_number") {
+    if (type === "awb_number") {
       if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
-        return "Invalid AWB Number";
+        return "AWB Number can contain letters, numbers, hyphens and underscores only";
       }
     }
 
     return "";
   };
 
-  // Input change
+  const validationError = trimmedValue
+    ? validateSearch(trimmedValue)
+    : "";
+
+  const isSearchDisabled =
+    loading || !trimmedValue || !!validationError;
+
+  // -----------------------------
+  // Input Change
+  // -----------------------------
   const handleInputChange = (e) => {
     const value = e.target.value;
 
@@ -99,9 +122,20 @@ export default function OrderSearch() {
     setError("");
   };
 
-  // Fetch orders API
+  const navigate = useNavigate()
+
+  // -----------------------------
+  // API Search
+  // -----------------------------
   const fetchOrders = async (params) => {
+    if (requestRef.current) return;
+
+    const controller = new AbortController();
+    requestRef.current = controller;
+
     setLoading(true);
+    setError("");
+    setHasSearched(false);
 
     try {
       const token = localStorage.getItem("token");
@@ -110,74 +144,51 @@ export default function OrderSearch() {
         throw new Error("Session expired. Please login again.");
       }
 
-      const res = await axios.get(
-        `${baseURL}${SEARCH_API}`,
-        {
-          params: {
-            ...params,
-            page: 1,
-            limit: 20,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      
 
-      if (res.data?.success === false) {
-        throw new Error(
-          res.data?.message || "Failed to fetch orders"
-        );
-      }
 
-      const responseData = res.data?.data;
+      const {data} = await AxiosInstance.get(`/api/admin/getAwbCompleteHistory/${params?.awb_number}`)
 
-      // Supports common API response structures
-      const records = Array.isArray(responseData)
-        ? responseData
-        : Array.isArray(responseData?.records)
-        ? responseData.records
-        : Array.isArray(responseData?.orders)
-        ? responseData.orders
-        : Array.isArray(res.data?.orders)
-        ? res.data.orders
-        : [];
+    
+       const {awb_number} = data.data?.order
+       navigate(`/admin/order-history?awb_number=${awb_number}`)
+       setSearchValue("")
 
-      setOrders(records);
-      setHasSearched(true);
-
-      if (records.length === 0) {
-        toast("No orders found");
-      } else {
-        toast.success(
-          `${records.length} order(s) found`
-        );
-      }
+     
     } catch (err) {
+      if (axios.isCancel(err)) return;
+
       setOrders([]);
       setHasSearched(false);
 
-      toast.error(
+      const message =
         err?.response?.data?.message ||
-          err?.message ||
-          "Failed to search orders"
-      );
+        err?.message ||
+        "Failed to search orders";
+
+      setError(message);
+      toast.error(message);
     } finally {
-      setLoading(false);
+      if (requestRef.current === controller) {
+        requestRef.current = null;
+        setLoading(false);
+      }
     }
   };
 
-  // Search submit
+  // -----------------------------
+  // Search Submit
+  // -----------------------------
   const handleSearch = async (e) => {
     e.preventDefault();
 
-    if (loading) return;
+    if (loading || requestRef.current) return;
 
     const value = searchValue.trim();
-    const validationError = validateSearch(value);
+    const message = validateSearch(value);
 
-    if (validationError) {
-      setError(validationError);
+    if (message) {
+      setError(message);
       return;
     }
 
@@ -188,7 +199,9 @@ export default function OrderSearch() {
     });
   };
 
-  // Clear search
+  // -----------------------------
+  // Clear Search
+  // -----------------------------
   const handleClear = () => {
     if (loading) return;
 
@@ -196,9 +209,13 @@ export default function OrderSearch() {
     setError("");
     setOrders([]);
     setHasSearched(false);
+
+    inputRef.current?.focus();
   };
 
-  // Change search type
+  // -----------------------------
+  // Change Search Type
+  // -----------------------------
   const handleSearchTypeChange = (type) => {
     if (loading) return;
 
@@ -207,16 +224,33 @@ export default function OrderSearch() {
     setError("");
     setOrders([]);
     setHasSearched(false);
+
+    inputRef.current?.focus();
   };
 
   return (
     <div className="w-full space-y-4">
-      {/* Search Input */}
+      {/* ================= SEARCH FORM ================= */}
       <form
         onSubmit={handleSearch}
         className="w-full max-w-xl"
+        noValidate
       >
-        <InputGroup className="h-10 rounded-sm border border-neutral-200 bg-white shadow-sm transition-all focus-within:border-[#0446DB] focus-within:ring-2 focus-within:ring-blue-500/10 dark:border-neutral-700 dark:bg-neutral-900">
+        <InputGroup
+          className="
+            !h-11 !w-full !rounded-lg
+            !border !border-gray-300
+            !bg-white shadow-sm
+            transition-all duration-200
+            hover:!border-blue-300
+            focus-within:!border-[#0446DB]
+            focus-within:!ring-2
+            focus-within:!ring-blue-500/15
+            dark:!border-gray-600
+            dark:!bg-gray-900
+            dark:hover:!border-blue-500
+          "
+        >
           {/* Search Type Dropdown */}
           <InputGroupAddon align="inline-start">
             <DropdownMenu>
@@ -224,28 +258,57 @@ export default function OrderSearch() {
                 <InputGroupButton
                   type="button"
                   variant="ghost"
-                 
-                  className="flex h-8 shrink-0 items-center gap-2 rounded-sm px-2.5 text-xs font-medium text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800 disabled:opacity-100"
+                  disabled={loading}
+                  className="
+                    flex h-9 shrink-0 items-center
+                    gap-2 rounded-md px-3
+                    text-sm font-medium
+                    !text-gray-800
+                    !opacity-100
+                    transition-colors
+                    hover:!bg-blue-50
+                    hover:!text-[#0446DB]
+                    dark:!text-gray-200
+                    dark:hover:!bg-gray-800
+                    disabled:cursor-not-allowed
+                  "
                 >
-                  <SelectedIcon className="h-4 w-4 text-[#0446DB] dark:text-blue-400" />
+                  <SelectedIcon
+                    className="
+                      h-[17px] w-[17px]
+                      shrink-0 text-[#0446DB]
+                      dark:text-blue-400
+                    "
+                  />
 
                   <span className="whitespace-nowrap">
                     {selectedOption.label}
                   </span>
 
-                  <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
+                  <ChevronDown
+                    className="
+                      h-4 w-4 shrink-0
+                      text-gray-500
+                      dark:text-gray-400
+                    "
+                  />
                 </InputGroupButton>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent
                 align="start"
                 sideOffset={8}
-                className="w-48 rounded-sm border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
+                className="
+                  z-50 w-48 rounded-lg
+                  border border-gray-200
+                  bg-white p-1.5 shadow-xl
+                  dark:border-gray-700
+                  dark:bg-gray-900
+                "
               >
                 {searchOptions.map((item) => {
                   const Icon = item.icon;
-                  const isSelected =
-                    searchType === item.value;
+                  const isSelected = searchType === item.value;
 
                   return (
                     <DropdownMenuItem
@@ -253,10 +316,28 @@ export default function OrderSearch() {
                       onSelect={() =>
                         handleSearchTypeChange(item.value)
                       }
-                      className="flex cursor-pointer items-center justify-between gap-2 rounded-sm px-3 py-2.5 text-sm"
+                      className="
+                        flex cursor-pointer
+                        items-center justify-between
+                        gap-2 rounded-md
+                        px-3 py-2.5 text-sm
+                        font-medium
+                        text-gray-700
+                        focus:bg-blue-50
+                        focus:text-[#0446DB]
+                        dark:text-gray-200
+                        dark:focus:bg-gray-800
+                      "
                     >
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-neutral-500" />
+                      <div className="flex items-center gap-2.5">
+                        <Icon
+                          className={`h-4 w-4 ${
+                            isSelected
+                              ? "text-[#0446DB]"
+                              : "text-gray-500"
+                          }`}
+                        />
+
                         <span>{item.label}</span>
                       </div>
 
@@ -271,10 +352,17 @@ export default function OrderSearch() {
           </InputGroupAddon>
 
           {/* Divider */}
-          <div className="h-5 w-px shrink-0 bg-neutral-200 dark:bg-neutral-700" />
+          <div
+            className="
+              h-6 w-px shrink-0
+              bg-gray-300
+              dark:bg-gray-700
+            "
+          />
 
           {/* Search Input */}
           <InputGroupInput
+            ref={inputRef}
             type="text"
             value={searchValue}
             onChange={handleInputChange}
@@ -283,12 +371,22 @@ export default function OrderSearch() {
             autoComplete="off"
             spellCheck={false}
             aria-label={`Search by ${selectedOption.label}`}
-            aria-invalid={!!error}
-            className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-neutral-800 placeholder:text-neutral-400 dark:text-white"
+            aria-invalid={!!error || !!validationError}
+            className="
+              h-full min-w-0 flex-1
+              !bg-transparent px-3
+              text-sm font-medium
+              !text-gray-900
+              !opacity-100
+              placeholder:!text-gray-500
+              focus:!outline-none
+              dark:!text-white
+              dark:placeholder:!text-gray-400
+            "
           />
 
           {/* Clear Button */}
-          {searchValue && (
+          {searchValue.length > 0 && (
             <InputGroupAddon align="inline-end">
               <InputGroupButton
                 type="button"
@@ -297,7 +395,18 @@ export default function OrderSearch() {
                 disabled={loading}
                 onClick={handleClear}
                 aria-label="Clear search"
-                className="h-7 w-7 rounded-sm text-neutral-400 hover:text-neutral-700 disabled:opacity-100 dark:hover:text-white"
+                className="
+                  flex h-7 w-7 shrink-0
+                  items-center justify-center
+                  rounded-md
+                  !text-gray-500
+                  !opacity-100
+                  hover:!bg-gray-100
+                  hover:!text-gray-800
+                  dark:!text-gray-400
+                  dark:hover:!bg-gray-800
+                  dark:hover:!text-white
+                "
               >
                 <X className="h-4 w-4" />
               </InputGroupButton>
@@ -308,59 +417,164 @@ export default function OrderSearch() {
           <InputGroupAddon align="inline-end">
             <InputGroupButton
               type="submit"
-              disabled={loading || !searchValue.trim()}
-              className="mr-1 flex h-8 shrink-0 items-center justify-center gap-2 rounded-sm bg-[#0446DB] px-3 text-xs font-medium text-white transition-colors hover:bg-blue-700 hover:text-white disabled:!cursor-not-allowed disabled:!bg-[#0446DB] disabled:!text-white disabled:!opacity-100"
+              disabled={isSearchDisabled}
+              aria-label="Search orders"
+              className={`
+                mr-1 flex h-9 shrink-0
+                items-center justify-center
+                gap-2 rounded-md px-4
+                text-sm font-semibold
+                transition-all duration-200
+
+                ${
+                  isSearchDisabled
+                    ? `
+                      !cursor-not-allowed
+                      !bg-blue-50
+                      !text-blue-400
+                      !opacity-100
+                      !shadow-none
+                      dark:!bg-blue-950/40
+                      dark:!text-blue-400
+                    `
+                    : `
+                      !cursor-pointer
+                      !bg-[#0446DB]
+                      !text-white
+                      !opacity-100
+                      shadow-sm
+                      hover:!bg-[#0339B5]
+                      hover:!text-white
+                      hover:shadow-md
+                      active:scale-[0.98]
+                    `
+                }
+              `}
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Search className="h-4 w-4" />
               )}
-              Search
+
+              <span>
+                {loading ? "Searching..." : "Search"}
+              </span>
             </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
 
-        {error && (
+        {/* Validation Error */}
+        {/* {(error || validationError) && (
           <p
             role="alert"
-            className="mt-1.5 text-xs font-medium text-red-500"
+            className="
+              mt-1.5 text-xs
+              font-medium text-red-500
+            "
           >
-            {error}
+            {error || validationError}
           </p>
-        )}
+        )} */}
       </form>
 
-      {/* Search Results */}
+      {/* ================= SEARCH RESULTS ================= */}
       {hasSearched && (
-        <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
-          <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-700">
-            <h3 className="text-sm font-semibold text-neutral-800 dark:text-white">
-              Search Results
-            </h3>
+        <div
+          className="
+            overflow-hidden rounded-lg
+            border border-gray-200
+            bg-white shadow-sm
+            dark:border-gray-700
+            dark:bg-gray-900
+          "
+        >
+          {/* Results Header */}
+          <div
+            className="
+              flex items-center
+              justify-between gap-3
+              border-b border-gray-200
+              px-4 py-3
+              dark:border-gray-700
+            "
+          >
+            <div className="flex items-center gap-2">
+              <Package className="h-4 w-4 text-[#0446DB]" />
 
-            <span className="text-xs text-neutral-500">
+              <h3
+                className="
+                  text-sm font-semibold
+                  text-gray-900
+                  dark:text-white
+                "
+              >
+                Search Results
+              </h3>
+            </div>
+
+            <span
+              className="
+                rounded-full
+                bg-blue-50 px-3 py-1
+                text-xs font-semibold
+                text-[#0446DB]
+                dark:bg-blue-950/40
+                dark:text-blue-400
+              "
+            >
               {orders.length} orders found
             </span>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Results Table */}
+          <div className="w-full overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-neutral-50 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+              <thead
+                className="
+                  bg-gray-50
+                  text-xs font-semibold
+                  text-gray-600
+                  dark:bg-gray-800
+                  dark:text-gray-300
+                "
+              >
                 <tr>
-                  <th className="px-4 py-3">#</th>
-                  <th className="px-4 py-3">Order ID</th>
-                  <th className="px-4 py-3">AWB Number</th>
-                  <th className="px-4 py-3">Status</th>
+                  <th className="whitespace-nowrap px-4 py-3">
+                    #
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-3">
+                    Order ID
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-3">
+                    AWB Number
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-3">
+                    Status
+                  </th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+              <tbody
+                className="
+                  divide-y divide-gray-100
+                  dark:divide-gray-800
+                "
+              >
                 {orders.length > 0 ? (
                   orders.map((order, index) => (
                     <tr
                       key={order.id ?? order.order_id ?? index}
-                      className="text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-800/50"
+                      className="
+                        text-gray-700
+                        transition-colors
+                        hover:bg-blue-50/50
+                        dark:text-gray-200
+                        dark:hover:bg-gray-800/60
+                      "
                     >
                       <td className="px-4 py-3">
                         {index + 1}
@@ -377,9 +591,20 @@ export default function OrderSearch() {
                       </td>
 
                       <td className="px-4 py-3">
-                        {order.order_status ??
-                          order.status ??
-                          "—"}
+                        <span
+                          className="
+                            inline-flex rounded-full
+                            bg-gray-100 px-2.5 py-1
+                            text-xs font-medium
+                            text-gray-700
+                            dark:bg-gray-800
+                            dark:text-gray-200
+                          "
+                        >
+                          {order.order_status ??
+                            order.status ??
+                            "—"}
+                        </span>
                       </td>
                     </tr>
                   ))
@@ -389,8 +614,15 @@ export default function OrderSearch() {
                       colSpan={4}
                       className="px-4 py-10 text-center"
                     >
-                      <Inbox className="mx-auto mb-2 h-7 w-7 text-neutral-400" />
-                      <p className="text-sm text-neutral-500">
+                      <Inbox
+                        className="
+                          mx-auto mb-2
+                          h-8 w-8
+                          text-gray-400
+                        "
+                      />
+
+                      <p className="text-sm text-gray-500">
                         No orders found
                       </p>
                     </td>

@@ -17,7 +17,7 @@ const CODRemittances = lazy(() => import("./components/admin/CODRemittances"));
 const RiderOnboarding = lazy(() => import("./components/admin/RiderOnboarding"));
 const OrderAssignment = lazy(() => import("./components/admin/OrderAssignment"));
 const RoutePlanning = lazy(() => import("./components/admin/RoutePlanning"));
-const NDR = lazy(() => import("./components/admin/NDR"));
+const NDR = lazy(() => import("./components/admin/ndr/NDR"));
 const VendorStats = lazy(() => import("./components/admin/VendorStats"));
 const ProtectedRoute = lazy(() => import("./components/layout/ProtectedRoute"));
 const VendorRiders = lazy(() => import("./components/admin/VendorRiders"));
@@ -41,7 +41,7 @@ const MerchantDetails = lazy(() => import("./components/admin/MerchantDetails"))
 const MerchantCOD = lazy(() => import("./components/merchant_component/MerchantCOD"));
 const TrackAWBOrder = lazy(() => import("./components/TrackAWBOrder"));
 const RemittanceStatusVendor = lazy(() => import("./components/admin/remittance/RemittanceStatusVendor"));
-const VendorRemittanceRecord = lazy(() => import("./components/vendor_components/VendorRemittanceRecord"));
+const VendorRemittanceRecord = lazy(() => import("./components/vendor_components/remittance/VendorRemittanceRecord"));
 const RidersMap = lazy(() => import("./components/admin/RidersMap"));
 const VendorRidersMap = lazy(() => import("./components/vendor_components/VendorRidersMap"));
 const MerchantCX = lazy(() => import("./components/merchant_component/MerchantCX"));
@@ -67,8 +67,8 @@ const PaymentFailed = lazy(() => import("./components/merchant_component/techbas
 const TechCodRemittances = lazy(() => import("./components/merchant_component/techbasedMerchant/pricing/TechCodRemittances"));
 const CouponForm = lazy(() => import("./components/admin/couponSub/CouponForm"));
 const Coupon = lazy(() => import("./components/admin/couponSub/Coupon"));
-const Pricing = lazy(() => import("./components/admin/PricingPlans"));
-const UpdatePlanDetails = lazy(() => import("./components/UpdatePlanDetails"));
+const Pricing = lazy(() => import("./components/admin/pricing/PricingPlans"));
+const UpdatePlanDetails = lazy(() => import("./components/admin/pricing/UpdatePlanDetails"));
 const TechbasedMerchentRemittances = lazy(() => import("./components/merchant_component/techbasedMerchant/remittances/TechbasedMerchentRemittances"));
 const TechProfile = lazy(() => import("./components/merchant_component/techbasedMerchant/profile/TechProfile"));
 const Profile = lazy(() => import("./components/merchant_component/Profile"));
@@ -141,11 +141,12 @@ import DevAnalytics from "./components/admin/dev/DevAnalytics";
 import DistributionCenterOnboarding from "./components/admin/dc/DistributionCenterOnboarding";
 import DistributionCenterListing from "./components/admin/dc/DistributionCenterListing";
 import WeightDiscrepancies from "./components/merchant_component/WeightDiscrepancies";
-import WeightMIS from "./components/admin/WeightMIS";
-import Dispute from "./components/admin/Dispute";
+import WeightMIS from "./components/admin/WeightReconciliation/WeightMIS";
+import Dispute from "./components/admin/WeightReconciliation/Dispute";
 import { ProtectedLayout } from "./components/layout/ProtectedLayout";
 import DcVendorListing from "./components/distributionCenter/vendor/DcVendorListing";
 import InspectController from "./Helper/InspectController";
+import  WeightReconciliation  from "./components/admin/WeightReconciliation/WeightReconciliation";
 
 
 // const getLocalPermissions = () => {
@@ -251,6 +252,10 @@ function App() {
         { path: "billingandinvoices", element: <Suspense fallback={<LoadingFallback />}><BillingAndInvoices /></Suspense> },
         { path: "dev/analytics", element: <Suspense fallback={<LoadingFallback />}><DevAnalytics /></Suspense> },
         { path: "onboarding/distribution-center", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterOnboarding /></Suspense> },
+
+
+
+        { path: "weight/reconciliation", element: <Suspense fallback={<LoadingFallback />}><WeightReconciliation /></Suspense> },
         { path: "weightMIS", element: <Suspense fallback={<LoadingFallback />}><WeightMIS /></Suspense> },
         { path: "dispute", element: <Suspense fallback={<LoadingFallback />}><Dispute /></Suspense> },
         // dc
@@ -467,7 +472,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      {/* <InspectController /> */}
+      <InspectController />
 
       <RouterProvider router={appRouter}>
         <ScrollToTop />

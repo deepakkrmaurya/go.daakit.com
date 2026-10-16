@@ -352,7 +352,7 @@ function NewMappingOrders({orders}) {
     setLastOneMonth()
   },[])
 
-  const [loadingPage, setLoadingPage] = useState(true);
+  const [loadingPage, setLoadingPage] = useState(false);
 
 useEffect(() => {
   const timer = setTimeout(() => {

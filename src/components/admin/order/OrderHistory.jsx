@@ -591,9 +591,28 @@ export default function OrderHistory() {
                                   <div className="p-2 bg-indigo-50 rounded-sm">
                                     <User className="w-6 h-6 text-[#0446DB]" />
                                   </div>
-                                  <div>
+                                  <div className=" w-full flex justify-between">
+                                    <div>
                                     <h4 className="font-bold text-gray-900">{assignment.rider_name}</h4>
                                     <p className="text-sm text-gray-600">{assignment.rider_phone}</p>
+                                  </div>
+                                 
+                                    <div className="inline-flex items-center gap-2.5 rounded-md border border-blue-200 bg-blue-50/70 px-3 py-2 dark:border-blue-500/20 dark:bg-blue-500/10">
+                                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#0446DB]/10 text-[#0446DB] dark:bg-blue-500/20 dark:text-blue-400">
+                                        <Truck className="h-4 w-4" />
+                                      </div>
+
+                                      <div className="flex min-w-0 flex-col gap-0.5">
+                                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                          Fleet Partner Rider
+                                        </span>
+
+                                        <h4 className="truncate text-sm font-bold tracking-wide text-[#0446DB] dark:text-blue-400">
+                                          FP_{assignment?.vendor_id}_{assignment?.rider_id}
+                                        </h4>
+                                      </div>
+                                    </div>
+
                                   </div>
                                 </div>
 

@@ -13,7 +13,7 @@ import {
   submitUpload,
   getDiscrepancies,
   exportDiscrepancies,
-} from "../../Redux/weightMis";
+} from "../../../Redux/weightMis";
 import { toast } from "react-toastify";
 
 // ============================================================
@@ -1115,18 +1115,9 @@ const Dashboard = ({ onNavigateToUpload }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <header
-        className="text-white p-6 md:px-10"
-        style={{ backgroundColor: BRAND_COLOR }}
-      >
-        <div className="mx-auto">
-          <h1 className="text-2xl font-bold">Weight MIS</h1>
-          <p className="text-blue-100 text-sm mt-1">Operations Overview</p>
-        </div>
-      </header>
-
-      <main className="mx-auto px-4 md:px-8 mt-6">
+    <div className="">
+      
+      <main className="mx-auto ">
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-7 gap-5 mb-8">
           {stats.map((stat, index) => (

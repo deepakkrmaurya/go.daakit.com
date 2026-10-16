@@ -5,7 +5,7 @@ import {
   getDisputeQueue,
   getDisputeDetail,
   resolveDispute,
-} from "../../Redux/weightMis";
+} from "../../../Redux/weightMis";
 import { FiRefreshCw } from "react-icons/fi";
 
 const BRAND_COLOR = "#0446DB";
@@ -457,20 +457,10 @@ function Dispute() {
   // ============================================================
   if (view === "list") {
     return (
-      <div className="min-h-screen bg-gray-50 pb-12">
-        <header
-          className="text-white p-5 md:p-6 md:px-10"
-          style={{ backgroundColor: BRAND_COLOR }}
-        >
-          <div className="mx-auto">
-            <h1 className="text-2xl font-bold">All Discrepancies</h1>
-            <p className="text-blue-100 text-sm mt-1">
-              Weight MIS · All batches
-            </p>
-          </div>
-        </header>
+      <div className=" pb-12">
+       
 
-        <main className="mx-auto px-4 md:px-8 mt-6">
+        <main className="mx-auto ">
           {/* TABS */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 mb-3 max-w-md">
             <button
