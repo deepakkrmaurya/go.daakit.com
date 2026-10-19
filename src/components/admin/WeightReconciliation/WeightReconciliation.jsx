@@ -62,7 +62,7 @@ export default function WeightReconciliation() {
     }}
     className="
       flex h-full items-center justify-center gap-2
-      rounded-lg px-5 text-sm font-semibold
+      rounded-sm px-5 text-sm font-semibold
       text-gray-600 transition-all duration-200
       hover:bg-blue-50 hover:text-[#0446DB]
       data-[state=active]:bg-[#0446DB]

@@ -959,7 +959,7 @@ const SubscriptionPlans = () => {
   ======================================================= */
 
   return (
-    <div className="min-h-screen bg-white px-4 py-10 dark:bg-black sm:px-6 lg:px-8">
+    <div className=" bg-white px-4 py-10 dark:bg-black sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1250px]">
 
         {/* =================================================

@@ -359,7 +359,7 @@ function DcUserLogin() {
                       onChange={handleChange}
                       autoComplete="username"
                       required
-                      placeholder="name@company.com"
+                      placeholder="Enter Your username"
                       className="h-[52px] w-full rounded-sm border border-[#D0D5DD] bg-[#F8F9FB] pl-12 pr-4 text-sm text-[#101828] outline-none transition placeholder:text-[#98A2B3] hover:border-[#B8C0CC] focus:border-[#0446DB] focus:bg-white focus:ring-4 focus:ring-blue-50"
                     />
                   </div>

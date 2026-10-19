@@ -5622,6 +5622,29 @@ useEffect(() => {
                     </Button>
                   ))}
 
+                   {[
+                                               "undelivered",
+                                               "undelivered assigned",
+                                               "cancelled",
+                                               "rto in transit",
+                                               "rto out for delivery",
+                                               "rto undelivered",
+                                               "rto delivered",
+                                             ].includes(selectedStatus) && (
+                                               <Button
+                                                 className="my-2 rounded-sm border border-[#0446DB] bg-[#0446DB] px-2 py-2.5 text-sm font-medium tracking-wide text-white transition-all duration-300"
+                                               >
+                                                 {selectedStatus === "rto in transit"
+                                                   ? "RTO In Transit"
+                                                   : selectedStatus === "rto delivered"
+                                                     ? "RTO Delivered"
+                                                     : toCapitalizeEachWord(selectedStatus)}
+                   
+                                                 {` (${totalOrders})`}
+                                               </Button>
+                                             )}
+
+
                   <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button
@@ -6760,8 +6783,7 @@ useEffect(() => {
                   {/* Content */}
                   <div className="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-5">
                     {/* Change Action */}
-                    {(permissions.includes("UPDATE_STATUS") ||
-                      permissions.includes("CANCEL_MAPPED")) || permissions.includes('ADMIN_FULL_ACCESS') && (
+                    {(permissions.includes("UPDATE_STATUS") || permissions.includes("CANCEL_MAPPED") || permissions.includes('ADMIN_FULL_ACCESS')) && (
                       <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
                         <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
                           <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
@@ -8687,8 +8709,8 @@ useEffect(() => {
                                                     {order.status ===
                                                       "rto in transit" && (
                                                         <>
-                                                          <option value="rto delivered">
-                                                            RTO Delivered
+                                                          <option value="rto out for delivery">
+                                                            RTO  Out For Delivery
                                                           </option>
                                                         </>
                                                       )}

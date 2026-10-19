@@ -3,7 +3,13 @@ import axios from "axios";
 import Select from "react-select";
 
 import { HiOutlineDocumentMagnifyingGlass } from "react-icons/hi2";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FaRegCopy } from "react-icons/fa";
 import { CiCircleCheck } from "react-icons/ci";
 import { toast } from "react-toastify";
@@ -44,7 +50,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Download, Filter, Loader2, PackageCheck, UserPlus,X, Zap } from "lucide-react";
+import { ChevronDown, Download, Filter, Loader2, PackageCheck, UserPlus,X, Zap } from "lucide-react";
 import AxiosInstance from "@/Helper/axiosInstance";
 import CustomButton from "../../common/CustomButton";
 import { FiRefreshCw } from "react-icons/fi";
@@ -209,10 +215,10 @@ const [assign, setAssign] = useState(false);
     "out for delivery",
     "delivered",
     "undelivered",
-    "undelivered assigned",
-    "ndr",
-    "rto in transit",
-    "rto delivered",
+    // "undelivered assigned",
+    // "ndr",
+    // "rto in transit",
+    // "rto delivered",
   ];
   const [selectedStatus, setSelectedStatus] = useState("All");
 
@@ -301,15 +307,8 @@ const [assign, setAssign] = useState(false);
   const cancelMappedAssignment = async (id) => {
     setLoading(true);
     try {
-      const res = await axios.post(
-        `${baseURL}/api/vendor/cancelMappedWithByVendor/${id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
+      const res = await AxiosInstance.post(`/api/dc/orders/${id}/cancelMapping`)
+     
       if (res.data.success) {
         toast.success("Mapped assignment canceled successfully");
         fetchOrders();
@@ -1034,14 +1033,9 @@ const handleRefreshVendors = async () => {
   const exportVendorPendingPickupOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${baseURL}/api/vendor/exportVendorPendingPickupOrders`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
+
+      const res = await AxiosInstance.get('/api/dc/orders/exportPendingPickup')
+      
 
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
@@ -1062,20 +1056,16 @@ const handleRefreshVendors = async () => {
   const exportVendorOrdersWithRider = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${baseURL}/api/vendor/exportVendorOrdersWithRider`,
-        {
-          params: {
+
+      const res = await AxiosInstance.get('/api/dc/orders/export',{
+        params: {
             start_date: advanceFilters.startDate,
             end_date: advanceFilters.endDate,
             awb_number: advanceFilters.awbNumber,
             status: selectedStatus,
           },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
+      })
+      
 
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
@@ -1120,15 +1110,8 @@ const handleRefreshVendors = async () => {
   const exportVendorRotOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${baseURL}/api/vendor/exportVendorRtoOrders`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
 
+      const res = await AxiosInstance.get('/api/dc/orders/exportRto')
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -1435,6 +1418,73 @@ useEffect(() => {
                         {selectedStatus === st && ` (${totalOrders}) `}
                       </Button>
                     ))}
+
+                    {[
+                      "undelivered assigned",
+                      "ndr",
+                      "rto in transit",
+                      "rto delivered",
+                                                ].includes(selectedStatus) && (
+                                                  <Button
+                                                    className="my-2 rounded-sm border border-[#0446DB] bg-[#0446DB] px-2 py-2.5 text-sm font-medium tracking-wide text-white transition-all duration-300"
+                                                  >
+                                                    {selectedStatus === "rto in transit"
+                                                      ? "RTO In Transit"
+                                                      : selectedStatus === "rto delivered"
+                                                        ? "RTO Delivered"
+                                                        : toCapitalizeEachWord(selectedStatus)}
+                      
+                                                    {` (${totalOrders})`}
+                                                  </Button>
+                                                )}
+                    
+                    
+                                          
+                    
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <button
+                                                type="button"
+                                                className="inline-flex h-8 mt-2 items-center justify-center gap-2 whitespace-nowrap rounded-sm border border-blue-200 bg-blue-50 px-2 text-sm font-medium text-[#0446DB] shadow-sm transition-all duration-200 hover:border-[#0446DB] hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 data-[state=open]:border-[#0446DB] data-[state=open]:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-400"
+                                              >
+                                                More
+                                                <ChevronDown className="h-4 w-4 transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
+                                              </button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent className="!w-52 !min-w-52">
+                                              {[
+                                               "undelivered assigned",
+                                                "ndr",
+                                                "rto in transit",
+                                                "rto delivered",
+                                              ].map((s) => {
+                                                return (
+                                                  <>
+                                                    <DropdownMenuItem
+                                                      onClick={() => {
+                                                        setSelectedBulkOrders([]);
+                                                       
+                                                         setSelectedStatus(s);
+                                                        setPage(1);
+                                                        clearAllState();
+                                                      }}
+                                                      variant={
+                                                        s === "cancelled"
+                                                          ? "destructive"
+                                                          : "default"
+                                                      }
+                                                      className={`${selectedStatus == s ? "bg-[#0446DB] hover:bg-[#0446DB]  text-white" : " hover:bg-[#0446DB] hover:text-white "}`}
+                                                    >
+                                                      {s.toLowerCase() === "rto"
+                                                        ? "RTO"
+                                                        : s.charAt(0).toUpperCase() + s.slice(1)}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                  </>
+                                                );
+                                              })}
+                                            </DropdownMenuContent>
+                                          </DropdownMenu>
                   </div>
                 </div>
               </div>
@@ -1447,21 +1497,14 @@ useEffect(() => {
                 <AlertDialog>
                   {/* ================= ACTION BUTTON ================= */}
                   <AlertDialogTrigger asChild>
-                    {/* <Button
+                    <Button
                       variant="outline"
                       className="my-1 h-7 py-2 cursor-pointer rounded-sm border-[#0446DB] bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:bg-[#0446DB] dark:text-white dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
                     >
                       Action
-                    </Button> */}
+                    </Button>
 
-                 <CustomButton
-                    variant="primary"
-                    icon={Zap}
-                    onClick={() => setOpen(true)}
-                    
-                  >
-                    Action
-                  </CustomButton>
+                 
                   </AlertDialogTrigger>
 
                   {/* ================= MAIN POPUP ================= */}

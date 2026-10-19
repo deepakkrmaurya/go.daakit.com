@@ -320,7 +320,7 @@ const staticSubscriptionPlans = [
   );
 
   return (
-    <div className="min-h-screen bg-[#f5f8fb] dark:bg-[#0B0D10]">
+    <div className="min-h-auto bg-[#f5f8fb] dark:bg-[#0B0D10]">
       <div className="mx-auto">
         {/* =====================================================
             PREMIUM HERO
@@ -350,210 +350,173 @@ const staticSubscriptionPlans = [
         {/* =====================================================
             PAGE CONTENT
         ====================================================== */}
-        <div className="px-3">
+        <div className="">
           <div className="overflow-hidden rounded-sm border border-gray-200/80 bg-white shadow-[0_20px_70px_-35px_rgba(15,23,42,0.25)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none">
             {/* Tabs */}
             <div className="flex flex-col gap-4 border-b border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-neutral-800">
-              {/* <div className="inline-flex w-full rounded-sm bg-gray-100 p-1 sm:w-auto dark:bg-neutral-800">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("recharge")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-sm px-5 py-2.5 text-sm font-semibold transition-all sm:min-w-[180px] ${
-                    activeTab === "recharge"
-                      ? "bg-white text-[#0446DB] shadow-sm dark:bg-neutral-700 dark:text-blue-400"
-                      : "text-gray-500 hover:text-gray-800 dark:text-neutral-400 dark:hover:text-white"
-                  }`}
+              
+
+              
+              <div className="w-full min-w-0 sm:w-auto">
+                <div
+                  className={`
+                    grid w-full min-w-0 max-w-full gap-1
+                    rounded-[18px]
+                    border border-slate-200/80
+                    bg-[#F1F4F8] p-[5px]
+                    shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)]
+                    sm:inline-flex sm:w-auto sm:p-[6px]
+
+                    ${isTechBased ? "grid-cols-2" : "grid-cols-1"}
+
+                    dark:border-neutral-700/70
+                    dark:bg-neutral-800
+                  `}
                 >
-                  <WalletIcon className="h-4 w-4" />
-                  Wallet Recharge
-                </button>
-                        
-                {isTechBased && (
+                  {/* WALLET RECHARGE */}
                   <button
                     type="button"
-                    onClick={() => setActiveTab("subscription")}
-                    className={`flex flex-1 items-center justify-center gap-2 rounded-sm px-5 py-2.5 text-sm font-semibold transition-all sm:min-w-[180px] ${
-                      activeTab === "subscription"
-                        ? "bg-white text-[#0446DB] shadow-sm dark:bg-neutral-700 dark:text-blue-400"
-                        : "text-gray-500 hover:text-gray-800 dark:text-neutral-400 dark:hover:text-white"
-                    }`}
+                    onClick={() => setActiveTab("recharge")}
+                    className={`
+                      group flex min-w-0 flex-col
+                      items-center justify-center
+                      gap-1.5 rounded-[14px]
+                      px-2 py-3
+                      text-xs font-semibold
+                      transition-all duration-200
+
+                      sm:min-w-[190px]
+                      sm:flex-row sm:gap-3
+                      sm:px-5 sm:py-3 sm:text-sm
+
+                      ${
+                        activeTab === "recharge"
+                          ? `
+                            bg-white text-[#0969F9]
+                            shadow-[0_3px_10px_rgba(15,23,42,0.10)]
+                            ring-1 ring-black/[0.03]
+                            dark:bg-neutral-700
+                            dark:text-blue-400
+                            dark:ring-white/[0.05]
+                          `
+                          : `
+                            text-slate-500
+                            hover:bg-white/50
+                            hover:text-slate-800
+                            dark:text-neutral-400
+                            dark:hover:bg-neutral-700/50
+                            dark:hover:text-white
+                          `
+                      }
+                    `}
                   >
-                    <CrownIcon className="h-4 w-4" />
-                    Subscription
+                    <span
+                      className={`
+                        flex h-8 w-8 shrink-0
+                        items-center justify-center
+                        rounded-[9px]
+                        transition-all duration-200
+
+                        ${
+                          activeTab === "recharge"
+                            ? `
+                              bg-[#E8F1FF] text-[#0969F9]
+                              dark:bg-blue-500/15
+                              dark:text-blue-400
+                            `
+                            : `
+                              bg-slate-200/70 text-slate-500
+                              dark:bg-neutral-700
+                              dark:text-neutral-400
+                            `
+                        }
+                      `}
+                    >
+                      <WalletIcon
+                        className="h-[17px] w-[17px]"
+                        strokeWidth={2}
+                      />
+                    </span>
+
+                    <span className="text-center leading-tight sm:whitespace-nowrap">
+                      Wallet Recharge
+                    </span>
                   </button>
-                )}
-              </div> */}
 
-              <div className="w-full sm:w-auto">
-  <div
-    className="
-      inline-flex w-full items-center gap-1
-      rounded-[18px]
-      border border-slate-200/80
-      bg-[#F1F4F8]
-      p-[6px]
-      shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)]
-      sm:w-auto
+                  {/* SUBSCRIPTION */}
+                  {isTechBased && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("subscription")}
+                      className={`
+                        group flex min-w-0 flex-col
+                        items-center justify-center
+                        gap-1.5 rounded-[14px]
+                        px-2 py-3
+                        text-xs font-semibold
+                        transition-all duration-200
 
-      dark:border-neutral-700/70
-      dark:bg-neutral-800
-    "
-  >
-    {/* ==============================
-        WALLET RECHARGE
-    ============================== */}
+                        sm:min-w-[190px]
+                        sm:flex-row sm:gap-3
+                        sm:px-5 sm:py-3 sm:text-sm
 
-    <button
-      type="button"
-      onClick={() => setActiveTab("recharge")}
-      className={`
-        group flex flex-1 items-center justify-center
-        gap-3 rounded-[14px]
-        px-5 py-3
-        text-sm font-semibold
-        transition-all duration-200
-        sm:min-w-[190px]
+                        ${
+                          activeTab === "subscription"
+                            ? `
+                              bg-white text-[#0969F9]
+                              shadow-[0_3px_10px_rgba(15,23,42,0.10)]
+                              ring-1 ring-black/[0.03]
+                              dark:bg-neutral-700
+                              dark:text-blue-400
+                              dark:ring-white/[0.05]
+                            `
+                            : `
+                              text-slate-500
+                              hover:bg-white/50
+                              hover:text-slate-800
+                              dark:text-neutral-400
+                              dark:hover:bg-neutral-700/50
+                              dark:hover:text-white
+                            `
+                        }
+                      `}
+                    >
+                      <span
+                        className={`
+                          flex h-8 w-8 shrink-0
+                          items-center justify-center
+                          rounded-[9px]
+                          transition-all duration-200
 
-        ${
-          activeTab === "recharge"
-            ? `
-              bg-white
-              text-[#0969F9]
-              shadow-[0_3px_10px_rgba(15,23,42,0.10)]
-              ring-1 ring-black/[0.03]
+                          ${
+                            activeTab === "subscription"
+                              ? `
+                                bg-[#E8F1FF] text-[#0969F9]
+                                dark:bg-blue-500/15
+                                dark:text-blue-400
+                              `
+                              : `
+                                bg-slate-200/70 text-slate-500
+                                dark:bg-neutral-700
+                                dark:text-neutral-400
+                              `
+                          }
+                        `}
+                      >
+                        <CrownIcon
+                          className="h-[17px] w-[17px]"
+                          strokeWidth={2}
+                        />
+                      </span>
 
-              dark:bg-neutral-700
-              dark:text-blue-400
-              dark:ring-white/[0.05]
-            `
-            : `
-              text-slate-500
-              hover:bg-white/50
-              hover:text-slate-800
+                      <span className="text-center leading-tight sm:whitespace-nowrap">
+                        Subscription
+                      </span>
+                    </button>
+                  )}
+                </div>
+              </div>
 
-              dark:text-neutral-400
-              dark:hover:bg-neutral-700/50
-              dark:hover:text-white
-            `
-        }
-      `}
-    >
-      <span
-        className={`
-          flex h-8 w-8 shrink-0
-          items-center justify-center
-          rounded-[9px]
-          transition-all duration-200
-
-          ${
-            activeTab === "recharge"
-              ? `
-                bg-[#E8F1FF]
-                text-[#0969F9]
-
-                dark:bg-blue-500/15
-                dark:text-blue-400
-              `
-              : `
-                bg-slate-200/70
-                text-slate-500
-
-                dark:bg-neutral-700
-                dark:text-neutral-400
-              `
-          }
-        `}
-      >
-        <WalletIcon
-          className="h-[17px] w-[17px]"
-          strokeWidth={2}
-        />
-      </span>
-
-      <span className="whitespace-nowrap">
-        Wallet Recharge
-      </span>
-    </button>
-
-    {/* ==============================
-        SUBSCRIPTION
-    ============================== */}
-
-    {isTechBased && (
-      <button
-        type="button"
-        onClick={() => setActiveTab("subscription")}
-        className={`
-          group flex flex-1 items-center justify-center
-          gap-3 rounded-[14px]
-          px-5 py-3
-          text-sm font-semibold
-          transition-all duration-200
-          sm:min-w-[190px]
-
-          ${
-            activeTab === "subscription"
-              ? `
-                bg-white
-                text-[#0969F9]
-                shadow-[0_3px_10px_rgba(15,23,42,0.10)]
-                ring-1 ring-black/[0.03]
-
-                dark:bg-neutral-700
-                dark:text-blue-400
-                dark:ring-white/[0.05]
-              `
-              : `
-                text-slate-500
-                hover:bg-white/50
-                hover:text-slate-800
-
-                dark:text-neutral-400
-                dark:hover:bg-neutral-700/50
-                dark:hover:text-white
-              `
-          }
-        `}
-      >
-        <span
-          className={`
-            flex h-8 w-8 shrink-0
-            items-center justify-center
-            rounded-[9px]
-            transition-all duration-200
-
-            ${
-              activeTab === "subscription"
-                ? `
-                  bg-[#E8F1FF]
-                  text-[#0969F9]
-
-                  dark:bg-blue-500/15
-                  dark:text-blue-400
-                `
-                : `
-                  bg-slate-200/70
-                  text-slate-500
-
-                  dark:bg-neutral-700
-                  dark:text-neutral-400
-                `
-            }
-          `}
-        >
-          <CrownIcon
-            className="h-[17px] w-[17px]"
-            strokeWidth={2}
-          />
-        </span>
-
-        <span className="whitespace-nowrap">
-          Subscription
-        </span>
-      </button>
-    )}
-  </div>
-</div>
 
               <div className="hidden items-center gap-2 text-xs font-medium text-gray-400 sm:flex dark:text-neutral-500">
                 <LockIcon />
@@ -845,10 +808,10 @@ const staticSubscriptionPlans = [
               /* =================================================
                   SUBSCRIPTION TAB
               ================================================== */
-              <div className="p-4 sm:p-6 lg:p-8">
-                <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="">
+                <div className=" flex flex-col px-6 gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0446DB] dark:text-blue-400">
+                    <p className="text-xs  font-semibold uppercase tracking-[0.16em] text-[#0446DB] dark:text-blue-400">
                       Subscription Plans
                     </p>
 
@@ -877,100 +840,7 @@ const staticSubscriptionPlans = [
                     ))}
                   </div>
                 ) : subscriptionPlans?.length > 0 ? (
-                  // <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  //   {subscriptionPlans.map((plan, index) => {
-                  //     const active = selectedPlan?.id === plan.id;
-
-                  //     return (
-                  //       <button
-                  //         key={plan.id}
-                  //         type="button"
-                  //         onClick={() => setSelectedPlan(plan)}
-                  //         className={`group relative overflow-hidden rounded-sm border p-5 text-left transition-all duration-300 ${
-                  //           active
-                  //             ? "border-[#0446DB] bg-[#F4F7FF] shadow-[0_18px_45px_-25px_rgba(4,70,219,0.65)] dark:border-blue-500 dark:bg-blue-500/10"
-                  //             : "border-gray-200 bg-white hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-blue-500"
-                  //         }`}
-                  //       >
-                  //         <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-blue-500/5 blur-2xl" />
-
-                  //         <div className="relative">
-                  //           <div className="flex items-start justify-between gap-3">
-                  //             <div>
-                  //               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-                  //                 <CrownIcon />
-                  //               </div>
-
-                  //               <h3 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">
-                  //                 {plan?.plan_name || `Plan ${index + 1}`}
-                  //               </h3>
-                  //             </div>
-
-                  //             {active && (
-                  //               <span className="rounded-full bg-[#0446DB] px-2.5 py-1 text-[10px] font-bold tracking-wide text-white">
-                  //                 SELECTED
-                  //               </span>
-                  //             )}
-                  //           </div>
-
-                  //           <div className="mt-5 flex items-end gap-2">
-                  //             <span className="text-3xl font-bold tracking-tight text-[#0446DB] dark:text-blue-400">
-                  //               {formatCurrency(plan?.amount)}
-                  //             </span>
-
-                  //             {plan?.original_amount &&
-                  //               Number(plan.original_amount) >
-                  //                 Number(plan.amount) && (
-                  //                 <span className="pb-1 text-sm text-gray-400 line-through">
-                  //                   {formatCurrency(plan.original_amount)}
-                  //                 </span>
-                  //               )}
-                  //           </div>
-
-                  //           <div className="mt-3 inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:bg-neutral-800 dark:text-neutral-300">
-                  //             {plan?.validity || 0} days validity
-                  //           </div>
-
-                  //           {plan?.description && (
-                  //             <p className="mt-4 text-sm leading-6 text-gray-500 dark:text-neutral-400">
-                  //               {plan.description}
-                  //             </p>
-                  //           )}
-
-                  //           {Array.isArray(plan?.features) &&
-                  //             plan.features.length > 0 && (
-                  //               <div className="mt-5 space-y-2.5 border-t border-gray-100 pt-5 dark:border-neutral-800">
-                  //                 {plan.features.map(
-                  //                   (feature, featureIndex) => (
-                  //                     <div
-                  //                       key={featureIndex}
-                  //                       className="flex items-start gap-2.5 text-sm text-gray-600 dark:text-neutral-300"
-                  //                     >
-                  //                       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  //                         <CheckIcon className="h-3.5 w-3.5" />
-                  //                       </span>
-
-                  //                       <span>{feature}</span>
-                  //                     </div>
-                  //                   )
-                  //                 )}
-                  //               </div>
-                  //             )}
-
-                  //           <div
-                  //             className={`mt-6 rounded-sm py-2.5 text-center text-sm font-bold transition ${
-                  //               active
-                  //                 ? "bg-[#0446DB] text-white"
-                  //                 : "bg-gray-100 text-gray-600 group-hover:bg-blue-50 group-hover:text-[#0446DB] dark:bg-neutral-800 dark:text-neutral-300 dark:group-hover:bg-blue-500/10 dark:group-hover:text-blue-400"
-                  //             }`}
-                  //           >
-                  //             {active ? "Plan Selected" : "Choose Plan"}
-                  //           </div>
-                  //         </div>
-                  //       </button>
-                  //     );
-                  //   })}
-                  // </div>
+                  
 
                   <>
                    

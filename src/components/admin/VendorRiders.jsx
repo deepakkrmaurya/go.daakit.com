@@ -1439,7 +1439,7 @@ import AxiosInstance from "../../Helper/axiosInstance";
 
 
 
-const baseURL = import.meta.env.VITEBASEURL;
+const baseURL = import.meta.env.VITE_BASE_URL;
 
 const INDIACOUNTRYCODE = "IN";
 
@@ -2804,7 +2804,7 @@ function VendorRiders() {
 
                       <TableCell className="px-4 py-4 font-medium text-gray-900 dark:text-white">
 
-                        {vendor !== "self" ? `FP${vendor}_` : "DKT_"}
+                        {vendor !== "self" ? `FP_${vendor}_` : "DKT_"}
 
                         {rider.id}
 

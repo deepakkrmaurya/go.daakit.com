@@ -350,7 +350,7 @@ function Navbar({ allowedRoles, children }) {
             <MdOutlineAppRegistration className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
           ),
           subItems: [
-            // {label: "DC List", href: "/admin/dc/list", icon: <FaWarehouse className="h-4 w-4" />,},
+            {label: "DC List", href: "/admin/dc/list", icon: <FaWarehouse className="h-4 w-4" />,},
             {
               label: "Merchant",
               href: "/admin/merchant-details",
@@ -1189,6 +1189,7 @@ function Navbar({ allowedRoles, children }) {
               <NavLink
                 key={`${subItem.href}-${idx}`}
                 to={subItem.href}
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
@@ -1315,6 +1316,7 @@ function Navbar({ allowedRoles, children }) {
                       key={`${link.label}-${idx}`}
                       link={link}
                       isOpen={open}
+                      onNavigate={() => setMobileOpen(false)}
                     />
                   ))}
                 </div>

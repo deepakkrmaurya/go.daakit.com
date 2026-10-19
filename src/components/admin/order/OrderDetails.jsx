@@ -7563,6 +7563,7 @@ import {
   CheckCircle2,
   ChevronDown,
   CreditCardIcon,
+  IndianRupee,
   LogOutIcon,
   SettingsIcon,
   UserIcon,
@@ -7761,94 +7762,99 @@ function OrderDetails() {
   const clearAll = () => {
     setNewStatus("");
     setRemark("");
+     setCheckVendorMapping()
+    setBulkOrderWeight(0);
+    setFetchBulkAssignmentVendor(false);
+    setSelectedMapType(null);
+    setEditingStatusId(null);
+    setAssignmentState("");
+    setLoading(false);
+    setRiders([]);
+    setopenOfd([]);
+    setopenDeliverde([]);
+    setRescheduleDate("");
+    setRemarks("");
+    setSub_remarks("");
+    setdetailed_remarks("");
+    setFetchBulkAssignmentRider(false);
+    setcanceledBulkOrder(false);
+    setIsOpenIndividualAssignmnet("");
+    setIsOpenIndividualVendorAssignmnet("");
+    setIsOpenIndividualAssignmnetMap("");
+    setIsOpenIndividualVendorMap("");
+    setVendor([]); // Clear vendors
+    setCheckVendorMapping(null); // Reset vendor mapping check
+    setBulkStatusState(""); // Clear bulk status
+    setEditingDeliveryId(null); // Clear delivery editing state
+    setEditingPickupId(null); // Clear pickup editing state
+    // Reset form data if needed
+    setDeliveryFormData({
+      delivery_contact_name: "",
+      delivery_address_line: "",
+      delivery_city: "",
+      delivery_state: "",
+      delivery_pincode: "",
+    });
+    setPickupFormData({
+      pickup_contact_name: "" || "",
+      pickup_phone: "",
+      pickup_address_line: "",
+      pickup_city: "",
+      pickup_state: "",
+      pickup_pincode: "",
+    });
+  };
+ const clearAllState = () => {
+  setBulkMappingOpen(false);
+  setAssignmentState("");
+  setCheckVendorMapping(null);
+  setVendor([]);
+  setNewStatus("");
+  setRemark("");
+  setSelectedBulkOrders([]);
+  setBulkOrderWeight(0);
+  setFetchBulkAssignmentVendor(false);
+  setSelectedMapType(null);
+  setEditingStatusId(null);
+  setLoading(false);
+  setRiders([]);
+  setopenOfd([]);
+  setopenDeliverde([]);
+  setRescheduleDate("");
+  setRemarks("");
+  setSub_remarks("");
+  setdetailed_remarks("");
+  setFetchBulkAssignmentRider(false);
+  setcanceledBulkOrder(false);
+  setIsOpenIndividualAssignmnet("");
+  setIsOpenIndividualVendorAssignmnet("");
+  setIsOpenIndividualAssignmnetMap("");
+  setIsOpenIndividualVendorMap("");
+  setBulkStatusState("");
+  setEditingDeliveryId(null);
+  setEditingPickupId(null);
 
-    setBulkOrderWeight(0);
-    setFetchBulkAssignmentVendor(false);
-    setSelectedMapType(null);
-    setEditingStatusId(null);
-    setAssignmentState("");
-    setLoading(false);
-    setRiders([]);
-    setopenOfd([]);
-    setopenDeliverde([]);
-    setRescheduleDate("");
-    setRemarks("");
-    setSub_remarks("");
-    setdetailed_remarks("");
-    setFetchBulkAssignmentRider(false);
-    setcanceledBulkOrder(false);
-    setIsOpenIndividualAssignmnet("");
-    setIsOpenIndividualVendorAssignmnet("");
-    setIsOpenIndividualAssignmnetMap("");
-    setIsOpenIndividualVendorMap("");
-    setVendor([]); // Clear vendors
-    setCheckVendorMapping(null); // Reset vendor mapping check
-    setBulkStatusState(""); // Clear bulk status
-    setEditingDeliveryId(null); // Clear delivery editing state
-    setEditingPickupId(null); // Clear pickup editing state
-    // Reset form data if needed
-    setDeliveryFormData({
-      delivery_contact_name: "",
-      delivery_address_line: "",
-      delivery_city: "",
-      delivery_state: "",
-      delivery_pincode: "",
-    });
-    setPickupFormData({
-      pickup_contact_name: "" || "",
-      pickup_phone: "",
-      pickup_address_line: "",
-      pickup_city: "",
-      pickup_state: "",
-      pickup_pincode: "",
-    });
-  };
-  const clearAllState = () => {
-    setNewStatus("");
-    setRemark("");
-    setSelectedBulkOrders([]);
-    setBulkOrderWeight(0);
-    setFetchBulkAssignmentVendor(false);
-    setSelectedMapType(null);
-    setEditingStatusId(null);
-    setAssignmentState("");
-    setLoading(false);
-    setRiders([]);
-    setopenOfd([]);
-    setopenDeliverde([]);
-    setRescheduleDate("");
-    setRemarks("");
-    setSub_remarks("");
-    setdetailed_remarks("");
-    setFetchBulkAssignmentRider(false);
-    setcanceledBulkOrder(false);
-    setIsOpenIndividualAssignmnet("");
-    setIsOpenIndividualVendorAssignmnet("");
-    setIsOpenIndividualAssignmnetMap("");
-    setIsOpenIndividualVendorMap("");
-    setVendor([]); // Clear vendors
-    setCheckVendorMapping(null); // Reset vendor mapping check
-    setBulkStatusState(""); // Clear bulk status
-    setEditingDeliveryId(null); // Clear delivery editing state
-    setEditingPickupId(null); // Clear pickup editing state
-    // Reset form data if needed
-    setDeliveryFormData({
-      delivery_contact_name: "",
-      delivery_address_line: "",
-      delivery_city: "",
-      delivery_state: "",
-      delivery_pincode: "",
-    });
-    setPickupFormData({
-      pickup_contact_name: "" || "",
-      pickup_phone: "",
-      pickup_address_line: "",
-      pickup_city: "",
-      pickup_state: "",
-      pickup_pincode: "",
-    });
-    setDcBulkOrder(false);
-  };
+  // Reset delivery form
+  setDeliveryFormData({
+    delivery_contact_name: "",
+    delivery_address_line: "",
+    delivery_city: "",
+    delivery_state: "",
+    delivery_pincode: "",
+  });
+
+  // Reset pickup form
+  setPickupFormData({
+    pickup_contact_name: "",
+    pickup_phone: "",
+    pickup_address_line: "",
+    pickup_city: "",
+    pickup_state: "",
+    pickup_pincode: "",
+  });
+
+  setDcBulkOrder(false);
+};
   function toCapitalizeEachWord(str) {
     return str
       .split(" ")
@@ -7950,38 +7956,6 @@ const handleBulkRevokeVendorMapping = async () => {
     setBulkMappingLoading(false);
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   const getAllVendors = async () => {
     try {
@@ -8904,14 +8878,14 @@ const handleBulkRevokeVendorMapping = async () => {
             <div className="sticky top-0 left-0 z-40 shrink-0 bg-[#f5f8fb] dark:bg-neutral-900">
               <div className="  mx-auto   ">
                 {/* Desktop Layout */}
-                <div className=" md:flex  items-center justify-between ">
+<div className="flex w-full min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <div className="flex-shrink-0">
                     <h1 className="text-2xl font-bold dark:text-white">
                       Order Details
                     </h1>
                   </div>
 
-                  <div className="flex-1 max-w-xl mx-8">
+                  <div className="w-full min-w-0 xl:mx-4 xl:max-w-xl xl:flex-1">
                     <form
                       className="flex w-full"
                       onSubmit={(e) => {
@@ -8924,8 +8898,7 @@ const handleBulkRevokeVendorMapping = async () => {
                         placeholder="Search by AWB Number..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="flex-grow px-4 py-2.5 rounded-l-lg text-sm text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0446DB] focus:border-transparent"
-                      />
+className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0446DB] focus:border-transparent"                      />
                       <button
                         type="submit"
                         className="bg-white px-5 py-2.5 rounded-r-lg border border-l-0 border-gray-300 text-gray-600 hover:bg-indigo-100 hover:text-[#0446DB] transition"
@@ -8935,24 +8908,27 @@ const handleBulkRevokeVendorMapping = async () => {
                     </form>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <Link to="/admin/bookOrders" className="block w-full">
-                      <CustomButton
-                        variant="outline"
-                        size="md"
-                        icon={FaTasks}
-                        className="w-full mt-1 whitespace-nowrap rounded-sm"
+                 <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3 xl:w-auto xl:flex-nowrap">
+                   <CustomButton
+                     variant="outline"
+                     size="md"
+                     icon={FaTasks}
+                    className="w-full sm:w-auto rounded-sm"
+                   >
+                    <Link
+                        to="/admin/bookOrders"
+                        
                       >
                         Assignment Console
-                      </CustomButton>
                     </Link>
+                      </CustomButton>
 
                     <CustomButton
                       variant="outline"
                       size="md"
                       icon={FaFileExport}
                       onClick={exportCSV}
-                      className="w-full mt-1 rounded-sm "
+                      className="w-full sm:w-auto rounded-sm"
                     >
                       Export
                     </CustomButton>
@@ -8967,7 +8943,7 @@ const handleBulkRevokeVendorMapping = async () => {
                           variant="outline"
                           size="md"
                           icon={FaFilter}
-                          className="w-full mt-1 rounded-sm"
+                          className="w-full sm:w-auto rounded-sm"
                         >
                           Filter
                         </CustomButton>
@@ -9538,7 +9514,7 @@ const handleBulkRevokeVendorMapping = async () => {
 
                               {/* map dc  */}
 
-                              {false && (
+                              {true && (
                                 <div className="overflow-hidden rounded-sm border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
                                   <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-800/40">
                                     <div>
@@ -10435,7 +10411,7 @@ const handleBulkRevokeVendorMapping = async () => {
                             <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
                               <AlertDialogCancel
                                 onClick={() => {
-                                  clearAll();
+                                  
                                   clearAllState();
                                 }}
                                 className="cursor-pointer rounded-sm"
@@ -12146,6 +12122,8 @@ const handleBulkRevokeVendorMapping = async () => {
                       selectedStatus === "in transit" ||
                       selectedStatus === "undelivered" ||
                       selectedStatus === "undelivered assigned" ||
+                      selectedStatus === "rto out for delivery" ||
+                      selectedStatus === "rto undelivered" ||
                       selectedStatus === "out for delivery" ? (
                         <th className="sticky top-0 z-30 bg-gray-100 dark:bg-neutral-800 dark:text-white whitespace-nowrap  px-2 font-semibold py-3">
                           <div>
@@ -12716,7 +12694,7 @@ const handleBulkRevokeVendorMapping = async () => {
                                             : "Prepaid"}
                                         </div>
                                         <div>
-                                          <strong>Order Specific:</strong>{" "}
+                                          <strong>Weight Slab:</strong>{" "}
                                           {order.order_specific}
                                         </div>
                                         <div>
@@ -12729,13 +12707,13 @@ const handleBulkRevokeVendorMapping = async () => {
                                             order.total_amount,
                                           ).toLocaleString()}
                                         </div>
-                                        <div>
+                                        {/* <div>
                                           <strong>Order Weight:</strong>{" "}
                                           {Number(
                                             order.total_weight,
                                           ).toLocaleString()}
                                           g
-                                        </div>
+                                        </div> */}
                                         <div>
                                           <strong>Charge Weight:</strong>{" "}
                                           {Number(
@@ -13136,7 +13114,7 @@ const handleBulkRevokeVendorMapping = async () => {
                                         <button
                                           onClick={() => {
                                             navigate(
-                                              `/admin/order-history?awb=${order?.awb_number}`,
+                                              `/admin/order-history?awb_number=${order?.awb_number}`,
                                             );
                                           }}
                                           className="bg-green-500 mr-2 text-white px-4 py-2 rounded hover:bg-indigo-800 transition"
@@ -13214,22 +13192,26 @@ const handleBulkRevokeVendorMapping = async () => {
 
                             {/* SELLER DETAILS */}
                             <td className=" py-2">
-                              <div className="flex flex-col gap-1.5 text-sm">
+                              <div className="flex flex-col  text-sm">
                                 <p className="text-gray-700 dark:text-gray-300">
                                   <span className="font-medium text-gray-900 dark:text-white">
                                     Merchant ID:
                                   </span>{" "}
                                   {order?.merchant_id ?? "N/A"}
                                 </p>
+                                {
+                                  console.log(order)
+                                }
 
                                 {order?.brand_name && (
                                   <p className="text-gray-700 dark:text-gray-300">
                                     <span className="font-medium text-gray-900 dark:text-white">
                                       Brand Name:
                                     </span>{" "}
-                                    {order.brand_name}
+                                    {order?.brand_name}
                                   </p>
                                 )}
+                              
 
                                 {order?.merchant_company_name && (
                                   <p className="text-gray-700 dark:text-gray-300">
@@ -13239,6 +13221,7 @@ const handleBulkRevokeVendorMapping = async () => {
                                     {order.merchant_company_name}
                                   </p>
                                 )}
+                                
                               </div>
                             </td>
 
@@ -13329,35 +13312,65 @@ const handleBulkRevokeVendorMapping = async () => {
                               </p>
                               <p>
                                 <span className="font-medium text-gray-800 dark:text-white">
-                                  Weight:
-                                </span>{" "}
-                                <span className="dark:text-white">
-                                  {Number(order.total_weight).toLocaleString()}g
+                                  Weight Slab:
                                 </span>
+                                {/* <span className="dark:text-white">
+                                  {Number(order.total_weight).toLocaleString()}g
+                                </span> */}
+                                
+
                                 {selectedStatus !== "cancelled" && (
                                   <span
-                                    className={`ml-2 px-2 py-0.5  rounded-full text-sm font-semibold shadow-sm ${
-                                      order.order_specific?.slice(0, 3) ===
-                                      "NDD"
+                                    className={`ml-2 px-2 py-0.5 rounded-full text-sm font-semibold shadow-sm ${
+                                      order?.order_specific === "NDD"
                                         ? "text-green-800 bg-green-100 border border-green-300"
-                                        : order.order_specific?.slice(0, 3) ===
-                                            "SDD"
+                                        : order?.order_specific === "SDD"
                                           ? "text-yellow-800 bg-yellow-100 border border-yellow-300"
-                                          : "text-red-800 bg-red-100 border border-red-300 animate-blink"
+                                          : order?.order_specific === "Turant"
+                                            ? "text-red-800 bg-red-100 border border-red-300 animate-blink"
+                                            : "text-gray-800 bg-gray-100 border border-gray-300"
                                     }`}
                                   >
-                                    {order.order_specific?.slice(0, 3) === "NDD"
-                                      ? "NDD"
-                                      : order.order_specific?.slice(0, 3) ===
-                                          "SDD"
-                                        ? "SDD"
-                                        : order.order_specific?.slice(0, 6) ===
-                                            "Turant"
-                                          ? "Turant"
-                                          : order.order_specific}
+                                    {order?.order_specific || "N/A"}
                                   </span>
                                 )}
                               </p>
+                              {order?.order_type && (
+                                  <p className="flex flex-wrap mt-1 items-center gap-2 text-gray-700 dark:text-gray-300">
+                                    <span className="font-medium text-gray-900 dark:text-white">
+                                      Payment Details:
+                                    </span>
+
+                                    <span
+                                      className={`inline-flex items-center gap-2  text-xs font-bold ${
+                                        order.order_type.toUpperCase() === "COD"
+                                          ? " text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
+                                          : order.order_type.toUpperCase() === "PREPAID"
+                                            ? " text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                            : "border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                      }`}
+                                    >
+                                      
+
+                                      <span className="font-extrabold">
+                                        {Number(order.total_amount || 0).toLocaleString("en-IN", {
+                                          style: "currency",
+                                          currency: "INR",
+                                          maximumFractionDigits: 2,
+                                        })}
+                                      </span>
+
+                                      <span className="opacity-40">|</span>
+
+                                      {order.order_type.toUpperCase() === "COD"
+                                        ? "COD"
+                                        : order.order_type.toUpperCase() === "PREPAID"
+                                          ? "Prepaid"
+                                          : order.order_type}
+                                    </span>
+                                  </p>
+                                )}
+                                
                               <p>
                                 <span className="font-medium dark:text-white text-gray-800">
                                   Dimensions:

@@ -256,8 +256,8 @@ function App() {
 
 
         { path: "weight/reconciliation", element: <Suspense fallback={<LoadingFallback />}><WeightReconciliation /></Suspense> },
-        { path: "weightMIS", element: <Suspense fallback={<LoadingFallback />}><WeightMIS /></Suspense> },
-        { path: "dispute", element: <Suspense fallback={<LoadingFallback />}><Dispute /></Suspense> },
+        // { path: "weightMIS", element: <Suspense fallback={<LoadingFallback />}><WeightMIS /></Suspense> },
+        // { path: "dispute", element: <Suspense fallback={<LoadingFallback />}><Dispute /></Suspense> },
         // dc
         { path: "dc/list", element: <Suspense fallback={<LoadingFallback />}><DistributionCenterListing /></Suspense> },
         { index: true, element: <Navigate to="analytics" /> },
@@ -472,7 +472,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <InspectController />
+      {/* <InspectController /> */}
 
       <RouterProvider router={appRouter}>
         <ScrollToTop />
