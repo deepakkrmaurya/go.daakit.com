@@ -8103,8 +8103,7 @@ const handleBulkRevokeVendorMapping = async () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      // setSelectedLiveStatus(selectedStatus)
-      // console.log(selectedStatus)
+    
       const res = await axios.get(`${baseURL}/api/admin/getallorders`, {
         params: {
           page,
@@ -8144,7 +8143,7 @@ const handleBulkRevokeVendorMapping = async () => {
   const fetchDcList = async () => {
     try {
       const getDcList = await AxiosInstance.get(`/api/dc/list`);
-      console.log("getDcList", getDcList?.data?.data);
+      
       setDcList(getDcList?.data?.data || []);
     } catch (error) {
       setDcList([]);
@@ -9055,7 +9054,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
 
                               <div className=" mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                 <div>
-                                  {console.log(merchantList)}
+                                  
                                   <label className="block text-xs dark:text-white text-gray-600 mb-1">
                                     Merchant ID
                                   </label>
@@ -11807,10 +11806,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                 (order) => order.id,
                                               );
 
-                                            console.log(
-                                              "Cancel DC Mapped action triggered",
-                                              orderIds,
-                                            );
+                                            
                                             CancelDcMapping({ orderIds });
                                             return;
                                           } else {
@@ -12590,6 +12586,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                               </p>
                               <p className="text-left text-gray-800 flex items-center">
                                 <Link
+                                target="_blank"
                                   to={`/admin/order-history?awb_number=${encodeURIComponent(order.awb_number)}`}
                                   
                                   rel="noopener noreferrer"
@@ -13199,9 +13196,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                   </span>{" "}
                                   {order?.merchant_id ?? "N/A"}
                                 </p>
-                                {
-                                  console.log(order)
-                                }
+                                
 
                                 {order?.brand_name && (
                                   <p className="text-gray-700 dark:text-gray-300">
@@ -13260,7 +13255,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     <p>
                                       {order.pickup_stage === "at_central_hub"
                                         ? "At Central Hub"
-                                        : "At Vendor Hub"}
+                                        : order.pickup_stage === "at_dc" ? "At DC" : "At Vendor Hub"}
                                     </p>
                                   )}
 
@@ -13282,7 +13277,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                               </p>
                               <HoverCard>
                                 <HoverCardTrigger>
-                                  {order.delivery_address_line.slice(0, 30)}
+                                  {order.delivery_address_line.slice(0, 40)}
                                   ...
                                 </HoverCardTrigger>
                                 <HoverCardContent className="bg-[#0446DB] text-white">
@@ -13292,13 +13287,13 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                 </HoverCardContent>
                               </HoverCard>
                               <p className="text-xs text-gray-500 dark:text-white">
-                                {order.delivery_city}, {order.delivery_state} -{" "}
-                                {order.delivery_pincode}
+                                {order.delivery_city}, {order.delivery_state} -{" "}  {order.delivery_pincode}, {" "}
+                               
+
+                                {order.delivery_country}
+                              
                               </p>
 
-                              <p className="text-xs text-gray-400">
-                                {order.delivery_country}
-                              </p>
                             </td>
 
                             {/* Package Details */}
@@ -13314,11 +13309,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                 <span className="font-medium text-gray-800 dark:text-white">
                                   Weight Slab:
                                 </span>
-                                {/* <span className="dark:text-white">
-                                  {Number(order.total_weight).toLocaleString()}g
-                                </span> */}
-                                
-
                                 {selectedStatus !== "cancelled" && (
                                   <span
                                     className={`ml-2 px-2 py-0.5 rounded-full text-sm font-semibold shadow-sm ${
@@ -13382,811 +13372,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                               </p>
                             </td>
 
-                            {/* Assignment */}
-                            {/* {selectedStatus === "All" ? (
-                                  <>
-                                    <td className="px-6 py-4 text-center">
-                                      {order.status === "booked" ||
-                                      order.status === "undelivered" ? (
-                                        <>
-                                          {!(
-                                            isOpenIndividualAssignmnet ===
-                                            order.id
-                                          ) ? (
-                                            <span className="px-3 py-1 rounded-full whitespace-nowrap text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
-                                              Not Assigned
-                                            </span>
-                                          ) : (
-                                            <></>
-                                          )}
-                                        </>
-                                      ) : order.status === "pending pickup" ||
-                                        order.status === "in transit" ||
-                                        order.status === "picked" ||
-                                        order.status === "out for delivery" ||
-                                        order.status ===
-                                          "undelivered assigned" ? (
-                                        <>
-                                          {!(
-                                            isOpenIndividualAssignmnet ===
-                                            order.id
-                                          ) ? (
-                                            order.mapped_with !== null ? (
-                                              <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
-                                                Not Assigned
-                                              </span>
-                                            ) : (
-                                              <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600 mb-2 inline-block cursor-pointer">
-                                                Assigned
-                                              </span>
-                                            )
-                                          ) : (
-                                            <></>
-                                          )}
-                                        </>
-                                      ) : order.status === "cancelled" ? (
-                                        <span className="px-3 whitespace-nowrap py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
-                                          Order Canceled
-                                        </span>
-                                      ) : order.status === "delivered" ? (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Assigned
-                                        </span>
-                                      ) : order.status === "rto delivered" ? (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Return To Origin
-                                        </span>
-                                      ) : (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Assigned
-                                        </span>
-                                      )}
-                                    </td>
-                                  </>
-                                ) : (
-                                  <>
-                                    <td className="px-6 py-4 text-center">
-                                      {order.status === "booked" ||
-                                      order.status === "undelivered" ? (
-                                        <>
-                                          <span
-                                            onClick={() => {
-                                              if (
-                                                order.status ===
-                                                  "undelivered" &&
-                                                order.mapped_with !== null
-                                              ) {
-                                                return;
-                                              }
-                                              if (
-                                                order.tpc_awb_number !== null
-                                              ) {
-                                                return;
-                                              }
-                                            }}
-                                            className="px-3 py-1 rounded-full whitespace-nowrap text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer"
-                                          >
-                                            Not Assigned
-                                          </span>
-                                        </>
-                                      ) : order.status === "picked" &&
-                                        order.rider_id == null ? (
-                                        <>
-                                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
-                                            Not Assignedd
-                                          </span>
-                                        </>
-                                      ) : order.status === "pending pickup" ||
-                                        order.status === "in transit" ||
-                                        order.status === "picked" ||
-                                        order.status ===
-                                          "undelivered assigned" ? (
-                                        <>
-                                          {!(
-                                            isOpenIndividualAssignmnet ===
-                                            order.id
-                                          ) ? (
-                                            order.mapped_with !== null ||
-                                            order.rider_id == null ? (
-                                              <span
-                                                onClick={() => {
-                                                  if (
-                                                    order.rider_preference ===
-                                                    "self"
-                                                  ) {
-                                                    return;
-                                                  }
-                                                  if (
-                                                    order.status ===
-                                                    "in transit"
-                                                  ) {
-                                                    return;
-                                                  }
-                                                  if (
-                                                    order.tpc_awb_number !==
-                                                    null
-                                                  ) {
-                                                    return;
-                                                  }
-                                                  if (order.rider_id == null) {
-                                                    return;
-                                                  }
-
-                                                  setIsOpenIndividualAssignmnet(
-                                                    order.id,
-                                                  );
-                                                }}
-                                                className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer"
-                                              >
-                                                Not Assigned
-                                              </span>
-                                            ) : (
-                                              <span
-                                                onClick={() => {
-                                                  if (
-                                                    order.rider_preference ===
-                                                    "self"
-                                                  ) {
-                                                    return;
-                                                  }
-                                                  if (
-                                                    order.status ===
-                                                    "in transit"
-                                                  ) {
-                                                    return;
-                                                  }
-                                                  if (
-                                                    order.tpc_awb_number !==
-                                                    null
-                                                  ) {
-                                                    return;
-                                                  }
-                                                  setIsOpenIndividualAssignmnet(
-                                                    order.id,
-                                                  );
-                                                }}
-                                                className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600 mb-2 inline-block cursor-pointer"
-                                              >
-                                                Assigned
-                                              </span>
-                                            )
-                                          ) : (
-                                            <form
-                                              onSubmit={(e) => {
-                                                e.preventDefault();
-                                                cancelRiderAssignment(order.id);
-                                                setIsOpenIndividualAssignmnet(
-                                                  "",
-                                                );
-                                              }}
-                                              className="flex items-center gap-2"
-                                            >
-                                              <button
-                                                type="submit"
-                                                className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
-                                              >
-                                                Cancel Rider Assignment
-                                              </button>
-                                              <button
-                                                type="button"
-                                                className="text-xs  text-gray-500 hover:underline"
-                                                onClick={() =>
-                                                  setIsOpenIndividualAssignmnet(
-                                                    "",
-                                                  )
-                                                }
-                                              >
-                                                Close
-                                              </button>
-                                            </form>
-                                          )}
-                                        </>
-                                      ) : order.status === "cancelled" ? (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
-                                          Order Canceled
-                                        </span>
-                                      ) : order.status === "delivered" ? (
-                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Assignment Completed
-                                        </span>
-                                      ) : order.status === "rto in transit" ? (
-                                        <>
-                                          <span className="px-3 py-1 rounded-full whitespace-nowrap text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
-                                            Not Assigned
-                                          </span>
-                                        </>
-                                      ) : order.status === "rto delivered" ? (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Return To Origin
-                                        </span>
-                                      ) : (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Assigned
-                                        </span>
-                                      )}
-                                    </td>
-                                  </>
-                                )} */}
-
-                            {/* Map */}
-                             {/* {selectedStatus === "All" ? (
-                                  <>
-                                    <td className="px-6 py-4 text-center">
-                                      {order.mapped_with === null ? (
-                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-red-100 text-red-600">
-                                          Not Mapped
-                                        </span>
-                                      ) : order.status === "cancelled" ? (
-                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-red-100 text-red-600">
-                                          Order Canceled
-                                        </span>
-                                      ) : order.status === "delivered" ? (
-                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Order Delivered
-                                        </span>
-                                      ) : order.status === "rto delivered" ? (
-                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Return To Origin
-                                        </span>
-                                      ) : order.mapped_with !== null ? (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Mapped
-                                        </span>
-                                      ) : (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Mapped
-                                        </span>
-                                      )}
-                                    </td>
-                                  </>
-                                ) : (
-                                  <>
-                                    <td className="px-6 py-4 text-center">
-                                      {order.status === "booked" ? (
-                                        <>
-                                          {!(
-                                            isOpenIndividualVendorAssignmnet ===
-                                            order.id
-                                          ) ? (
-                                            <span
-                                              onClick={() => {
-                                                if (
-                                                  order.tpc_awb_number !== null
-                                                ) {
-                                                  return;
-                                                }
-                                                fetchVendor(order.id);
-                                                if (
-                                                  order.rider_preference ===
-                                                  "daakit"
-                                                ) {
-                                                  setIsOpenIndividualVendorAssignmnet(
-                                                    order.id,
-                                                  );
-                                                  setIsOpenIndividualAssignmnet(
-                                                    "",
-                                                  );
-                                                }
-                                              }}
-                                              className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-red-100 text-red-600 mb-2 inline-block cursor-pointer"
-                                            >
-                                              Not Mapped
-                                            </span>
-                                          ) : (
-                                            <form
-                                              onSubmit={(e) => {
-                                                e.preventDefault();
-                                                const selectedVendor =
-                                                  assignmentState;
-                                                if (!selectedVendor) {
-                                                  toast.warn(
-                                                    "Please select a vendor",
-                                                  );
-                                                  return;
-                                                }
-                                                assignVendor(
-                                                  order.id,
-                                                  selectedVendor,
-                                                );
-                                                setIsOpenIndividualAssignmnet(
-                                                  "",
-                                                );
-                                              }}
-                                              className="flex items-center gap-2"
-                                            >
-                                              <select
-                                                value={assignmentState}
-                                                onChange={(e) =>
-                                                  setAssignmentState(
-                                                    e.target.value,
-                                                  )
-                                                }
-                                                className="border px-2 py-1 rounded-md"
-                                                required
-                                              >
-                                                <option value="" disabled>
-                                                  Select Vendor
-                                                </option>
-                                                {vendor.map((vendor) => (
-                                                  <option
-                                                    key={vendor.vendor_id}
-                                                    value={vendor.vendor_id}
-                                                  >
-                                                    {vendor.vendor_id} :{" "}
-                                                    {vendor.vendor_name}
-                                                  </option>
-                                                ))}
-                                              </select>
-                                              <button
-                                                type="submit"
-                                                className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
-                                              >
-                                                Assign
-                                              </button>
-                                              <button
-                                                type="button"
-                                                className="text-xs text-gray-500 hover:underline"
-                                                onClick={() =>
-                                                  setIsOpenIndividualVendorAssignmnet(
-                                                    "",
-                                                  )
-                                                }
-                                              >
-                                                Close
-                                              </button>
-                                            </form>
-                                          )}
-                                        </>
-                                      ) : order.status === "pending pickup" ||
-                                        order.status === "out for delivery" ||
-                                        order.status ===
-                                          "undelivered assigned" ? (
-                                        <>
-                                          {!(
-                                            isOpenIndividualAssignmnetMap ===
-                                            order.id
-                                          ) ? (
-                                            order.mapped_with !== null ? (
-                                              <span
-                                                onClick={() => {
-                                                  if (
-                                                    order.status ===
-                                                      "out for delivery" ||
-                                                    order.status ===
-                                                      "undelivered assigned"
-                                                  ) {
-                                                    return;
-                                                  }
-
-                                                  setIsOpenIndividualAssignmnetMap(
-                                                    order.id,
-                                                  );
-                                                }}
-                                                className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600 mb-2 inline-block cursor-pointer"
-                                              >
-                                                Mapped
-                                              </span>
-                                            ) : order.mapped_with == null ? (
-                                              <>
-                                                <AlertDialog>
-                                                  <AlertDialogTrigger asChild>
-                                                    <Button
-                                                      type="button"
-                                                      onClick={() => {
-                                                        const order_ids = [
-                                                          order.id,
-                                                        ];
-
-                                                        setFetchBulkAssignmentVendor(
-                                                          true,
-                                                        );
-                                                        fetchVendor(order_ids);
-                                                      }}
-                                                      className="cursor-pointer rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-600 transition-colors hover:bg-green-200"
-                                                    >
-                                                      Map Vendor
-                                                    </Button>
-                                                  </AlertDialogTrigger>
-
-                                                  <AlertDialogContent className="!max-w-md overflow-hidden rounded-md border border-gray-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
-                                                   
-                                                    <AlertDialogHeader className="border-b border-gray-100 px-5 py-4 text-left dark:border-neutral-800">
-                                                      <AlertDialogTitle className="text-base font-semibold text-gray-900 dark:text-white">
-                                                        Map Orders to Vendor
-                                                      </AlertDialogTitle>
-
-                                                      <AlertDialogDescription className="mt-1 text-sm text-gray-500 dark:text-neutral-400"></AlertDialogDescription>
-                                                    </AlertDialogHeader>
-
-                                                
-                                                    <div className="px-5 py-5">
-                                                      <label className="mb-2 block text-xs font-semibold text-gray-700 dark:text-neutral-300">
-                                                        Select Vendor
-                                                      </label>
-
-                                                      <select
-                                                        value={assignmentState}
-                                                        onChange={(e) =>
-                                                          setAssignmentState(
-                                                            e.target.value,
-                                                          )
-                                                        }
-                                                        className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-blue-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:ring-blue-500/10"
-                                                      >
-                                                        <option value="">
-                                                          Select Vendor
-                                                        </option>
-
-                                                        {vendor?.map(
-                                                          (vendorItem) => (
-                                                            <option
-                                                              key={
-                                                                vendorItem.vendor_id
-                                                              }
-                                                              value={
-                                                                vendorItem.vendor_id
-                                                              }
-                                                            >
-                                                              {
-                                                                vendorItem.vendor_id
-                                                              }{" "}
-                                                              :{" "}
-                                                              {
-                                                                vendorItem.vendor_name
-                                                              }
-                                                            </option>
-                                                          ),
-                                                        )}
-                                                      </select>
-
-                                                      {fetchBulkAssignmentVendor &&
-                                                        vendor?.length ===
-                                                          0 && (
-                                                          <p className="mt-2 text-xs text-gray-500 dark:text-neutral-400">
-                                                            Loading available
-                                                            vendors...
-                                                          </p>
-                                                        )}
-                                                    </div>
-
-                                                  
-                                                    <AlertDialogFooter className="border-t border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
-                                                      <AlertDialogCancel className=" cursor-pointer rounded-md">
-                                                        Cancel
-                                                      </AlertDialogCancel>
-
-                                                      <Button
-                                                        type="button"
-                                                        onClick={async () => {
-                                                          if (
-                                                            !assignmentState
-                                                          ) {
-                                                            toast.warn(
-                                                              "Please select a vendor",
-                                                            );
-                                                            return;
-                                                          }
-
-                                                          const order_ids = [
-                                                            order.id,
-                                                          ];
-
-                                                          await assignVendor(
-                                                            order_ids,
-                                                            assignmentState,
-                                                          );
-
-                                                          setSelectedBulkOrders(
-                                                            [],
-                                                          );
-                                                          setBulkOrderWeight(0);
-                                                          setFetchBulkAssignmentVendor(
-                                                            false,
-                                                          );
-                                                          setAssignmentState(
-                                                            "",
-                                                          );
-                                                        }}
-                                                        className=" cursor-pointer rounded-md bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-[#0339b5]"
-                                                      >
-                                                        Map Vendors
-                                                      </Button>
-                                                    </AlertDialogFooter>
-                                                  </AlertDialogContent>
-                                                </AlertDialog>
-                                              </>
-                                            ) : (
-                                              <>
-                                                <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium  bg-red-100 text-red-600 mb-2 inline-block cursor-pointer">
-                                                  Not Mapped
-                                                </span>
-                                              </>
-                                            )
-                                          ) : (
-                                            <form
-                                              onSubmit={(e) => {
-                                                e.preventDefault();
-                                                cancelVendorAssignment(
-                                                  order.id,
-                                                );
-                                                setIsOpenIndividualAssignmnet(
-                                                  "",
-                                                );
-                                              }}
-                                              className="flex items-center gap-2"
-                                            >
-                                              <button
-                                                type="submit"
-                                                className="bg-[#0446DB] whitespace-nowrap text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
-                                              >
-                                                Cancel Vendor Assignment
-                                              </button>
-                                              <button
-                                                type="button"
-                                                className="text-xs bg-red-500/20 px-2 py-1 rounded text-red-500 text-gray-500 hover:underline"
-                                                onClick={() =>
-                                                  setIsOpenIndividualAssignmnetMap(
-                                                    "",
-                                                  )
-                                                }
-                                              >
-                                                Close
-                                              </button>
-                                            </form>
-                                          )}
-                                        </>
-                                      ) : order.status === "picked" &&
-                                        order?.mapped_with === null ? (
-                                        <>
-                                          <span className="px-3 whitespace-nowrap py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
-                                            Not Mapped
-                                          </span>
-                                        </>
-                                      ) : order.status === "cancelled" ? (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
-                                          Order Canceled
-                                        </span>
-                                      ) : order.status === "undelivered" ? (
-                                        <>
-                                          {checkVendorMapping !== null &&
-                                          !checkVendorMapping?.canChangeMapping &&
-                                          isOpenIndividualVendorMap ===
-                                            order.id ? (
-                                            <>
-                                              <form
-                                                onSubmit={(e) => {
-                                                  e.preventDefault();
-                                                  revokeVendorMapping(order.id);
-                                                }}
-                                                className="flex items-center gap-2"
-                                              >
-                                                <button
-                                                  type="submit"
-                                                  className="bg-[#0446DB] whitespace-nowrap text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
-                                                >
-                                                  Revoke Vendor Mapping
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  className="text-xs bg-red-500/20 px-2 py-1 rounded text-red-500 text-gray-500 hover:underline"
-                                                  onClick={() => {
-                                                    setCheckVendorMapping({
-                                                      canChangeMapping: true,
-                                                      currentAction: "grant",
-                                                    });
-                                                    setIsOpenIndividualVendorMap(
-                                                      "",
-                                                    );
-                                                  }}
-                                                >
-                                                  Close
-                                                </button>
-                                              </form>
-                                            </>
-                                          ) : isOpenIndividualVendorMap ===
-                                            order.id ? (
-                                            <>
-                                              <form
-                                                onSubmit={(e) => {
-                                                  e.preventDefault();
-                                                  const selectedVendor =
-                                                    assignmentState;
-                                                  if (!selectedVendor) {
-                                                    toast.warn(
-                                                      "Please select a vendor",
-                                                    );
-                                                    return;
-                                                  }
-                                                  changeVendorMapping(
-                                                    order.id,
-                                                    selectedVendor,
-                                                  );
-                                                  setIsOpenIndividualVendorMap(
-                                                    "",
-                                                  );
-                                                }}
-                                                className="flex items-center gap-2"
-                                              >
-                                                <select
-                                                  value={assignmentState}
-                                                  onChange={(e) =>
-                                                    setAssignmentState(
-                                                      e.target.value,
-                                                    )
-                                                  }
-                                                  className="border px-2 py-1 rounded-md"
-                                                  required
-                                                >
-                                                  <option value="" disabled>
-                                                    Select Vendor
-                                                  </option>
-                                                  {vendor.map((vendor) => (
-                                                    <option
-                                                      key={vendor.vendor_id}
-                                                      value={vendor.vendor_id}
-                                                    >
-                                                      {vendor.vendor_id} :{" "}
-                                                      {vendor.vendor_name}
-                                                    </option>
-                                                  ))}
-                                                </select>
-                                                <button
-                                                  type="submit"
-                                                  className="bg-[#0446DB] whitespace-nowrap text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
-                                                >
-                                                  Change Mapping
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  className="text-xs text-gray-500 hover:underline"
-                                                  onClick={() =>
-                                                    setIsOpenIndividualVendorMap(
-                                                      "",
-                                                    )
-                                                  }
-                                                >
-                                                  Close
-                                                </button>
-                                              </form>
-                                            </>
-                                          ) : (
-                                            <span
-                                              onClick={() => {
-                                                if (
-                                                  order.status === "undelivered"
-                                                ) {
-                                                  checkVendorMappingStatus(
-                                                    order.id,
-                                                  );
-                                                  fetchVendor(order.id);
-                                                 
-                                                  setIsOpenIndividualVendorMap(
-                                                    order.id,
-                                                  );
-                                                
-                                                }
-                                              }}
-                                              className="px-3 py-1 cursor-pointer rounded-full text-xs font-medium bg-green-100 text-green-600"
-                                            >
-                                              Mapped
-                                            </span>
-                                          )}
-                                        </>
-                                      ) : order.status === "delivered" ||
-                                        order.status === "undelivered" ||
-                                        order.status === "rto in transit" ? (
-                                        <>
-                                          {order.mapped_with === null ? (
-                                            <span className="px-3 whitespace-nowrap py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
-                                              Not Mapped
-                                            </span>
-                                          ) : isOpenIndividualVendorMap ===
-                                            order.id ? (
-                                            <>
-                                              <form
-                                                onSubmit={(e) => {
-                                                  e.preventDefault();
-                                                  const selectedVendor =
-                                                    assignmentState;
-                                                  if (!selectedVendor) {
-                                                    toast.warn(
-                                                      "Please select a vendor",
-                                                    );
-                                                    return;
-                                                  }
-                                                  changeVendorMapping(
-                                                    order.id,
-                                                    selectedVendor,
-                                                  );
-                                                  setIsOpenIndividualVendorMap(
-                                                    "",
-                                                  );
-                                                }}
-                                                className="flex items-center gap-2"
-                                              >
-                                                <select
-                                                  value={assignmentState}
-                                                  onChange={(e) =>
-                                                    setAssignmentState(
-                                                      e.target.value,
-                                                    )
-                                                  }
-                                                  className="border px-2 py-1 rounded-md"
-                                                  required
-                                                >
-                                                  <option value="" disabled>
-                                                    Select Vendor
-                                                  </option>
-                                                  {vendor.map((vendor) => (
-                                                    <option
-                                                      key={vendor.vendor_id}
-                                                      value={vendor.vendor_id}
-                                                    >
-                                                      {vendor.vendor_id} :{" "}
-                                                      {vendor.vendor_name}
-                                                    </option>
-                                                  ))}
-                                                </select>
-                                                <button
-                                                  type="submit"
-                                                  className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
-                                                >
-                                                  Assign
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  className="text-xs text-gray-500 hover:underline"
-                                                  onClick={() =>
-                                                    setIsOpenIndividualVendorMap(
-                                                      "",
-                                                    )
-                                                  }
-                                                >
-                                                  Close
-                                                </button>
-                                              </form>
-                                            </>
-                                          ) : (
-                                            <span
-                                              onClick={() => {
-                                                if (
-                                                  order.status === "undelivered"
-                                                ) {
-                                                  fetchVendor(order.id);
-                                                  setIsOpenIndividualVendorMap(
-                                                    order.id,
-                                                  );
-                                                  setIsOpenIndividualAssignmnetMap(
-                                                    "",
-                                                  );
-                                                }
-                                              }}
-                                              className="px-3 py-1 cursor-pointer rounded-full text-xs font-medium bg-green-100 text-green-600"
-                                            >
-                                              Mapped
-                                            </span>
-                                          )}
-                                        </>
-                                      ) : order.status === "rto delivered" ? (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Return To Origin
-                                        </span>
-                                      ) : order.mapped_with !== null ? (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Mapped
-                                        </span>
-                                      ) : order.status === "in transit" ? (
-                                        <span className="px-3 py-1 whitespace-nowrap rounded-full text-xs font-medium bg-red-100 text-red-600">
-                                          Not Mapped
-                                        </span>
-                                      ) : (
-                                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                          Assigned
-                                        </span>
-                                      )}
-                                    </td>
-                                  </>
-                                )}  */}
+                            
 
                             {/* Status */}
                             {selectedStatus === "All" ? (

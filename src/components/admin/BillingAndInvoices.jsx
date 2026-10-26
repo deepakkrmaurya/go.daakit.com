@@ -3398,7 +3398,7 @@ const BillingAndInvoices = () => {
     return (
       <>
 
-        <div className="flex flex-col sm:flex-row justify-between gap-4  p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between gap-4  sm:p-6">
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl sm:text-4xl font-bold dark:text-white">
@@ -3420,7 +3420,7 @@ const BillingAndInvoices = () => {
       z-50
       w-[260px] sm:w-[280px]
       max-w-[85vw]
-      bg-[#12263f] dark:text-white
+      bg-[#ffffff] 
       rounded-lg p-3 sm:p-4
       text-[11px] sm:text-sm
       shadow-xl
@@ -3459,7 +3459,7 @@ const BillingAndInvoices = () => {
           </div>
         </div>
 
-        <div className="min-h-screen bg-gray-50 font-sans text-base text-[#12263f] p-4 sm:p-6 md:p-10">
+        <div className="min-h-screen bg-gray-50 font-sans text-base text-[#12263f]  sm:p-6 md:p-10">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
             {/* Setup Card */}
             <article className="order-2 lg:order-1 bg-white border border-[#dfe5ec] rounded-[12px] shadow-sm p-6 sm:p-8 md:p-10">
@@ -3541,7 +3541,7 @@ const BillingAndInvoices = () => {
                           setScope(key);
                           if (key === "all") setSelectedSellers(new Set());
                         }}
-                        className={`h-10 rounded-md text-sm font-bold transition-colors cursor-pointer ${
+                        className={`h-10 rounded-md whitespace-nowrap text-sm font-bold transition-colors cursor-pointer ${
                           scope === key
                             ? "bg-white text-blue-600 shadow-sm ring-1 ring-blue-100"
                             : "bg-transparent text-[#66758a] hover:text-[#12263f]"

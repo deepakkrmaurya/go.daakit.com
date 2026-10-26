@@ -15,6 +15,7 @@ import {
   X,
   ShieldCheck,
   Weight,
+  HandCoins,
 } from "lucide-react";
 
 import { useEffect, useState, useRef } from "react";
@@ -316,7 +317,7 @@ function Navbar({ allowedRoles, children }) {
               href: "/admin/order-details",
               icon: <TbPackage className="h-4 w-4" />,
             },
-            // { label: "New Mapped Orders", href: "/admin/orderNewMappings", icon: <TbPackage className="h-4 w-4" /> },
+            
             {
               label: "NDR (Exception)",
               href: "/admin/ndr",
@@ -339,10 +340,6 @@ function Navbar({ allowedRoles, children }) {
             // },
           ],
         },
-
-        // { label: "Order History", href: "/admin/order-history", icon: <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
-        
-
         {
           label: "OnBoarding",
           href: "#",
@@ -403,10 +400,7 @@ function Navbar({ allowedRoles, children }) {
           ],
         },
 
-        // { label: "User", href: "#", icon: <FaUser className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />, subItems: [
-        //   { label: "Add New User", href: "/admin/add-user", icon: <FaUserPlus className="h-4 w-4" /> },
-        //   { label: "Add Role & Permission", href: "/admin/role-permission", icon: <MdAdminPanelSettings className="h-4 w-4" /> },
-        // ]},
+      
 
         {
           label: "Settings",
@@ -605,7 +599,7 @@ function Navbar({ allowedRoles, children }) {
           label: "Dashboard",
           href: "/dc/analytics",
           icon: (
-            <IoAnalyticsOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <DashboardIcon />
           ),
         },
 
@@ -613,7 +607,7 @@ function Navbar({ allowedRoles, children }) {
           label: "Operation",
           href: "#",
           icon: (
-            <MdBuild className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <OperationIcon />
           ),
           subItems: [
             {
@@ -621,11 +615,11 @@ function Navbar({ allowedRoles, children }) {
               href: "/dc/rider-orders",
               icon: <TbPackage className="h-4 w-4" />,
             },
-            {
-              label: "New Mapped Orders",
-              href: "/dc/mapped-orders",
-              icon: <TbPackage className="h-4 w-4" />,
-            },
+            // {
+            //   label: "New Mapped Orders",
+            //   href: "/dc/mapped-orders",
+            //   icon: <TbPackage className="h-4 w-4" />,
+            // },
           ],
         },
 
@@ -633,13 +627,18 @@ function Navbar({ allowedRoles, children }) {
           label: "Finance",
           href: "#",
           icon: (
-            <MdAccountBalance className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            <FinanceIcon />
           ),
           subItems: [
             {
-              label: "Remittance Record",
+              label: "Self Remittance",
               href: "/dc/remittance-record",
-              icon: <ImStatsBars2 className="h-4 w-4" />,
+              icon: <RemittanceIcon/>,
+            },
+            {
+              label: "vendor Remittance",
+              href: "/dc/vendor/remittance-record",
+              icon: <HandCoins size={18} strokeWidth={1.8}/>,
             },
           ],
         },
@@ -666,16 +665,16 @@ function Navbar({ allowedRoles, children }) {
               href: "/dc/map",
               icon: <FaMapMarkedAlt className="h-4 w-4" />,
             },
-            {
-              label: "Rate List",
-              href: "/dc/rider_rate/list",
-              icon: <LuReceiptIndianRupee className="h-4 w-4" />,
-            },
-            {
-              label: "Rider Performance",
-              href: "/dc/shipment-tracking",
-              icon: <CiDeliveryTruck className="h-4 w-4" />,
-            },
+            // {
+            //   label: "Rate List",
+            //   href: "/dc/rider_rate/list",
+            //   icon: <LuReceiptIndianRupee className="h-4 w-4" />,
+            // },
+            // {
+            //   label: "Rider Performance",
+            //   href: "/dc/shipment-tracking",
+            //   icon: <CiDeliveryTruck className="h-4 w-4" />,
+            // },
           ],
         },
 
@@ -691,11 +690,7 @@ function Navbar({ allowedRoles, children }) {
               href: "/dc/vendor/listing",
               icon: <MdPersonAddAlt1 className="h-4 w-4" />,
             },
-            {
-              label: "Vendor Onboarding",
-              href: "/dc/vendor/on-boarding",
-              icon: <MdPersonAddAlt1 className="h-4 w-4" />,
-            },
+          
           ],
         },
         {
@@ -707,7 +702,7 @@ function Navbar({ allowedRoles, children }) {
           subItems: [
             {
               label: "Hub List",
-              href: "/vendor/hub_list",
+              href: "/dc/hub_list",
               icon: <FaTruck className="h-4 w-4" />,
             },
           ],
@@ -715,7 +710,7 @@ function Navbar({ allowedRoles, children }) {
 
         {
           label: "Support",
-          href: "/vendor/support",
+          href: "/dc/support",
           icon: (
             <LifeBuoy className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
           ),
@@ -1685,7 +1680,7 @@ function Navbar({ allowedRoles, children }) {
                     type="button"
                     onClick={() => setMobileOpen(true)}
                     className="
-
+                 ml-2
                     grid
 
                     h-10

@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Select from "react-select";
 
@@ -57,6 +57,58 @@ import { FiRefreshCw } from "react-icons/fi";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 
+const toDateKey = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const fromDateKey = (value) => {
+  if (!value) return undefined;
+  const normalized = String(value).replace(/\//g, "-");
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(normalized);
+  if (!match) return undefined;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Number.isNaN(date.getTime()) ? undefined : date;
+};
+
+const defaultDcFilters = () => {
+  const today = new Date();
+  const monthAgo = new Date(today);
+  monthAgo.setMonth(monthAgo.getMonth() - 1);
+  return {
+    startDate: toDateKey(monthAgo),
+    endDate: toDateKey(today),
+    order_id: "",
+    awbNumber: "",
+    city: "",
+    state: "",
+    pincode: "",
+    rider_id: "",
+    order_specific: "",
+  };
+};
+
+const readApiError = (error, fallback) =>
+  error?.response?.data?.message || error?.message || fallback;
+
+const saveCsv = (blobData, fileName) => {
+  const blob = blobData instanceof Blob
+    ? blobData
+    : new Blob([blobData], { type: "text/csv;charset=utf-8" });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  // Revoke on a later event-loop turn, after the browser starts the download.
+  window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+};
+
 function DCOrderDetails() {
 const [bulkActionLoading, setBulkActionLoading] = useState(false);
 const [assignRiderLoading, setAssignRiderLoading] = useState(false);
@@ -72,6 +124,7 @@ const [assign, setAssign] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
 
+  const [selectedStatus, setSelectedStatus] = useState("All");
   const [copySuccess, setCopySuccess] = useState(null);
   const [bulkStatusState, setBulkStatusState] = useState("");
   const [selectedBulkOrders, setSelectedBulkOrders] = useState([]);
@@ -82,17 +135,9 @@ const [assign, setAssign] = useState(false);
   const [reassignRiderPopup, setReassignRiderPopup] = useState(null);
   const [newRider, setNewRider] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [advanceFilters, setAdvanceFilters] = useState({
-    startDate: "",
-    endDate: "",
-    order_id: "",
-    awbNumber: "",
-    city: "",
-    state: "",
-    pincode: "",
-    rider_id: "",
-    order_specific: "",
-  });
+  const [advanceFilters, setAdvanceFilters] = useState(defaultDcFilters);
+  const latestFetchRef = useRef(0);
+
   const [ndrData, setNdrData] = useState({
     ndr_id: "",
     newRemarks: "",
@@ -106,80 +151,99 @@ const [assign, setAssign] = useState(false);
 
   const [showNdrActions, setShowNdrActions] = useState(false);
 
-  const toggleSelectAll = () => {
-    if (selectedBulkOrders.length === orders.length) {
-      setSelectedBulkOrders([]);
+  // A vendor mapping is considered active only when mapped_with has a valid ID.
+  const isVendorMapped = (order) =>
+    order?.mapped_with !== null &&
+    order?.mapped_with !== undefined &&
+    String(order.mapped_with).trim() !== "" &&
+    String(order.mapped_with) !== "0";
 
-    } else {
-      const assignedOrder = orders.filter(
-        (order) => order.mapped_with !== null,
-      );
-      setSelectedBulkOrders(assignedOrder);
-    
+  const supportsVendorGroups = ["picked", "undelivered"].includes(selectedStatus);
+  const selectedVendorGroup =
+    supportsVendorGroups && selectedBulkOrders.length > 0
+      ? (isVendorMapped(selectedBulkOrders[0]) ? "mapped" : "unmapped")
+      : null;
+
+  const selectableOrders = orders.filter((order) => {
+    if (selectedStatus === "pending pickup") return order.mapped_dc_id != null;
+    if (selectedStatus === "picked") return order.pickup_stage === "at_dc";
+    if (selectedStatus === "undelivered") return true;
+    if (selectedStatus === "rto in transit") return true;
+    return false;
+  });
+
+  const canSelectOrder = (order) =>
+    !selectedVendorGroup ||
+    (isVendorMapped(order) ? "mapped" : "unmapped") === selectedVendorGroup;
+
+  const eligibleSelectableOrders = selectableOrders.filter(canSelectOrder);
+
+  const handleOrderSelection = (order, checked) => {
+    if (!checked) {
+      setSelectedBulkOrders((previous) => previous.filter((item) => item.id !== order.id));
+      return;
     }
+    if (!canSelectOrder(order)) {
+      toast.info(
+        selectedVendorGroup === "mapped"
+          ? "Vendor mapped orders are selected. Clear selection before selecting unmapped orders."
+          : "Unmapped orders are selected. Clear selection before selecting vendor mapped orders."
+      );
+      return;
+    }
+    setSelectedBulkOrders((previous) =>
+      previous.some((item) => item.id === order.id) ? previous : [...previous, order]
+    );
   };
 
+  const toggleSelectAll = () => {
+    // When no type is selected and both exist, start with unmapped orders.
+    // The user can select a mapped order first to select all mapped orders instead.
+    const targetGroup = selectedVendorGroup ||
+      (supportsVendorGroups ? "unmapped" : null);
+    const available = selectableOrders.filter((order) =>
+      !targetGroup || (isVendorMapped(order) ? "mapped" : "unmapped") === targetGroup
+    );
+    if (!available.length) {
+      toast.info("Select a vendor mapped order first to select that group.");
+      return;
+    }
+    const ids = new Set(available.map((order) => order.id));
+    const allSelected = available.every((order) =>
+      selectedBulkOrders.some((item) => item.id === order.id)
+    );
+    setSelectedBulkOrders((previous) =>
+      allSelected
+        ? previous.filter((item) => !ids.has(item.id))
+        : [...previous.filter((item) => !ids.has(item.id)), ...available]
+    );
+  };
 
+  // Only reset transient UI after actions. Do NOT erase fetched orders,
+  // status tab, pagination or filters (the old version did this).
   const clearAllState = () => {
-  // Loading States
-  setBulkActionLoading(false);
-  setAssignRiderLoading(false);
-  setAssign(false);
-  setLoading(false);
-
-  // Popups & Dialogs
-  setIsOpenIndividualMap("");
-  setOpen(false);
-  setEndOpen(false);
-  setIsOpenIndividualAssignmnet("");
-  setReassignPopup(null);
-  setReassignRiderPopup(null);
-  setIsFilterOpen(false);
-  setShowNdrActions(false);
-
-  // Orders & Pagination
-  setOrders([]);
-  setPage(1);
-  setLimit(20);
-  setTotalPages(1);
-  setTotalOrders(0);
-
-  // Selection & Status
-  setCopySuccess(null);
-  setBulkStatusState("");
-  setSelectedBulkOrders([]);
-  setEditingStatusId(null);
-  setSelectedStatus(selectedStatus);
-  setAssignmentState("");
-
-  // Rider
-  setNewRider("");
-  setReassignRidersOptions([]);
-
-  // Filters
-  setAdvanceFilters({
-    startDate: "",
-    endDate: "",
-    order_id: "",
-    awbNumber: "",
-    city: "",
-    state: "",
-    pincode: "",
-    rider_id: "",
-    order_specific: "",
-  });
-
-  setFilterUpdate(false);
-
-  // NDR
-  setNdrData({
-    ndr_id: "",
-    newRemarks: "",
-  });
-};
+    setAssign(false);
+    setIsOpenIndividualMap("");
+    setOpen(false);
+    setEndOpen(false);
+    setIsOpenIndividualAssignmnet("");
+    setReassignPopup(null);
+    setReassignRiderPopup(null);
+    setShowNdrActions(false);
+    setCopySuccess(null);
+    setBulkStatusState("");
+    setSelectedBulkOrders([]);
+    setEditingStatusId(null);
+    setAssignmentState("");
+    setNewRider("");
+    setReassignRidersOptions([]);
+    setAssignVendor(false);
+    setSelectedVendor("");
+    setVendorList([]);
+  };
 
   function toCapitalizeEachWord(str) {
-    return str
+    return String(str || "")
       .split(" ")
       .map((word) => {
         if (!word) return "";
@@ -188,24 +252,10 @@ const [assign, setAssign] = useState(false);
       .join(" ");
   }
 
-  const resetAdvanceFilters = async () => {
-    const today = new Date();
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-    setAdvanceFilters({
-      endDate: today.toISOString().split("T")[0],
-      startDate: oneMonthAgo.toISOString().split("T")[0],
-      order_id: "",
-      awbNumber: "",
-      city: "",
-      state: "",
-      pincode: "",
-      rider_id: "",
-      order_specific: "",
-    });
+  const resetAdvanceFilters = () => {
+    setAdvanceFilters(defaultDcFilters());
+    setPage(1);
   };
-
 
   const status = [
     "All",
@@ -214,42 +264,42 @@ const [assign, setAssign] = useState(false);
     "in transit",
     "out for delivery",
     "delivered",
-    "undelivered",
+    // "undelivered",
     // "undelivered assigned",
     // "ndr",
     // "rto in transit",
     // "rto delivered",
   ];
-  const [selectedStatus, setSelectedStatus] = useState("All");
-
   const fetchOrders = async () => {
+    const requestId = ++latestFetchRef.current;
     setLoading(true);
     try {
-    const params = {
-            page,
-            limit,
-            status: selectedStatus === "All" ? undefined : selectedStatus,
-            order_id: advanceFilters.order_id,
-            awb_number: advanceFilters.awbNumber,
-            start_date: advanceFilters.startDate,
-            end_date: advanceFilters.endDate,
-            city: advanceFilters.city,
-            pincode: advanceFilters.pincode,
-            rider_id: advanceFilters.rider_id,
-            order_specific: advanceFilters.order_specific,
-          }
-
-      const res = await AxiosInstance.get(`/api/dc/orders`,{params})
-       console.log(res.data.data)
-       console.log(res.data.data?.orders)
-      setTotalOrders(res.data.data?.total);
-      setOrders(res?.data?.data?.orders || []);
-      setTotalPages(Math.max(1, res?.data?.data?.totalPages));
-     
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "An error occurred while fetching orders.");
+      const params = {
+        page,
+        limit,
+        status: selectedStatus === "All" ? undefined : selectedStatus,
+        awb_number: advanceFilters.awbNumber?.trim() || undefined,
+        start_date: advanceFilters.startDate || undefined,
+        end_date: advanceFilters.endDate || undefined,
+        // These filters require matching server-side SQL support.
+        order_id: advanceFilters.order_id || undefined,
+        city: advanceFilters.city || undefined,
+        pincode: advanceFilters.pincode || undefined,
+        rider_id: advanceFilters.rider_id || undefined,
+        order_specific: advanceFilters.order_specific || undefined,
+      };
+      const response = await AxiosInstance.get("/api/dc/orders", { params });
+      if (requestId !== latestFetchRef.current) return;
+      const payload = response.data?.data || {};
+      setOrders(Array.isArray(payload.orders) ? payload.orders : []);
+      setTotalOrders(Number(payload.total) || 0);
+      setTotalPages(Math.max(1, Number(payload.totalPages) || 1));
+    } catch (error) {
+      if (requestId === latestFetchRef.current) {
+        toast.error(readApiError(error, "Unable to load DC orders"));
+      }
     } finally {
-      setLoading(false);
+      if (requestId === latestFetchRef.current) setLoading(false);
     }
   };
 
@@ -272,7 +322,7 @@ const [assign, setAssign] = useState(false);
      
    
     } catch (err) {
-      toast.error(err.response.data.message);
+      toast.error(readApiError(err, "Unable to mark order delivered"));
       return;
     } finally {
       setLoading(false);
@@ -324,140 +374,146 @@ const [assign, setAssign] = useState(false);
     }
   };
 
-  const fetchReassignRiders = async (order_id) => {
+  const fetchReassignRiders = async (orderIdOrIds) => {
+    const ids = (Array.isArray(orderIdOrIds) ? orderIdOrIds : [orderIdOrIds])
+      .map(Number)
+      .filter((value) => Number.isSafeInteger(value) && value > 0);
+    if (!ids.length) {
+      toast.error("Please select valid order IDs");
+      return false;
+    }
     try {
-
-      const res = await AxiosInstance.get(`/api/dc/getRidersOutsideIdealLoad?order_id=${order_id}`)
-      const tempArr = [];
-      res?.data?.data.forEach((element) => {
-        tempArr.push({
-          value: element.rider_id,
-          label: `${element.rider_id}: ${element.rider_name} | ${element.total_weight_grams}g | ${element.total_boxes} box(es)`,
-        });
+      const { data } = await AxiosInstance.get("/api/dc/getRidersOutsideIdealLoad", {
+        params: { order_id: [...new Set(ids)].join(",") },
       });
-
-      setReassignRidersOptions(tempArr);
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Error in fetching riders",
-      );
-    } finally {
-      setLoading(false);
+      if (!data?.success) throw new Error(data?.message || "Unable to fetch riders");
+      const options = (Array.isArray(data.data) ? data.data : []).map((rider) => ({
+        value: Number(rider.rider_id),
+        label: `${rider.rider_id}: ${rider.rider_name} | ${rider.total_weight_grams ?? 0}g | ${rider.total_boxes ?? 0} box(es)`,
+      }));
+      setReassignRidersOptions(options);
+      if (!options.length) toast.info("No eligible DC riders currently available");
+      return options.length > 0;
+    } catch (error) {
+      setReassignRidersOptions([]);
+      toast.error(readApiError(error, "Error fetching DC riders"));
+      return false;
     }
   };
 
   const reassignRider = async (order_id, new_rider_id) => {
-    setLoading(true);
+    if (!new_rider_id) return toast.error("Please select a rider");
+    const order = orders.find((item) => Number(item.id) === Number(order_id));
+    if (!order) return toast.error("Order not found. Refresh the list.");
+    // if (order.status === "undelivered" || order.status === "undelivered assigned") {
+    //   return toast.error("This DC rider API only accepts picked orders. An undelivered reattempt endpoint is required.");
+    // }
+    setAssignRiderLoading(true);
     try {
-      if (selectedStatus === "picked") {
-        const resPick = await AxiosInstance.post(`/api/dc/assignOrdersToRider`,
-          {
-            order_id,
-            rider_id: new_rider_id,
-          },
-        )
-       
-        if (resPick.data.success) {
-          fetchOrders();
-          setReassignPopup(null);
-          setIsOpenIndividualAssignmnet("");
-          toast.success(resPick.data.message);
-          return;
-        }
-        setLoading(false);
-        return;
+      if (order.status === "in transit" || order.status === "undelivered") {
+        // A new assignment cannot be created while the existing one is active.
+        const approved = window.confirm(
+          "This will cancel the current rider assignment before assigning the new rider. Continue?"
+        );
+        if (!approved) return;
+        await AxiosInstance.post("/api/dc/cancelRiderAssignment", { order_id });
+        return
+      } else if (order.status !== "picked") {
+        return toast.error("Order must be picked before assigning a DC rider");
       }
-
-
-      const res = await AxiosInstance.post(`/api/dc/assignOrdersToRider`,
-         {
+      try {
+        const response = await AxiosInstance.post("/api/dc/assignOrdersToRider", {
           order_id,
-         rider_id: new_rider_id,
-        },
-      )
-
+          rider_id: Number(new_rider_id),
+        });
+        if (!response.data?.success) throw new Error(response.data?.message || "Rider assignment failed");
+        toast.success(response.data.message || "Rider assigned successfully");
+        clearAllState();
+      } catch (error) {
+        toast.error(readApiError(error, "Assignment failed. If you just cancelled a rider, the order is now available for reassignment."));
+      }
       
-      toast.success("Order reassigned successfully");
-      fetchOrders();
-      clearAllState()
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Error while reassigning order to new rider",
-      );
+
+
+      await fetchOrders();
+    } catch (error) {
+      toast.error(readApiError(error, "Unable to cancel the previous rider assignment"));
     } finally {
-      setLoading(false);
+      setAssignRiderLoading(false);
     }
   };
 
   const assignBulkOrderRider = async (ids, new_rider_id) => {
-  if (!ids?.length) {
-    toast.error("Please select at least one order.");
-    return;
-  }
-
-  if (!new_rider_id) {
-    toast.error("Please select a rider.");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const res = await AxiosInstance.post(`/api/dc/assignOrdersToRider`,{
-      
-          order_ids:ids,
-          rider_id: new_rider_id,
-       
-    })
-   
-
-    clearAllState()
-    await fetchOrders();
-
-    toast.success(
-      `${ids.length} order${ids.length > 1 ? "s" : ""} assigned successfully`
-    );
+    const orderIds = [...new Set((ids || []).map(Number))];
+    if (!orderIds.length || orderIds.some((id) => !Number.isSafeInteger(id) || id <= 0)) {
+      toast.error("Please select valid orders");
+      return false;
+    }
+    if (selectedBulkOrders.some(isVendorMapped)) {
+      toast.error("Vendor mapped orders cannot be selected for this rider assignment action");
+      return false;
+    }
+    if (!new_rider_id) {
+      toast.error("Please select a rider");
+      return false;
+    }
+    // DC service currently permits only picked orders at DC/central hub.
     
-  } catch (err) {
-    console.error("Bulk assign error:", err);
+if (
+  selectedBulkOrders.some(
+    (order) =>
+      !["picked", "undelivered"].includes(
+        String(order.status || "").trim().toLowerCase()
+      )
+  )
+) {
+  toast.error(
+    "Bulk DC rider assignment is supported for picked and undelivered orders only"
+  );
+  return false;
+}
 
-    toast.error(
-      err.response?.data?.message ||
-        err.message ||
-        "Error while assigning orders to rider"
-    );
-  } finally {
-    setLoading(false);
-  }
-  };
-
-  
-
-  const PickedOrder = async (order_ids) => {
-    setLoading(true);
+    setAssignRiderLoading(true);
     try {
-      const res = await AxiosInstance.post(`/api/dc/markOrdersPickedBulk`,{
-          order_ids: order_ids,
-        })
-      
-      fetchOrders();
-      toast.success("Pickup Marked Successfully");
-      clearAllState()
-      setSelectedBulkOrders([]);
-    
-      setIsOpenIndividualMap("");
+      const response = await AxiosInstance.post("/api/dc/assignOrdersToRider", {
+        order_ids: orderIds,
+        rider_id: Number(new_rider_id),
+      });
+      if (!response.data?.success) throw new Error(response.data?.message || "Assignment failed");
+      toast.success(response.data.message || "Orders assigned successfully");
+      clearAllState();
+      await fetchOrders();
+      return true;
     } catch (error) {
-      toast.error("Something went wrong while marking pickup");
-      return;
+      toast.error(readApiError(error, "Error assigning DC orders to rider"));
+      return false;
     } finally {
-      setLoading(false);
+      setAssignRiderLoading(false);
     }
   };
 
+  const PickedOrder = async (order_ids) => {
+    if (!Array.isArray(order_ids) || !order_ids.length) {
+      toast.error("Select at least one order");
+      return false;
+    }
+    setBulkActionLoading(true);
+    try {
+      const response = await AxiosInstance.post("/api/dc/markOrdersPickedBulk", {
+        order_ids,
+      });
+      if (!response.data?.success) throw new Error(response.data?.message || "Pickup failed");
+      toast.success(response.data.message || "Pickup marked successfully");
+      clearAllState();
+      await fetchOrders();
+      return true;
+    } catch (error) {
+      toast.error(readApiError(error, "Error marking DC pickup"));
+      return false;
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
 
   const changeNdrStatus = async (data) => {
     setLoading(true);
@@ -475,7 +531,7 @@ const [assign, setAssign] = useState(false);
         },
       );
       if (!res.data.success) {
-        toast.success(res.data.message);
+        toast.error(res.data.message || "Unable to update NDR status");
         return;
       }
       fetchOrders();
@@ -509,10 +565,7 @@ const getEligibleVendorsByOrders = async ({ order_ids }) => {
     const { data } = await AxiosInstance.get(
       "/api/dc/eligibleVendorsByOrders",
       {
-        params: { order_ids: ids },
-        paramsSerializer: {
-          indexes: null,
-        },
+        params: { order_ids: ids.join(",") },
       }
     );
 
@@ -554,8 +607,23 @@ const handleRefreshVendors = async () => {
 };
 
 
-
-
+const handleCancelBulkVendorMapping = async () => {
+  if (!selectedBulkOrders.length) return toast.error("Select at least one order");
+  if (!selectedBulkOrders.every(isVendorMapped)) {
+    return toast.error("Only vendor mapped orders can have their vendor mapping cancelled");
+  }
+  const results = await Promise.allSettled(
+    selectedBulkOrders.map((order) =>
+      AxiosInstance.post(`/api/dc/orders/${order.id}/cancelVendorMapping`)
+    )
+  );
+  const succeeded = results.filter((item) => item.status === "fulfilled").length;
+  const failed = results.length - succeeded;
+  if (succeeded) toast.success(`${succeeded} vendor mapping(s) cancelled`);
+  if (failed) toast.error(`${failed} mapping(s) failed; review orders and retry`);
+  clearAllState();
+  await fetchOrders();
+};
 
   const changeStatus = async (id, newStatus) => {
     setLoading(true);
@@ -616,27 +684,10 @@ const handleRefreshVendors = async () => {
   const getAssignmentButtons = (order) => {
     const { status, mapped_with, id, ndr_id } = order;
 
-    // Case 1: pending pickup && mapped_with == null
-    if (status === "pending pickup" && mapped_with === null) {
-      return (
-        <>
-          
-          <button
-            type="button"
-            onClick={async () => {
-              await fetchReassignRiders(id);
-              setReassignPopup(id);
-            }}
-            className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800 mr-2"
-          >
-            Reassign Rider
-          </button>
-        </>
-      );
-    }
-
+    // Rider assignment is possible only after DC pickup.
+    // Pending pickup uses the Cancel Mapped / Mark as Picked actions in the Status cell.
     // Case 2: pending pickup && mapped_with !== null
-    if (status === "pending picku" && mapped_with !== null) {
+    if (status === "pending pickup" && mapped_with == null) {
       return (
         <>
           <button
@@ -687,23 +738,23 @@ const handleRefreshVendors = async () => {
     }
 
     // Case 3: in transit && mapped_with === null
-    if (status === "in transit" && mapped_with === null) {
-      return (
-        <button
-          type="button"
-          onClick={async () => {
-            await fetchReassignRiders(id);
-            setReassignPopup(id);
-          }}
-          className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800 mr-2"
-        >
-          Reassign Rider
-        </button>
-      );
-    }
+    // if (status === "in transit" && mapped_with === null) {
+    //   return (
+    //     <button
+    //       type="button"
+    //       onClick={async () => {
+    //         await fetchReassignRiders(id);
+    //         setReassignPopup(id);
+    //       }}
+    //       className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800 mr-2"
+    //     >
+    //       Reassign Rider
+    //     </button>
+    //   );
+    // }
 
     // Case 4: in transit && mapped_with !== null
-    if (status === "in transit" && mapped_with !== null) {
+    if (status === "in transit" || status === "undelivered assigned"  ) {
       return (
         <>
           <button
@@ -730,54 +781,16 @@ const handleRefreshVendors = async () => {
       );
     }
 
-    // Case 5: undelivered && mapped_with !== null
-    if (status === "undelivered" && mapped_with !== null) {
-      return (
-        <button
-          type="button"
-          onClick={async () => {
-            await fetchReassignRiders(id);
-            setReassignRiderPopup(id);
-          }}
-          className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800 mr-2"
-        >
-          Assign Rider
-        </button>
-      );
-    }
+    // Undelivered DC orders can be reassigned to a vendor via bulk action;
+    // DC rider assignment is intentionally unavailable until a reattempt API exists.
+    // if (status === "undelivered") return null;
 
-    // Case 6 & 7: undelivered assigned && mapped_with !== null
-    if (status === "undelivered assigned") {
-      return (
-        <>
-          <button
-            type="button"
-            onClick={async () => {
-              await fetchReassignRiders(id);
-              setReassignPopup(id);
-            }}
-            className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800 mr-2"
-          >
-            Reassign Rider
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              cancelRiderAssignment(id);
-              setIsOpenIndividualAssignmnet("");
-            }}
-            className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800 mr-2"
-          >
-            Cancel Assignment
-          </button>
-        </>
-      );
-    }
+    if (status === "undelivered assigned") return null;
 
     // Case 8: rto in transit && mapped_with !== null - handled in status column
 
     // For picked status
-    if (status === "picked") {
+    if (status === "picked" || status=='undelivered') {
       return (
         <button
           type="button"
@@ -856,6 +869,7 @@ const handleRefreshVendors = async () => {
               <span
                 onClick={() => {
                   setIsOpenIndividualMap("");
+                  clearAllState()
                 }}
                 className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800 cursor-pointer mr-2"
               >
@@ -865,10 +879,7 @@ const handleRefreshVendors = async () => {
           ) : (
             <span
               onClick={() => {
-                if (mapped_with === null) {
-                  toast.warning("Order is not mapped with any vendor");
-                  return;
-                }
+                
               
                 setIsOpenIndividualMap(id);
               }}
@@ -916,7 +927,10 @@ const handleRefreshVendors = async () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setEditingStatusId(null)}
+                  onClick={() => {setEditingStatusId(null)
+
+                    clearAllState()
+                  }}
                   className="text-xs text-gray-500 hover:underline"
                 >
                   Close
@@ -1031,59 +1045,38 @@ const handleRefreshVendors = async () => {
   };
 
   const exportVendorPendingPickupOrders = async () => {
-    setLoading(true);
     try {
-
-      const res = await AxiosInstance.get('/api/dc/orders/exportPendingPickup')
-      
-
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "orders_Pending.csv");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || err.message || "Failed to export orders",
-      );
-    } finally {
-      setLoading(false);
+      const response = await AxiosInstance.get("/api/dc/orders/exportPendingPickup", {
+        responseType: "blob",
+      });
+      saveCsv(response.data, "dc_pending_pickup_orders.csv");
+    } catch (error) {
+      toast.error(readApiError(error, "Failed to export pending pickup orders"));
     }
   };
 
   const exportVendorOrdersWithRider = async () => {
-    setLoading(true);
     try {
-
-      const res = await AxiosInstance.get('/api/dc/orders/export',{
+      const response = await AxiosInstance.get("/api/dc/orders/export", {
+        responseType: "blob",
         params: {
-            start_date: advanceFilters.startDate,
-            end_date: advanceFilters.endDate,
-            awb_number: advanceFilters.awbNumber,
-            status: selectedStatus,
+          ...{
+            start_date: advanceFilters.startDate || undefined,
+            end_date: advanceFilters.endDate || undefined,
+            awb_number: advanceFilters.awbNumber || undefined,
+            status: selectedStatus === "All" ? undefined : selectedStatus,
           },
-      })
-      
-
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "orders.csv");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || err.message || "Failed to export orders",
-      );
-    } finally {
-      setLoading(false);
+          // Backend export must implement exportAll=true to avoid 100-row pagination.
+        },
+      });
+      saveCsv(response.data, "dc_orders.csv");
+    } catch (error) {
+      toast.error(readApiError(error, "Failed to export DC orders"));
     }
   };
+
   const getOrderSpecificBadge = (orderSpecific = "") => {
-    const prefix = orderSpecific.split("-")[0]; // HLD4HRS, SDD, NDD
+    const prefix = String(orderSpecific || "").split("-")[0]; // HLD4HRS, SDD, NDD
 
     switch (prefix) {
       case "NDD":
@@ -1108,30 +1101,35 @@ const handleRefreshVendors = async () => {
   };
 
   const exportVendorRotOrders = async () => {
-    setLoading(true);
     try {
-
-      const res = await AxiosInstance.get('/api/dc/orders/exportRto')
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "orders_Rto.csv");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || err.message || "Failed to export orders",
-      );
-    } finally {
-      setLoading(false);
+      const response = await AxiosInstance.get("/api/dc/orders/exportRto", {
+        responseType: "blob",
+      });
+      saveCsv(response.data, "dc_rto_orders.csv");
+    } catch (error) {
+      toast.error(readApiError(error, "Failed to export RTO orders"));
     }
   };
 
-  useEffect(() => {
-    resetAdvanceFilters();
-    // fetchRiders();
-  }, []);
+  const assignOrderToVendoe = async ({ vendor_id, order_ids }) => {
+    if (!vendor_id || !order_ids?.length) return toast.error("Select vendor and orders");
+    if (selectedBulkOrders.some(isVendorMapped)) return toast.error("Clear vendor mapped orders before assigning a vendor");
+    setVendorLoading(true);
+    try {
+      const response = await AxiosInstance.post("/api/dc/bulkAssignOrdersToVendor", {
+        order_ids,
+        vendor_id: Number(vendor_id),
+      });
+      if (!response.data?.success) throw new Error(response.data?.message || "Vendor assignment failed");
+      toast.success(response.data.message || "Orders assigned to vendor");
+      clearAllState();
+      await fetchOrders();
+    } catch (error) {
+      toast.error(readApiError(error, "Error assigning orders to vendor"));
+    } finally {
+      setVendorLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchOrders();
@@ -1144,15 +1142,9 @@ const handleRefreshVendors = async () => {
     }
   }, [filterUpdate]);
   const formatToDMY = (dateStr) => {
-    if (!dateStr) return "";
-
-    const date = new Date(dateStr);
-
-    const dd = String(date.getDate()).padStart(2, "0");
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const yyyy = date.getFullYear();
-
-    return `${dd}/${mm}/${yyyy}`;
+    const date = fromDateKey(dateStr);
+    if (!date) return "";
+    return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
   };
 
     const [loadingPage, setLoadingPage] = useState(true);
@@ -1178,17 +1170,18 @@ useEffect(() => {
         </div>
         </>
       ):(
-        <div className="bg-gray-100 dark:bg-gray-900  min-h-screen w-full">
+        <div className="flex h-[calc(100dvh-100px)] min-h-0 min-w-0 w-full flex-col overflow-hidden bg-gray-100 dark:bg-gray-900">
           {/* Heading Strip */}
-          <div className="mb-0  z-10  dark:bg-gray-900  pb-4  h-auto ">
-            <div className="flex flex-wrap items-center justify-between">
+          <div className="z-10 shrink-0 bg-gray-100 pb-3 dark:bg-gray-900">
+            <div className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               {/* Heading */}
               <h1 className="text-2xl font-bold dark:text-white">Order Details</h1>
-              <div className="flex flex-wrap items-end gap-4 text-white">
+              <div className="grid w-full grid-cols-2 gap-2 text-white sm:grid-cols-4 lg:flex lg:w-auto lg:flex-wrap lg:items-center lg:justify-end">
                 {/* Right Side Filters */}
                 <CustomButton
                     icon={Download}
                     onClick={exportVendorPendingPickupOrders}
+                    className="w-full min-w-0 text-xs sm:text-sm lg:w-auto"
                   >
                     Export Pickup List
                   </CustomButton>
@@ -1196,6 +1189,7 @@ useEffect(() => {
                     variant="outline"
                     icon={Download}
                     onClick={exportVendorOrdersWithRider}
+                    className="w-full min-w-0 text-xs sm:text-sm lg:w-auto"
                   >
                     Export Orders List
                   </CustomButton>
@@ -1203,6 +1197,7 @@ useEffect(() => {
                       variant="outline"
                       icon={Download}
                       onClick={exportVendorRotOrders}
+                      className="w-full min-w-0 text-xs sm:text-sm lg:w-auto"
                     >
                       Export RTO List
                     </CustomButton>
@@ -1213,7 +1208,7 @@ useEffect(() => {
                   onOpenChange={setIsFilterOpen}
                 >
                   <DrawerTrigger asChild>
-                     <CustomButton variant="outline" icon={Filter}>
+                     <CustomButton variant="outline" icon={Filter} className="w-full min-w-0 text-xs sm:text-sm lg:w-auto">
     Filter
   </CustomButton>
                   </DrawerTrigger>
@@ -1227,9 +1222,7 @@ useEffect(() => {
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
-  
-                            applyFilters(); // Filter apply
-  
+                            setPage(1);
                             setFilterUpdate((prev) => !prev);
   
                             setIsFilterOpen(false); // Drawer Close
@@ -1243,6 +1236,7 @@ useEffect(() => {
                                 <Popover open={open} onOpenChange={setOpen}>
                                   <PopoverTrigger asChild>
                                     <Button
+                                      type="button"
                                       variant="outline"
                                       id="date"
                                       className="justify-start w-full font-normal"
@@ -1258,22 +1252,11 @@ useEffect(() => {
                                   >
                                     <Calendar
                                       mode="single"
-                                      selected={advanceFilters.startDate}
-                                      defaultMonth={advanceFilters.startDate}
+                                      selected={fromDateKey(advanceFilters.startDate)}
+                                      defaultMonth={fromDateKey(advanceFilters.startDate)}
                                       captionLayout="dropdown"
                                       onSelect={(date) => {
-                                        const formattedDate = `${date.getFullYear()}/${(
-                                          date.getMonth() + 1
-                                        )
-                                          .toString()
-                                          .padStart(
-                                            2,
-                                            "0",
-                                          )}/${date.getDate().toString().padStart(2, "0")}`;
-                                        setAdvanceFilters({
-                                          ...advanceFilters,
-                                          startDate: formattedDate,
-                                        });
+                                        setAdvanceFilters((prev) => ({ ...prev, startDate: toDateKey(date) }));
                                         setOpen(false);
                                       }}
                                     />
@@ -1291,6 +1274,7 @@ useEffect(() => {
                                 <Popover open={endopen} onOpenChange={setEndOpen}>
                                   <PopoverTrigger asChild>
                                     <Button
+                                      type="button"
                                       variant="outline"
                                       id="enddate"
                                       className="justify-start w-full font-normal"
@@ -1306,22 +1290,11 @@ useEffect(() => {
                                   >
                                     <Calendar
                                       mode="single"
-                                      selected={advanceFilters.startDate}
-                                      defaultMonth={advanceFilters.startDate}
+                                      selected={fromDateKey(advanceFilters.endDate)}
+                                      defaultMonth={fromDateKey(advanceFilters.endDate)}
                                       captionLayout="dropdown"
                                       onSelect={(date) => {
-                                        const formattedDate = `${date.getFullYear()}/${(
-                                          date.getMonth() + 1
-                                        )
-                                          .toString()
-                                          .padStart(
-                                            2,
-                                            "0",
-                                          )}/${date.getDate().toString().padStart(2, "0")}`;
-                                        setAdvanceFilters({
-                                          ...advanceFilters,
-                                          endDate: formattedDate,
-                                        });
+                                        setAdvanceFilters((prev) => ({ ...prev, endDate: toDateKey(date) }));
                                         setEndOpen(false);
                                       }}
                                     />
@@ -1350,15 +1323,13 @@ useEffect(() => {
                             {/*  Button */}
                             <div className=" w-full flex">
                               <button
-                                onClick={() => {
-                                  setFilterUpdate((prev) => !prev);
-                                  setIsFilterOpen(false);
-                                }}
+                                type="submit"
                                 className="bg-[#0446DB] w-1/2 text-white px-4 py-2 rounded-md hover:bg-indigo-800 transition text-sm mx-1"
                               >
                                 Filter
                               </button>
                               <button
+                                type="button"
                                 onClick={() => {
                                   resetAdvanceFilters();
                                   setFilterUpdate((prev) => !prev);
@@ -1384,9 +1355,9 @@ useEffect(() => {
             </div>
           </div>
   
-          <div className="  dark:bg-gray-900 rounded-md">
-            <div className="w-full  bg-white  shadow-sm  dark:bg-gray-900   left-0 px-4 z-40   ">
-              <div className="relative flex justify-center ">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col rounded-md dark:bg-gray-900">
+            <div className="z-20 w-full shrink-0 bg-white px-2 shadow-sm dark:bg-gray-900 sm:px-4">
+              <div className="relative flex justify-left ">
                 <div
                   className="flex  overflow-x-auto  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 "
                   onWheel={(e) => {
@@ -1394,7 +1365,7 @@ useEffect(() => {
                     e.currentTarget.scrollLeft += e.deltaY;
                   }}
                 >
-                  <div className="flex gap-2  min-w-max px-8 mt-0">
+                  <div className="flex gap-2  min-w-max  mt-0">
                     {" "}
                     {/* Added padding on sides */}
                     {status.map((st) => (
@@ -1408,7 +1379,7 @@ useEffect(() => {
                          
                           setIsOpenIndividualAssignmnet("");
                         }}
-                        className={`px-5 py-2.5 rounded-full my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${
+                        className={`px-5 py-2.5 rounded-sm my-2 border transition-all duration-300 font-medium text-sm tracking-wide ${
                           selectedStatus === st
                             ? "bg-[#0446DB] text-white shadow-sm  border-transparent"
                             : "bg-white hover:bg-[#0446DB] hover:text-white text-gray-700 border-gray-200 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]"
@@ -1420,6 +1391,7 @@ useEffect(() => {
                     ))}
 
                     {[
+                      'undelivered',
                       "undelivered assigned",
                       "ndr",
                       "rto in transit",
@@ -1439,7 +1411,7 @@ useEffect(() => {
                                                 )}
                     
                     
-                                          
+                    
                     
                                           <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -1453,6 +1425,7 @@ useEffect(() => {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent className="!w-52 !min-w-52">
                                               {[
+                                                "undelivered",
                                                "undelivered assigned",
                                                 "ndr",
                                                 "rto in transit",
@@ -1463,10 +1436,10 @@ useEffect(() => {
                                                     <DropdownMenuItem
                                                       onClick={() => {
                                                         setSelectedBulkOrders([]);
-                                                       
-                                                         setSelectedStatus(s);
+                                                        setSelectedStatus(s);
+                                                        
                                                         setPage(1);
-                                                        clearAllState();
+                                                       
                                                       }}
                                                       variant={
                                                         s === "cancelled"
@@ -1488,6 +1461,16 @@ useEffect(() => {
                   </div>
                 </div>
               </div>
+              {supportsVendorGroups && selectedBulkOrders.length > 0 && (
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
+                  <span>
+                    <strong>{selectedBulkOrders.length} selected</strong> — {selectedVendorGroup === "mapped"
+                      ? "Vendor mapped orders: Cancel Vendor Mapping"
+                      : "Unmapped orders: Assign to Rider / Vendor"}. Other group checkboxes are disabled.
+                  </span>
+                  <button type="button" onClick={() => setSelectedBulkOrders([])} className="font-semibold underline">Clear selection</button>
+                </div>
+              )}
               {selectedBulkOrders.length > 0 &&
               (selectedStatus === "pending pickup" ||
                 selectedStatus === "out for delivery" ||
@@ -1666,8 +1649,7 @@ useEffect(() => {
                           PICKED / UNDELIVERED - ASSIGN RIDER
                       ===================================================== */}
 
-                      {(selectedStatus === "picked" ||
-                        selectedStatus === "undelivered") && (
+                      {(selectedStatus === "picked" || selectedStatus === "undelivered")  && (
                         <div className="overflow-hidden rounded-sm border border-blue-200 dark:border-blue-500/20">
                           {/* CARD HEADER */}
                           <div className="border-b border-blue-100 bg-blue-50/70 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/5">
@@ -1693,7 +1675,7 @@ useEffect(() => {
                                     <span className="font-semibold text-[#0446DB] dark:text-blue-400">
                                       {selectedBulkOrders?.length || 0}
                                     </span>{" "}
-                                    selected orders.sssss
+                                    selected orders.
                                   </p>
                                 </div>
 
@@ -1710,9 +1692,8 @@ useEffect(() => {
                                     try {
                                       setAssignRiderLoading(true);
 
-                                      await fetchReassignRiders(order_ids);
-
-                                      setAssign(true);
+                                      const hasRiders = await fetchReassignRiders(order_ids);
+                                      if (hasRiders) setAssign(true);
                                     } finally {
                                       setAssignRiderLoading(false);
                                     }
@@ -1757,7 +1738,7 @@ useEffect(() => {
 
                                     {reassignRidersOptions.map((rider) => (
                                       <option
-                                        key={rider.rider_id}
+                                        key={rider.value}
                                         value={rider.value}
                                       >
                                         {rider.label}
@@ -1813,13 +1794,11 @@ useEffect(() => {
                                         try {
                                           setAssignRiderLoading(true);
 
-                                          await assignBulkOrderRider(
-                                            ids,
-                                            newRider
-                                          );
-
-                                          setNewRider("");
-                                          setAssign(false);
+                                          const success = await assignBulkOrderRider(ids, newRider);
+                                          if (success) {
+                                            setNewRider("");
+                                            setAssign(false);
+                                          }
                                         } catch (error) {
                                           console.error(error);
                                         } finally {
@@ -1844,195 +1823,279 @@ useEffect(() => {
                           </div>
                         </div>
                       )}
+                       
+
+                       {
+                         (supportsVendorGroups && selectedVendorGroup === 'mapped' && selectedBulkOrders.every(isVendorMapped))  && (
+                          <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                                                          <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                                                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                                              Change Order Status
+                                                            </h3>
+                          
+                                                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                                                              Select an action to apply to all selected
+                                                              orders.
+                                                            </p>
+                                                          </div>
+                          
+                                                          <div className="space-y-4 p-4">
+                                                            <div>
+                                                              <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                                                Select Status
+                                                              </label>
+                          
+                                                              <select
+                                                                className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                                                                value={bulkStatusState}
+                                                                onChange={(e) => {
+                                                                  const value = e.target.value;
+                          
+                                                                  setBulkStatusState(value);
+                                                                  // if (value === "cancelled") {
+                                                                  //   setNewStatus(value);
+                                                                  // } else {
+                                                                  //   setNewStatus("");
+                                                                  //   setRemark("");
+                                                                  // }
+                                                                }}
+                                                              >
+                                                                <option value="">Select Status</option>
+                                                                  <option value="Cancel Vendor Mapped">
+                                                                    Cancel Vendor Mapping
+                                                                  </option>
+                                                              </select>
+                                                            </div>
+                          
+                                                            
+                          
+                                                            {bulkStatusState && (
+                                                              <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
+                                                                <div>
+                                                                  <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                                                    Selected Orders
+                                                                  </p>
+                          
+                                                                  <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+                                                                    This action will be applied to all
+                                                                    selected orders.
+                                                                  </p>
+                                                                </div>
+                          
+                                                                <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+                                                                  {selectedBulkOrders?.length || 0}
+                                                                </span>
+                                                              </div>
+                                                            )}
+                          
+                                                            {bulkStatusState && (
+                                                              <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
+                                                                <Button
+                                                              variant="default"
+                                                              onClick={handleCancelBulkVendorMapping}
+                                                              disabled={!selectedBulkOrders?.length}
+                                                            >
+                                                              Cancel Vendor Mapping
+                                                            </Button>
+                                                              </div>
+                                                            )}
+                                                          </div>
+                          </div>
+                         )
+                       }
 
 
+                      {(selectedStatus === "picked" || selectedStatus === "undelivered") && (
+                        <div className="overflow-hidden rounded-sm border border-emerald-200 dark:border-emerald-500/20">
+                          {/* HEADER */}
+                          <div className="border-b border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                              Assign Orders to Vendor
+                            </h3>
+                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                              Assign all currently selected orders to a vendor.
+                            </p>
+                          </div>
 
-                      {selectedStatus === "picked" && (
-  <div className="overflow-hidden rounded-sm border border-emerald-200 dark:border-emerald-500/20">
-    {/* HEADER */}
-    <div className="border-b border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-      <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-        Assign Orders to Vendor
-      </h3>
-      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-        Assign all currently selected orders to a vendor.
-      </p>
-    </div>
+                          <div className="space-y-4 p-4">
+                            {!assignVendor ? (
+                              /* INITIAL ASSIGN BUTTON */
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                    Assign Selected Orders
+                                  </p>
+                                  <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                    Select a vendor for{" "}
+                                    <span className="font-semibold text-emerald-600">
+                                      {selectedBulkOrders?.length || 0}
+                                    </span>{" "}
+                                    selected orders.
+                                  </p>
+                                </div>
 
-    <div className="space-y-4 p-4">
-      {!assignVendor ? (
-        /* INITIAL ASSIGN BUTTON */
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-              Assign Selected Orders
-            </p>
-            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-              Select a vendor for{" "}
-              <span className="font-semibold text-emerald-600">
-                {selectedBulkOrders?.length || 0}
-              </span>{" "}
-              selected orders.
-            </p>
-          </div>
+                                <Button
+                                  type="button"
+                                  disabled={vendorLoading || !selectedBulkOrders?.length}
+                                  onClick={async () => {
+                                    const order_ids = [
+                                      ...new Set(
+                                        (selectedBulkOrders || [])
+                                          .map((order) => order.id)
+                                          .filter((id) => id != null)
+                                      ),
+                                    ];
 
-          <Button
-            type="button"
-            disabled={vendorLoading || !selectedBulkOrders?.length}
-            onClick={async () => {
-              const order_ids = [
-                ...new Set(
-                  (selectedBulkOrders || [])
-                    .map((order) => order.id)
-                    .filter((id) => id != null)
-                ),
-              ];
+                                    if (!order_ids.length) {
+                                      toast.error("Please select at least one order");
+                                      return;
+                                    }
 
-              if (!order_ids.length) {
-                toast.error("Please select at least one order");
-                return;
-              }
+                                    setSelectedVendor("");
+                                    setAssignVendor(true);
 
-              setSelectedVendor("");
-              setAssignVendor(true);
+                                    await getEligibleVendorsByOrders({ order_ids });
+                                  }}
+                                  className="h-9 min-w-[120px] rounded-sm bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                                >
+                                  {vendorLoading ? (
+                                    <>
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      Loading...
+                                    </>
+                                  ) : (
+                                    "Assign Orders"
+                                  )}
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                {/* VENDOR DROPDOWN */}
+                                <div>
+                                  <div className="mb-1.5 flex items-center justify-between">
+                                    <label
+                                      htmlFor="vendorSelect"
+                                      className="text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                                    >
+                                      Select Vendor <span className="text-red-500">*</span>
+                                    </label>
 
-              await getEligibleVendorsByOrders({ order_ids });
-            }}
-            className="h-9 min-w-[120px] rounded-sm bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-          >
-            {vendorLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              "Assign Orders"
-            )}
-          </Button>
-        </div>
-      ) : (
-        <>
-          {/* VENDOR DROPDOWN */}
-          <div>
-            <div className="mb-1.5 flex items-center justify-between">
-              <label
-                htmlFor="vendorSelect"
-                className="text-xs font-medium text-neutral-700 dark:text-neutral-300"
-              >
-                Select Vendor <span className="text-red-500">*</span>
-              </label>
+                                    {vendorList.length === 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={handleRefreshVendors}
+                                        disabled={vendorLoading}
+                                        className="flex h-8 items-center gap-2 rounded-sm border border-emerald-200 px-3 text-xs font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-500/30 dark:text-emerald-400"
+                                      >
+                                        <FiRefreshCw
+                                          className={vendorLoading ? "animate-spin" : ""}
+                                        />
+                                        {vendorLoading ? "Refreshing..." : "Refresh"}
+                                      </button>
+                                    )}
+                                  </div>
 
-              {vendorList.length === 0 && (
-                <button
-                  type="button"
-                  onClick={handleRefreshVendors}
-                  disabled={vendorLoading}
-                  className="flex h-8 items-center gap-2 rounded-sm border border-emerald-200 px-3 text-xs font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-500/30 dark:text-emerald-400"
-                >
-                  <FiRefreshCw
-                    className={vendorLoading ? "animate-spin" : ""}
-                  />
-                  {vendorLoading ? "Refreshing..." : "Refresh"}
-                </button>
-              )}
-            </div>
+                                  <select
+                                    id="vendorSelect"
+                                    value={selectedVendor}
+                                    onChange={(e) => setSelectedVendor(e.target.value)}
+                                    disabled={vendorLoading || vendorList.length === 0}
+                                    className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-800 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                                  >
+                                    <option value="">
+                                      {vendorLoading
+                                        ? "Loading vendors..."
+                                        : vendorList.length === 0
+                                          ? "No vendors available"
+                                          : "Select Vendor"}
+                                    </option>
 
-            <select
-              id="vendorSelect"
-              value={selectedVendor}
-              onChange={(e) => setSelectedVendor(e.target.value)}
-              disabled={vendorLoading || vendorList.length === 0}
-              className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-800 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
-            >
-              <option value="">
-                {vendorLoading
-                  ? "Loading vendors..."
-                  : vendorList.length === 0
-                    ? "No vendors available"
-                    : "Select Vendor"}
-              </option>
+                                    {vendorList.map((vendor) => (
+                                      <option
+                                        key={vendor.vendor_id ?? vendor.id}
+                                        value={vendor.vendor_id ?? vendor.id}
+                                      >
+                                        {vendor.vendor_id}:
+                                        {vendor.vendor_name ??
+                                          vendor.company_name ??
+                                          vendor.name}
+                                      </option>
+                                    ))}
+                                  </select>
 
-              {vendorList.map((vendor) => (
-                <option
-                  key={vendor.vendor_id ?? vendor.id}
-                  value={vendor.vendor_id ?? vendor.id}
-                >
-                  {vendor.vendor_name ??
-                    vendor.company_name ??
-                    vendor.name}
-                </option>
-              ))}
-            </select>
+                                  {!vendorLoading && vendorList.length === 0 && (
+                                    <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                                      No eligible vendors found. Click Refresh to try again.
+                                    </p>
+                                  )}
+                                </div>
 
-            {!vendorLoading && vendorList.length === 0 && (
-              <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-                No eligible vendors found. Click Refresh to try again.
-              </p>
-            )}
-          </div>
+                                {/* FOOTER */}
+                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-4 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                      Assign Selected Orders
+                                    </p>
+                                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                      Assign{" "}
+                                      <span className="font-semibold text-emerald-600">
+                                        {selectedBulkOrders?.length || 0}
+                                      </span>{" "}
+                                      selected orders to the chosen vendor.
+                                    </p>
+                                  </div>
 
-          {/* FOOTER */}
-          <div className="flex flex-col gap-3 border-t border-neutral-100 pt-4 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-                Assign Selected Orders
-              </p>
-              <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                Assign{" "}
-                <span className="font-semibold text-emerald-600">
-                  {selectedBulkOrders?.length || 0}
-                </span>{" "}
-                selected orders to the chosen vendor.
-              </p>
-            </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      disabled={vendorLoading}
+                                      onClick={() => {
+                                        setAssignVendor(false);
+                                        setSelectedVendor("");
+                                      }}
+                                      className="h-9 rounded-sm px-4 text-sm font-medium"
+                                    >
+                                      Cancel
+                                    </Button>
 
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={vendorLoading}
-                onClick={() => {
-                  setAssignVendor(false);
-                  setSelectedVendor("");
-                }}
-                className="h-9 rounded-sm px-4 text-sm font-medium"
-              >
-                Cancel
-              </Button>
+                                    <Button
+                                      type="button"
+                                      disabled={
+                                        vendorLoading ||
+                                        !selectedVendor ||
+                                        !selectedBulkOrders?.length
+                                      }
+                                      onClick={() => {
+                                        const order_ids = [
+                                          ...new Set(
+                                            (selectedBulkOrders || [])
+                                              .map((order) => order.id)
+                                              .filter((id) => id != null)
+                                          ),
+                                        ];
 
-              <Button
-                type="button"
-                disabled={
-                  vendorLoading ||
-                  !selectedVendor ||
-                  !selectedBulkOrders?.length
-                }
-                onClick={() => {
-                  const order_ids = [
-                    ...new Set(
-                      (selectedBulkOrders || [])
-                        .map((order) => order.id)
-                        .filter((id) => id != null)
-                    ),
-                  ];
-
-                  // Call actual vendor assignment API here
-                  console.log({
-                    order_ids,
-                    vendor_id: Number(selectedVendor),
-                  });
-                }}
-                className="h-9 min-w-[105px] rounded-sm bg-emerald-600 px-5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-              >
-                Continue
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  </div>
-)}
+                                        // Call actual vendor assignment API here
+                                        console.log({
+                                          order_ids,
+                                          vendor_id: Number(selectedVendor),
+                                        });
+                                        assignOrderToVendoe({
+                                          order_ids,
+                                          vendor_id: Number(selectedVendor),
+                                        })
+                                      }}
+                                      className="h-9 min-w-[105px] rounded-sm bg-emerald-600 px-5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                                    >
+                                      Continue
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                       )}
 
 
 
@@ -2300,6 +2363,7 @@ useEffect(() => {
                           setBulkStatusState(false);
                           setNewRider("");
                           setAssign(false);
+                          clearAllState()
                         }}
                         className="cursor-pointer rounded-sm"
                       >
@@ -2320,27 +2384,25 @@ useEffect(() => {
              
   
             {/* Table */}
-            <div className="overflow-x-auto bg-white dark:bg-gray-900 ">
+            <div className="min-h-0 min-w-0 w-full flex-1 overflow-auto overscroll-contain bg-white dark:bg-gray-900">
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 z-30 bg-white shadow-[0_1px_0_#e2e8f0] dark:bg-gray-900">
                   <TableRow>
                     {selectedStatus === "pending pickup" ||
                     selectedStatus === "picked" ||
                     selectedStatus === "rto in transit" ||
                     selectedStatus === "undelivered" ? (
-                      <TableHead className="px-6 py-4">
+                      <TableHead className="sticky top-0 z-30 bg-white dark:bg-gray-900 px-6 py-4">
                         <div>
                           <span>
                             <input
                               type="checkbox"
                               className="w-4 h-4 text-indigo-600 rounded border-gray-300"
                               checked={
-                                selectedBulkOrders.filter(
-                                  (order) => order.mapped_with !== null,
-                                ).length ===
-                                orders.filter(
-                                  (order) => order.mapped_with !== null,
-                                )?.length
+                                eligibleSelectableOrders.length > 0 &&
+                                eligibleSelectableOrders.every((order) =>
+                                  selectedBulkOrders.some((selected) => selected.id === order.id)
+                                )
                               }
                               onChange={toggleSelectAll}
                             />
@@ -2348,33 +2410,38 @@ useEffect(() => {
                         </div>
                       </TableHead>
                     ) : (
-                      <TableHead className="px-6 py-4">-</TableHead>
+                      <TableHead className="sticky top-0 z-30 bg-white dark:bg-gray-900 px-6 py-4">-</TableHead>
                     )}
   
-                    <TableHead className="text-left whitespace-nowrap px-6 py-3">
+                    <TableHead className="sticky top-0 z-30 bg-white dark:bg-gray-900 text-left whitespace-nowrap px-6 py-3">
                       ORDER ID
                     </TableHead>
-                    {(selectedStatus === "in transit" ||
-                      selectedStatus === "out for delivery" ||
-                      selectedStatus === "delivered" ||
-                      selectedStatus === "undelivered assigned" ||
-                      selectedStatus === "ndr" ||
-                      selectedStatus === "rto in transit" ||
-                      selectedStatus === "rto delivered") && (
-                      <TableHead className="text-left px-6 py-3">
-                        RIDER ID
-                      </TableHead>
-                    )}
-                    <TableHead className="text-left whitespace-nowrap px-6 py-3">
+                    <TableHead className="sticky top-0 z-30 bg-white dark:bg-gray-900 text-left whitespace-nowrap uppercase px-6 py-3">
+                     Seller Details
+                    </TableHead>
+                    
+                    <TableHead className="sticky top-0 z-30 bg-white dark:bg-gray-900 text-left whitespace-nowrap px-6 py-3">
                       CONSIGNEE ADDRESS
                     </TableHead>
-                    <TableHead className="text-left whitespace-nowrap px-6 py-3">
+
+                    {(
+                        selectedStatus === "out for delivery" ||
+                        selectedStatus === "delivered" ||
+                        selectedStatus === "in transit" ||
+                        selectedStatus === "undelivered assigned") && (
+                        <>
+                          <TableHead className="sticky top-0 z-30 whitespace-nowrap bg-white py-3 text-left font-semibold dark:bg-gray-900 dark:text-white">
+                            RIDER ID/VENDOR ID
+                          </TableHead>
+                        </>
+                      )}
+                    <TableHead className="sticky top-0 z-30 bg-white dark:bg-gray-900 text-left whitespace-nowrap px-6 py-3">
                       PACKAGE DETAILS
                     </TableHead>
-                    <TableHead className="text-left whitespace-nowrap px-6 py-3">
+                    <TableHead className="sticky top-0 z-30 bg-white dark:bg-gray-900 text-left whitespace-nowrap px-6 py-3">
                       ASSIGNMENT
                     </TableHead>
-                    <TableHead className="text-left whitespace-nowrap px-6 py-3">
+                    <TableHead className="sticky top-0 z-30 bg-white dark:bg-gray-900 text-left whitespace-nowrap px-6 py-3">
                       STATUS
                     </TableHead>
                   </TableRow>
@@ -2399,7 +2466,19 @@ useEffect(() => {
                     </>
                   ) : (
                     orders.map((order) => {
-                      const badge = getOrderSpecificBadge(order.order_specific);
+                      
+                      const isVendorMapped = (order) => {
+                        const vendorId = order?.mapped_with;
+
+                        return (
+                          vendorId !== null &&
+                          vendorId !== undefined &&
+                          String(vendorId).trim() !== "" &&
+                          String(vendorId) !== "0"
+                        );
+                      };
+
+                      
                       let isSelected;
                       if (
                         selectedStatus === "pending pickup" ||
@@ -2418,7 +2497,7 @@ useEffect(() => {
                         <TableRow
                           key={order.id}
                           className={`hover:bg-gray-50 ${
-                            isSelected ? "bg-gray-100 text-white" : ""
+                            isSelected ? "bg-blue-50 text-white" : ""
                           } dark:hover:bg-gray-800`}
                         >
                           {/* Select */}
@@ -2426,35 +2505,33 @@ useEffect(() => {
                             selectedStatus === "picked" ||
                             selectedStatus === "rto in transit" ||
                             selectedStatus === "undelivered") &&
-                          order.mapped_with !== null ? (
+                          selectableOrders.some((item) => item.id === order.id) ? (
                             <TableCell className="px-6 py-4 whitespace-nowrap">
                               <input
                                 type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedBulkOrders((prev) => [
-                                      ...prev,
-                                      order,
-                                    ]);
-                                    
-                                  } else {
-                                    setSelectedBulkOrders((prev) =>
-                                      prev.filter((o) => o.id !== order.id),
-                                    );
-                                   
-                                  }
-                                }}
-                                className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
+                                checked={Boolean(isSelected)}
+                                disabled={!canSelectOrder(order)}
+                                title={!canSelectOrder(order)
+                                  ? "Clear selection to switch between vendor mapped and unmapped orders"
+                                  : isVendorMapped(order) ? "Vendor mapped order" : "Unmapped order"}
+                                onChange={(e) => handleOrderSelection(order, e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 text-[#0446DB] disabled:cursor-not-allowed disabled:opacity-30"
                               />
                             </TableCell>
                           ) : (
                             <TableCell className="px-6 py-4">-</TableCell>
                           )}
+
+
+
+
+
+
   
                           {/* Order ID */}
                           <TableCell className="px-6 py-4">
-                            <p className="text-l text-gray-800 flex items-center">
+                            <div className="text-l flex items-center text-gray-800">
+                              
                               <a
                                 href={`${frontEndURL}/track-order?awb_number=${order.awb_number}`}
                                 target="_blank"
@@ -2481,9 +2558,7 @@ useEffect(() => {
                               </button>
                               
                               <AlertDialog>
-                                <AlertDialogTrigger
-                                  render={<Button variant="outline" />}
-                                >
+                                <AlertDialogTrigger asChild>
                                   <button
   type="button"
   title="View Details"
@@ -2665,7 +2740,7 @@ useEffect(() => {
         order?.total_weight !== null &&
         order?.total_weight !== undefined &&
         order?.total_weight !== ""
-          ? `${order.total_weight-200} g`
+          ? `${order.total_weight} g`
           : "N/A",
     },
     {
@@ -3007,14 +3082,14 @@ useEffect(() => {
 
   {/* ================= STICKY FOOTER ================= */}
 
-  <AlertDialogFooter className="shrink-0 border-t border-slate-200 bg-slate-50/70 px-4 my-0 dark:border-slate-800 dark:bg-slate-900/50 sm:px-6">
-    <AlertDialogCancel className="m-0 h-9 cursor-pointer rounded-md border-slate-300 px-5 text-sm font-medium dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
-      Close
-    </AlertDialogCancel>
-  </AlertDialogFooter>
+                        <AlertDialogFooter className="shrink-0 border-t border-slate-200 bg-slate-50/70 px-4 my-0 dark:border-slate-800 dark:bg-slate-900/50 sm:px-6">
+                          <AlertDialogCancel className="m-0 h-9 cursor-pointer rounded-md border-slate-300 px-5 text-sm font-medium dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                            Close
+                          </AlertDialogCancel>
+                        </AlertDialogFooter>
                               </AlertDialogContent>
                               </AlertDialog>
-                            </p>
+                            </div>
                             <p className="text-s text-gray-500 dark:text-white">
                               {new Date(order.created_at).toLocaleString(
                                 "en-IN",
@@ -3030,68 +3105,135 @@ useEffect(() => {
                               )}
                             </p>
   
-                            <p className="text-s text-gray-400 dark:text-white">
-                              MID: {order.merchant_id}
-                            </p>
-                          <div className="flex min-w-0 items-center gap-1.5">
-  <p className="min-w-0 text-xs text-gray-400 dark:text-gray-400">
-    <span className="whitespace-nowrap">MOID: </span>
+                            
+                            <div className="flex min-w-0 items-center gap-1.5">
+                              <p className="min-w-0 text-xs text-gray-400 dark:text-gray-400">
+                                <span className="whitespace-nowrap">MOID: </span>
 
-    <span
-      className="inline-block max-w-[150px] truncate align-bottom font-medium text-gray-600 dark:text-gray-300"
-      title={order?.merchant_order_id}
-    >
-      {order?.merchant_order_id || "N/A"}
-    </span>
-  </p>
+                                <span
+                                  className="inline-block max-w-[150px] truncate align-bottom font-medium text-gray-600 dark:text-gray-300"
+                                  title={order?.merchant_order_id}
+                                >
+                                  {order?.merchant_order_id || "N/A"}
+                                </span>
+                              </p>
 
-  {order?.merchant_order_id && (
-    <button
-      type="button"
-      title="Copy Merchant Order ID"
-      onClick={(e) => {
-        e.stopPropagation();
-        navigator.clipboard.writeText(order.merchant_order_id);
-        setCopySuccess(order.merchant_order_id);
+                              {order?.merchant_order_id && (
+                                <button
+                                  type="button"
+                                  title="Copy Merchant Order ID"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(order.merchant_order_id);
+                                    setCopySuccess(order.merchant_order_id);
 
-        setTimeout(() => {
-          setCopySuccess(null);
-        }, 2000);
-      }}
-      className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-gray-400 transition hover:bg-blue-50 hover:text-[#0446DB] dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
-    >
-      {copySuccess === order.merchant_order_id ? (
-        <span className="text-xs text-green-500">✓</span>
-      ) : (
-        <svg
-          className="h-3.5 w-3.5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-          />
-        </svg>
-      )}
-    </button>
-  )}
-</div>
+                                    setTimeout(() => {
+                                      setCopySuccess(null);
+                                    }, 2000);
+                                  }}
+                                  className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-gray-400 transition hover:bg-blue-50 hover:text-[#0446DB] dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+                                >
+                                  {copySuccess === order.merchant_order_id ? (
+                                    <span className="text-xs text-green-500">✓</span>
+                                  ) : (
+                                    <svg
+                                      className="h-3.5 w-3.5"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                      />
+                                    </svg>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Vendor and Rider mapping — independent statuses */}
+                            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                              {isVendorMapped(order) ? (
+                                <span
+                                  title={`Vendor ID: ${order.mapped_with}`}
+                                  className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400"
+                                >
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                  Vendor: {order.mapped_with}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-2 py-1 text-[11px] font-semibold text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                  Vendor Not Mapped
+                                </span>
+                              )}
+
+                              {
+                                !['picked','pending pickup'].includes(order?.status) && (
+                                  order.rider_id != null &&
+                                  String(order.rider_id).trim() !== "" &&
+                                  Number(order.rider_id) > 0 ? (
+                                    <span
+                                      title={`Rider ID: ${order.rider_id}`}
+                                      className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+                                    >
+                                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                                      Rider: {order.rider_id}
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                                      Rider Not Assigned
+                                    </span>
+                                  )
+
+                                )
+                              }
+
+                            </div>
+
+                          
                           </TableCell>
   
-                          {/* Rider ID */}
-                          {(selectedStatus === "in transit" ||
-                            selectedStatus === "out for delivery" ||
-                            selectedStatus === "delivered" ||
-                            selectedStatus === "undelivered assigned" ||
-                            selectedStatus === "ndr" ||
-                            selectedStatus === "rto in transit" ||
-                            selectedStatus === "rto delivered") && (
-                            <td className="px-6 py-4 dark:text-white">{`DC_${order?.rider_dc_id}_${order?.rider_id}`}</td>
-                          )}
+                        
+                         {/* SELLER DETAILS */}
+                            <TableCell className="px-6 py-4 whitespace-pre-line">
+                              <div className="flex flex-col  text-sm">
+                                <p className="text-gray-700 dark:text-gray-300">
+                                  <span className="font-medium text-gray-900 dark:text-white">
+                                    Merchant ID:
+                                  </span>{" "}
+                                  {order?.merchant_id ?? "N/A"}
+                                </p>
+                                
+
+                                {order?.brand_name && (
+                                  <p className="text-gray-700 dark:text-gray-300">
+                                    <span className="font-medium text-gray-900 dark:text-white">
+                                      Brand Name:
+                                    </span>{" "}
+                                    {order?.brand_name}
+                                  </p>
+                                )}
+                              
+
+                                {order?.merchant_company_name && (
+                                  <p className="text-gray-700 dark:text-gray-300">
+                                    <span className="font-medium text-gray-900 dark:text-white">
+                                      Company Name:
+                                    </span>{" "}
+                                    {order.merchant_company_name}
+                                  </p>
+                                )}
+                                
+                              </div>
+                            </TableCell>
+
+
+                         
   
                           {/* Address */}
                           <TableCell className="px-6 py-4 whitespace-pre-line">
@@ -3103,7 +3245,7 @@ useEffect(() => {
                               </p> */}
                             <div className="relative inline-block group">
                               <span className="cursor-pointer whitespace-nowrap dark:text-white text-gray-800 font-medium">
-                                {order.delivery_address_line.slice(0, 35)}....
+                                {String(order.delivery_address_line || "").slice(0, 35)}...
                               </span>
                               <div
                                 className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0
@@ -3125,6 +3267,34 @@ useEffect(() => {
                               {order.delivery_country}
                             </p>
                           </TableCell>
+                         
+                         
+                          {(
+                              selectedStatus === "out for delivery" ||
+                              selectedStatus === "delivered" ||
+                              selectedStatus === "in transit" ||
+                              selectedStatus === "undelivered assigned") && (
+                              <>
+                                <TableCell className="px-6 py-4 text-gray-800 dark:text-white whitespace-pre-line">
+                                  
+                                 {order?.mapped_with == null && order?.rider_id == null ? (
+                                  "-"
+                                ) : (
+                                  <p>
+                                    {order?.mapped_with && order?.rider_id
+                                      ? `FP_${order.mapped_with}_${order.rider_id}`
+                                      : order?.mapped_with
+                                        ? `FP_${order.mapped_with}`
+                                        : `R_${order?.rider_id}`}
+                                  </p>
+                                )}
+                                </TableCell>
+                              </>
+                            )}
+                          
+
+
+                         
   
                           {/* Package Details */}
                           <TableCell className="px-6 py-4">
@@ -3134,18 +3304,60 @@ useEffect(() => {
                               </span>
                             </p>
                             <p>
-                              <span
-                                className={`ml-2 px-2 py-0.5 rounded-full text-sm font-semibold shadow-sm ${
-                                  order.order_specific.startsWith("NDD")
-                                    ? "text-green-800 bg-green-100 border border-green-300"
-                                    : order.order_specific.startsWith("SDD")
-                                      ? "text-yellow-800 bg-yellow-100 border border-yellow-300"
-                                      : `text-red-800 bg-red-100 border border-red-300 ${order.status !== "delivered" ? "animate-blink" : ""}`
-                                }`}
-                              >
-                                {order.order_specific.split("-")[0]}
-                              </span>
-                            </p>
+                                <span className="font-medium text-gray-800 dark:text-white">
+                                  Weight Slab:
+                                </span>
+                                {selectedStatus !== "cancelled" && (
+                                  <span
+                                    className={`ml-2 px-2 py-0.5 rounded-full text-sm font-semibold shadow-sm ${
+                                      order?.order_specific === "NDD"
+                                        ? "text-green-800 bg-green-100 border border-green-300"
+                                        : order?.order_specific === "SDD"
+                                          ? "text-yellow-800 bg-yellow-100 border border-yellow-300"
+                                          : order?.order_specific === "Turant"
+                                            ? "text-red-800 bg-red-100 border border-red-300 animate-blink"
+                                            : "text-gray-800 bg-gray-100 border border-gray-300"
+                                    }`}
+                                  >
+                                    {order?.order_specific || "N/A"}
+                                  </span>
+                                )}
+                              </p>
+                               {order?.order_type && (
+                                  <p className="flex flex-wrap mt-1 items-center gap-2 text-gray-700 dark:text-gray-300">
+                                    <span className="font-medium text-gray-900 dark:text-white">
+                                      Payment Details:
+                                    </span>
+
+                                    <span
+                                      className={`inline-flex items-center gap-2  text-xs font-bold ${
+                                        order.order_type.toUpperCase() === "COD"
+                                          ? " text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
+                                          : order.order_type.toUpperCase() === "PREPAID"
+                                            ? " text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                            : "border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                      }`}
+                                    >
+                                      
+
+                                      <span className="font-extrabold">
+                                        {Number(order.total_amount || 0).toLocaleString("en-IN", {
+                                          style: "currency",
+                                          currency: "INR",
+                                          maximumFractionDigits: 2,
+                                        })}
+                                      </span>
+
+                                      <span className="opacity-40">|</span>
+
+                                      {order.order_type.toUpperCase() === "COD"
+                                        ? "COD"
+                                        : order.order_type.toUpperCase() === "PREPAID"
+                                          ? "Prepaid"
+                                          : order.order_type}
+                                    </span>
+                                  </p>
+                                )}
                             <p className="text-gray-800 ">
                               <span className="font-medium  text-gray-800">
                                 Dimensions:
@@ -3214,6 +3426,14 @@ useEffect(() => {
                                     ) ? (
                                       <span
                                         onClick={() => {
+                                           if(order.status === "picked" && order?.mapped_with){
+                                            return
+                                           }
+
+
+                                           if(order.status === "in transit" && order?.mapped_with){
+                                            return
+                                           }
                                           setIsOpenIndividualAssignmnet(order.id);
                                         }}
                                         className={`px-3 py-1 rounded-full text-xs font-medium ${getAssignmentStatusColor(order, order.mapped_with)} whitespace-nowrap mb-2 inline-block cursor-pointer`}
@@ -3266,10 +3486,7 @@ useEffect(() => {
                             </>
                           )}
   
-                          {/* Status */}
-                          {/* <td className="px-6 py-4 whitespace-nowrap">
-                              {getStatusDisplay(order)}
-                            </td> */}
+                          
                           {selectedStatus === "All" ? (
                             <>
                               <TableCell className="px-6 py-4 whitespace-nowrap">
@@ -3355,23 +3572,21 @@ useEffect(() => {
                                   </form>
                                 ) : order.status === "out for delivery" ? (
                                   <>
-                                    <TableCell
-                                      onClick={() => {
-                                        // if (order.order_type === 'cod') {
-                                        //   return
-                                        // }
-                                        setIsOpenIndividualAssignmnet(order.id);
-                                      }}
-                                      className="px-6 cursor-pointer py-4 whitespace-nowrap"
+                                    <span
+                                      // onClick={() => {
+                                        
+                                      //   setIsOpenIndividualAssignmnet(order.id);
+                                      // }}
+                                      className="inline-block cursor-pointer whitespace-nowrap"
                                     >
                                       {getStatusDisplay(order)}
-                                    </TableCell>
+                                    </span>
                                   </>
                                 ) : (
                                   <>
-                                    <TableCell className="px-6 py-4 whitespace-nowrap">
+                                    <span className="inline-block whitespace-nowrap">
                                       {getStatusDisplay(order)}
-                                    </TableCell>
+                                    </span>
                                   </>
                                 )}
                               </TableCell>
@@ -3385,7 +3600,7 @@ useEffect(() => {
               </Table>
             </div>
   
-            <div className="py-3 flex justify-end gap-4  mx-10">
+            <div className="z-20 flex shrink-0 flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-2 py-3 dark:border-gray-700 dark:bg-gray-900 sm:flex-row sm:px-6">
               {/* Pagination Buttons */}
               <div className="flex gap-2">
                 <Button
@@ -3448,7 +3663,7 @@ useEffect(() => {
           
   
           
-          <AlertDialog open={reassignPopup} onOpenChange={setReassignPopup}>
+          <AlertDialog open={reassignPopup != null} onOpenChange={(isOpen) => !isOpen && setReassignPopup(null)}>
             <AlertDialogContent className="!max-w-sm">
               <AlertDialogHeader>
                 <AlertDialogTitle>
@@ -3490,7 +3705,7 @@ useEffect(() => {
                           {reassignRidersOptions.map((rider) => {
                            
                             return (
-                              <option key={rider.rider_id} value={rider.value}>
+                              <option key={rider.value} value={rider.value}>
                                 {rider.label}
                               </option>
                             );
@@ -3550,8 +3765,8 @@ useEffect(() => {
                         options={reassignRidersOptions}
                         isSearchable
                         value={reassignRidersOptions.find(
-                          (option) => option.value === newRider,
-                        )}
+                          (option) => Number(option.value) === Number(newRider),
+                        ) || null}
                         onChange={(selectedOption) =>
                           setNewRider(selectedOption?.value)
                         }

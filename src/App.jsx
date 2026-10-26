@@ -10,7 +10,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 // Lazy load all components
 const Register = lazy(() => import("./components/auth/Register"));
 const Login = lazy(() => import("./components/auth/Login"));
-const Analytics = lazy(() => import("./components/admin/Analytics"));
+const Analytics = lazy(() => import("./components/admin/dasboard/Analytics"));
 const Navbar = lazy(() => import("./components/layout/Navbar"));
 const OrderDetails = lazy(() => import("./components/admin/order/OrderDetails"));
 const CODRemittances = lazy(() => import("./components/admin/CODRemittances"));
@@ -22,10 +22,12 @@ const VendorStats = lazy(() => import("./components/admin/VendorStats"));
 const ProtectedRoute = lazy(() => import("./components/layout/ProtectedRoute"));
 const VendorRiders = lazy(() => import("./components/admin/VendorRiders"));
 const VendorAnalytics = lazy(() => import("./components/vendor_components/VendorAnalytics"));
+const DCAnalytics = lazy(() => import("./components/distributionCenter/Dashboard/DcAnalytics"));
 const VendorAllRiders = lazy(() => import("./components/vendor_components/rider/VendorAllRiders"));
 const DcAllRiders = lazy(() => import("./components/distributionCenter/rider/DcAllRiders"));
 const DcVendorOnboarding = lazy(() => import("./components/distributionCenter/vendor/DcVendorOnboarding"));
 const VendorCodRemittance = lazy(() => import("./components/vendor_components/remittance/VendorCodRemittance"));
+const DcCodRemittance = lazy(() => import("./components/distributionCenter/remmitance/DcCodRemittance"));
 const VendorOrderDetails = lazy(() => import("./components/vendor_components/order/VendorOrderDetails"));
 const DCOrderDetails = lazy(() => import("./components/distributionCenter/order/DcOrders"));
 const VendorMappedOrder = lazy(() => import("./components/vendor_components/order/VendorMappedOrder"));
@@ -33,7 +35,7 @@ const VendorRiderOnboarding = lazy(() => import("./components/vendor_components/
 const DcRiderOnboarding = lazy(() => import("./components/distributionCenter/rider/DcRiderOnboarding"));
 const OrderTracking = lazy(() => import("./components/OrderTracking"));
 const TrackOrder = lazy(() => import("./components/TrackOrder"));
-const MerchantAnalytics = lazy(() => import("./components/merchant_component/MerchantAnalytics"));
+const MerchantAnalytics = lazy(() => import("./components/merchant_component/merchant/dashboard/MerchantAnalytics"));
 const MerchantOrderTracking = lazy(() => import("./components/merchant_component/MerchantOrderTracking"));
 const MerchantNDR = lazy(() => import("./components/merchant_component/merchant/ndr/MerchantNDR"));
 const MerchantRemittances = lazy(() => import("./components/admin/MerchantRemittances"));
@@ -42,6 +44,8 @@ const MerchantCOD = lazy(() => import("./components/merchant_component/MerchantC
 const TrackAWBOrder = lazy(() => import("./components/TrackAWBOrder"));
 const RemittanceStatusVendor = lazy(() => import("./components/admin/remittance/RemittanceStatusVendor"));
 const VendorRemittanceRecord = lazy(() => import("./components/vendor_components/remittance/VendorRemittanceRecord"));
+const DcRemittanceRecord = lazy(() => import("./components/distributionCenter/remmitance/DcRemittanceRecord"));
+const DcVendorRemittanceRecord = lazy(() => import("./components/distributionCenter/remmitance/VendorRemmitanceRecord"));
 const RidersMap = lazy(() => import("./components/admin/RidersMap"));
 const VendorRidersMap = lazy(() => import("./components/vendor_components/VendorRidersMap"));
 const MerchantCX = lazy(() => import("./components/merchant_component/MerchantCX"));
@@ -96,7 +100,9 @@ const AdminLogin = lazy(() => import("./components/auth/AdminLogin"));
 const Page404 = lazy(() => import("./components/Page404"));
 const OrderSuccess = lazy(() => import("./components/OrderSuccess"));
 const HubList = lazy(() => import("./components/vendor_components/hub/HubList"));
+const DcHubList = lazy(() => import("./components/distributionCenter/hub/HubList"));
 const CreateHub = lazy(() => import("./components/vendor_components/hub/CreateHub"));
+const DcCreateHub = lazy(() => import("./components/distributionCenter/hub/DcHubOnboarding"));
 const OrderHistory = lazy(() => import("./components/admin/order/OrderHistory"));
 const PriceDetails = lazy(() => import("./components/merchant_component/PriceDetails"));
 const MerchantRecharge = lazy(() => import("./components/merchant_component/Recharge"));
@@ -147,6 +153,7 @@ import { ProtectedLayout } from "./components/layout/ProtectedLayout";
 import DcVendorListing from "./components/distributionCenter/vendor/DcVendorListing";
 import InspectController from "./Helper/InspectController";
 import  WeightReconciliation  from "./components/admin/WeightReconciliation/WeightReconciliation";
+import DcLoadout from "./components/distributionCenter/order/DcLoadout";
 
 
 // const getLocalPermissions = () => {
@@ -342,13 +349,15 @@ function App() {
       path: "/dc",
       element: <ProtectedLayout allowedRoles={['dc']} permissions={permissions} loading={loading} />,
       children: [
-        { path: "analytics", element: <Suspense fallback={<LoadingFallback />}><VendorAnalytics /></Suspense> },
+        { path: "analytics", element: <Suspense fallback={<LoadingFallback />}><DCAnalytics /></Suspense> },
         { path: "riders", element: <Suspense fallback={<LoadingFallback />}><DcAllRiders /></Suspense> },
         { path: "vendor/on-boarding", element: <Suspense fallback={<LoadingFallback />}><DcVendorOnboarding /></Suspense> },
         { path: "vendor/listing", element: <Suspense fallback={<LoadingFallback />}><DcVendorListing /></Suspense> },
-        { path: "cod-remittances", element: <Suspense fallback={<LoadingFallback />}><VendorCodRemittance /></Suspense> },
-        { path: "remittance-record", element: <Suspense fallback={<LoadingFallback />}><VendorRemittanceRecord /></Suspense> },
+        { path: "cod-remittances", element: <Suspense fallback={<LoadingFallback />}><DcCodRemittance /></Suspense> },
+        { path: "remittance-record", element: <Suspense fallback={<LoadingFallback />}><DcRemittanceRecord /></Suspense> },
+        { path: "vendor/remittance-record", element: <Suspense fallback={<LoadingFallback />}><DcVendorRemittanceRecord /></Suspense> },
         { path: "rider-orders", element: <Suspense fallback={<LoadingFallback />}><DCOrderDetails /></Suspense> },
+        { path: "loadout", element: <Suspense fallback={<LoadingFallback />}><DcLoadout /></Suspense> },
         { path: "mapped-orders", element: <Suspense fallback={<LoadingFallback />}><VendorMappedOrder /></Suspense> },
         { path: "rider-onboarding", element: <Suspense fallback={<LoadingFallback />}><DcRiderOnboarding /></Suspense> },
         { path: "map", element: <Suspense fallback={<LoadingFallback />}><VendorRidersMap /></Suspense> },
@@ -356,8 +365,8 @@ function App() {
         { path: "rider_rate/list", element: <Suspense fallback={<LoadingFallback />}><RiderRateList /></Suspense> },
         { path: "rider_rate/create", element: <Suspense fallback={<LoadingFallback />}><CreateRider /></Suspense> },
         { path: "support", element: <Suspense fallback={<LoadingFallback />}><Support /></Suspense> },
-        { path: "hub_list", element: <Suspense fallback={<LoadingFallback />}><HubList /></Suspense> },
-        { path: "hub_create", element: <Suspense fallback={<LoadingFallback />}><CreateHub /></Suspense> },
+        { path: "hub_list", element: <Suspense fallback={<LoadingFallback />}><DcHubList /></Suspense> },
+        { path: "hub_create", element: <Suspense fallback={<LoadingFallback />}><DcCreateHub /></Suspense> },
         { path: "shipment-tracking", element: <Suspense fallback={<LoadingFallback />}><ShipmentTracking /></Suspense> },
         { index: true, element: <Navigate to="analytics" /> },
       ],

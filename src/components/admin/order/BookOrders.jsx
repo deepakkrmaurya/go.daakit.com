@@ -2370,6 +2370,8 @@ function BookOrders() {
                                 }
                             </TableHead>
                             <TableHead className="sticky top-0 z-30 whitespace-nowrap bg-slate-100 px-3 py-3 text-xs font-semibold text-slate-800 shadow-[0_1px_0_#e2e8f0] dark:bg-neutral-800 dark:text-neutral-100">ORDER ID</TableHead>
+                            <TableHead className="sticky top-0 z-30 whitespace-nowrap bg-slate-100 px-3 py-3 text-xs font-semibold text-slate-800 shadow-[0_1px_0_#e2e8f0] dark:bg-neutral-800 dark:text-neutral-100">SELLER DETAILS</TableHead>
+                            
                             <TableHead className="sticky top-0 z-30 whitespace-nowrap bg-slate-100 px-3 py-3 text-xs font-semibold text-slate-800 shadow-[0_1px_0_#e2e8f0] dark:bg-neutral-800 dark:text-neutral-100">CONSIGNEE ADDRESS</TableHead>
                             <TableHead className="sticky top-0 z-30 whitespace-nowrap bg-slate-100 px-3 py-3 text-xs font-semibold text-slate-800 shadow-[0_1px_0_#e2e8f0] dark:bg-neutral-800 dark:text-neutral-100">PACKAGE DETAILS</TableHead>
                             <TableHead className="sticky top-0 z-30 whitespace-nowrap bg-slate-100 px-3 py-3 text-xs font-semibold text-slate-800 shadow-[0_1px_0_#e2e8f0] dark:bg-neutral-800 dark:text-neutral-100">ASSIGNMENT/RIDER</TableHead>
@@ -2438,6 +2440,8 @@ function BookOrders() {
                                                 <span className="px-6 py-4 text-center">-</span>
                                             )}
                                         </TableCell>
+
+                                        
 
                                         <TableCell>
                                             <div>
@@ -2598,30 +2602,30 @@ function BookOrders() {
                                                     })}
                                                 </p>
                                                 <p className="text-s text-gray-400 dark:text-white">
-                                                    <span>Merchant ID: {order.merchant_id}</span>
+                                                    <span>MID: {order.merchant_id}</span>
                                                     
-<span
-  className={`ml-2 inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-[11px] font-semibold ${
-    order?.rider_preference === "daakit"
-      ? "border-blue-200 bg-blue-50 text-[#0446DB] dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400"
-      : "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400"
-  }`}
->
-  <span
-    className={`h-1.5 w-1.5 rounded-full ${
-      order?.rider_preference === "daakit"
-        ? "bg-[#0446DB]"
-        : "bg-violet-500"
-    }`}
-  />
+                                                            <span
+                                                            className={`ml-2 inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-[11px] font-semibold ${
+                                                                order?.rider_preference === "daakit"
+                                                                ? "border-blue-200 bg-blue-50 text-[#0446DB] dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400"
+                                                                : "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-400"
+                                                            }`}
+                                                            >
+                                                            <span
+                                                                className={`h-1.5 w-1.5 rounded-full ${
+                                                                order?.rider_preference === "daakit"
+                                                                    ? "bg-[#0446DB]"
+                                                                    : "bg-violet-500"
+                                                                }`}
+                                                            />
 
-  {order?.rider_preference === "daakit" ? "DDN" : "BYOB"}
-</span>
+                                                            {order?.rider_preference === "daakit" ? "DDN" : "BYOB"}
+                                                            </span>
 
                                                 </p>
 
                                                 <p className="text-s text-gray-400 dark:text-white">
-                                                    Merchant Order ID: {order.merchant_order_id?.length <= 20
+                                                    MOID: {order.merchant_order_id?.length <= 20
                                                         ? order.merchant_order_id
                                                         : `${order.merchant_order_id.slice(0, 20)}...`}
                                                         
@@ -2646,6 +2650,37 @@ function BookOrders() {
                                                 </p>
                                             </div>
                                         </TableCell>
+                                        {/* SELLER DETAILS */}
+                            <TableCell className=" py-2">
+                              <div className="flex flex-col  text-sm">
+                                <p className="text-gray-700 dark:text-gray-300">
+                                  <span className="font-medium text-gray-900 dark:text-white">
+                                    Merchant ID:
+                                  </span>{" "}
+                                  {order?.merchant_id ?? "N/A"}
+                                </p>
+                                
+                                {order?.brand_name && (
+                                  <p className="text-gray-700 dark:text-gray-300">
+                                    <span className="font-medium text-gray-900 dark:text-white">
+                                      Brand Name:
+                                    </span>{" "}
+                                    {order?.brand_name}
+                                  </p>
+                                )}
+                              
+
+                                {order?.merchant_company_name && (
+                                  <p className="text-gray-700 dark:text-gray-300">
+                                    <span className="font-medium text-gray-900 dark:text-white">
+                                      Company Name:
+                                    </span>{" "}
+                                    {order.merchant_company_name}
+                                  </p>
+                                )}
+                                
+                              </div>
+                            </TableCell>
                                         <TableCell>
                                             <p className="font-medium text-gray-800 dark:text-white">{order.delivery_contact_name}</p>
                                             <HoverCard>
@@ -2655,34 +2690,74 @@ function BookOrders() {
                                                 </HoverCardContent>
                                             </HoverCard>
                                             <p className="text-xs text-gray-500 dark:text-white">
-                                                {order.delivery_city}, {order.delivery_state} - {order.delivery_pincode}
+                                                {order.delivery_city}, {order.delivery_state} - {order.delivery_pincode}, {order.delivery_country}
                                             </p>
-                                            <p className="text-xs text-gray-400">{order.delivery_country}</p>
+                                            
                                         </TableCell>
                                         <TableCell>
                                             <p>
                                                 <span className="whitespace-nowrap dark:text-white">EDD: {order.EDD}</span>
                                             </p>
+                                            
+
                                             <p>
-                                                <span className="font-medium text-gray-800 dark:text-white">Weight:</span>
-                                                <span className="dark:text-white"> {Number(order.total_weight).toLocaleString()}g</span>
-                                                <span
-                                                    className={`ml-2 px-2 py-0.5 rounded-full text-sm font-semibold shadow-sm ${order.order_specific?.slice(0, 3) === "NDD"
-                                                        ? "text-green-800 bg-green-100 border border-green-300"
-                                                        : order.order_specific?.slice(0, 3) === "SDD"
-                                                            ? "text-yellow-800 bg-yellow-100 border border-yellow-300"
-                                                            : "text-red-800 bg-red-100 border border-red-300 animate-blink"
-                                                        }`}
-                                                >
-                                                    {order.order_specific?.slice(0, 3) === "NDD"
-                                                        ? "NDD"
-                                                        : order.order_specific?.slice(0, 3) === "SDD"
-                                                            ? "SDD"
-                                                            : order.order_specific?.slice(0, 6) === "Turant"
-                                                                ? "Turant"
-                                                                : order.order_specific}
-                                                </span>
-                                            </p>
+                                <span className="font-medium text-gray-800 dark:text-white">
+                                  Weight Slab:
+                                </span>
+                              
+                                
+
+                                {selectedStatus !== "cancelled" && (
+                                  <span
+                                    className={`ml-2 px-2 py-0.5 rounded-full text-sm font-semibold shadow-sm ${
+                                      order?.order_specific === "NDD"
+                                        ? "text-green-800 bg-green-100 border border-green-300"
+                                        : order?.order_specific === "SDD"
+                                          ? "text-yellow-800 bg-yellow-100 border border-yellow-300"
+                                          : order?.order_specific === "Turant"
+                                            ? "text-red-800 bg-red-100 border border-red-300 animate-blink"
+                                            : "text-gray-800 bg-gray-100 border border-gray-300"
+                                    }`}
+                                  >
+                                    {order?.order_specific || "N/A"}
+                                  </span>
+                                )}
+                              </p>
+                              {order?.order_type && (
+                                  <p className="flex whitespace-nowrap mt-1 items-center gap-2 text-gray-700 dark:text-gray-300">
+                                    <span className="font-medium text-gray-900 dark:text-white">
+                                      Payment Details:
+                                    </span>
+
+                                    <span
+                                      className={`inline-flex items-center gap-2  text-xs font-bold ${
+                                        order.order_type.toUpperCase() === "COD"
+                                          ? " text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
+                                          : order.order_type.toUpperCase() === "PREPAID"
+                                            ? " text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                            : "border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                      }`}
+                                    >
+                                      
+
+                                      <span className="font-extrabold">
+                                        {Number(order.total_amount || 0).toLocaleString("en-IN", {
+                                          style: "currency",
+                                          currency: "INR",
+                                          maximumFractionDigits: 2,
+                                        })}
+                                      </span>
+
+                                      <span className="opacity-40">|</span>
+
+                                      {order.order_type.toUpperCase() === "COD"
+                                        ? "COD"
+                                        : order.order_type.toUpperCase() === "PREPAID"
+                                          ? "Prepaid"
+                                          : order.order_type}
+                                    </span>
+                                  </p>
+                                )}
                                             <p>
                                                 <span className="font-medium dark:text-white text-gray-800">Dimensions:</span>
                                                 <span className="dark:text-white"> {order.package_length}x{order.package_breadth}x{order.package_height}</span>
