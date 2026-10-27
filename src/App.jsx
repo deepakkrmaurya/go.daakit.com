@@ -154,6 +154,7 @@ import DcVendorListing from "./components/distributionCenter/vendor/DcVendorList
 import InspectController from "./Helper/InspectController";
 import  WeightReconciliation  from "./components/admin/WeightReconciliation/WeightReconciliation";
 import DcLoadout from "./components/distributionCenter/order/DcLoadout";
+import VendorLoadout from "./components/vendor_components/order/VendorLoadout";
 
 
 // const getLocalPermissions = () => {
@@ -341,6 +342,7 @@ function App() {
         { path: "hub_list", element: <Suspense fallback={<LoadingFallback />}><HubList /></Suspense> },
         { path: "hub_create", element: <Suspense fallback={<LoadingFallback />}><CreateHub /></Suspense> },
         { path: "shipment-tracking", element: <Suspense fallback={<LoadingFallback />}><ShipmentTracking /></Suspense> },
+        { path: "loadout", element: <Suspense fallback={<LoadingFallback />}><VendorLoadout /></Suspense> },
         { index: true, element: <Navigate to="analytics" /> },
       ],
     },

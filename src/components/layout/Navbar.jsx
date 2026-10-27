@@ -83,7 +83,7 @@ import { FaMapMarkedAlt } from "react-icons/fa";
 
 import { NoSymbolIcon } from "@heroicons/react/24/outline";
 
-import { LuReceiptIndianRupee } from "react-icons/lu";
+import { LuPackageOpen, LuReceiptIndianRupee } from "react-icons/lu";
 
 import { FaUserTie } from "react-icons/fa";
 
@@ -505,12 +505,17 @@ function Navbar({ allowedRoles, children }) {
             {
               label: "Orders",
               href: "/vendor/rider-orders",
-              icon: <OrderIcon />,
+              icon: <OrderIcon className="h-5 w-5"/>,
+            },
+            {
+              label: "Loadout",
+              href: "/vendor/loadout",
+              icon: <LuPackageOpen  className="h-5 w-5" />,
             },
             {
               label: "New Mapped Orders",
               href: "/vendor/mapped-orders",
-              icon: <MapOrderIcon />,
+              icon: <MapOrderIcon className="h-5 w-5"/>,
             },
           ],
         },
@@ -614,6 +619,11 @@ function Navbar({ allowedRoles, children }) {
               label: "Orders",
               href: "/dc/rider-orders",
               icon: <TbPackage className="h-4 w-4" />,
+            },
+            {
+              label: "Loadout",
+              href: "/dc/loadout",
+              icon: <LuPackageOpen  className="h-4 w-4" />,
             },
             // {
             //   label: "New Mapped Orders",

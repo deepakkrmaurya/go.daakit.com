@@ -1,8 +1,74 @@
+// {
+//   "compilerOptions": {
+//     "baseUrl": ".",
+//     "paths": {
+//       "@/*": ["./src/*"]
+//     }
+//   }
+// }
+
+
+
+// {
+//   "compilerOptions": {
+//     "target": "ES2020",
+//     "useDefineForClassFields": true,
+//     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+
+//     "module": "ESNext",
+//     "moduleResolution": "Bundler",
+//     "jsx": "react-jsx",
+
+//     "allowJs": true,
+//     "checkJs": false,
+
+//     "strict": true,
+//     "skipLibCheck": true,
+//     "noEmit": true,
+//     "isolatedModules": true,
+//     "resolveJsonModule": true,
+
+//     "esModuleInterop": true,
+//     "allowSyntheticDefaultImports": true,
+     
+//     "paths": {
+//       "@/lib/*": ["./lib/*"],
+//       "@/*": ["./src/*"]
+//     },
+
+//     "types": ["vite/client"]
+//   },
+
+//   "include": ["src", "lib"],
+//   "exclude": ["node_modules", "dist"]
+// }
+
+
+
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    // "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
+      "@/*": ["./src/*"],
+      "@/lib/*": ["./lib/*"]
+    },
+    "types": ["vite/client"]
+  },
+  "include": ["src", "lib"],
+  "exclude": ["node_modules", "dist"]
 }
