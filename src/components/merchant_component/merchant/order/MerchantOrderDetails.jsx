@@ -2665,7 +2665,7 @@ function TechMerchantOrderDetails() {
       awbs.push(order.awb_number);
     });
     try {
-      const res = await axios.post(`${baseURL}/api/label/generatelabel`, {
+      const res = await AxiosInstance.post(`/api/label/generatelabel`, {
         awbs: awbs,
       });
 
@@ -3738,7 +3738,16 @@ function TechMerchantOrderDetails() {
                   <TableRow>
                     <TableHead className="px-3 lg:px-6 py-3 text-left">
                       {selectedStatus === "All" ? (
-                        <></>
+                        <>
+                        <input
+                            type="checkbox"
+                            className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                            checked={
+                              selectedBulkOrders?.length ===
+                                orders?.data?.length && orders?.data?.length > 0
+                            }
+                            onChange={toggleSelectAll}
+                          /></>
                       ) : (
                         <>
                           <input
@@ -3799,7 +3808,17 @@ function TechMerchantOrderDetails() {
                             className={` hover:bg-indigo-50 dark:hover:bg-neutral-700 dark:bg-neutral-900 transition-colors duration-200 ${isSelected ? "bg-indigo-50" : "bg-[#FFFFFF]"}`}
                           >
                             {/* Selection Checkbox */}
-                            <TableCell className="px-3">-</TableCell>
+                            <TableCell className="px-3">
+                              <input
+                            type="checkbox"
+                            className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                            checked={
+                              selectedBulkOrders?.length ===
+                                orders?.data?.length && orders?.data?.length > 0
+                            }
+                            onChange={toggleSelectAll}
+                          />
+                            </TableCell>
 
                             {/* Order Information */}
                             <TableCell className="px-3 ">

@@ -392,10 +392,7 @@ function Login() {
             lg:flex
             xl:w-[50%]
           "
-          style={{
-            background:
-              "radial-gradient(circle at top right, #d9daab 0%, rgba(191,191,150,0.35) 30%, rgba(191,191,150,0.08) 50%, transparent 70%), linear-gradient(135deg, #0345DA 0%, #0345DA 40%, #0345DA 70%, #0345DA 100%)",
-          }}
+          
         >
           {/* ================================================
               BACKGROUND DECORATION
@@ -537,6 +534,10 @@ function Login() {
             lg:overflow-hidden
             lg:bg-transparent
           "
+          style={{
+            background:
+              "radial-gradient(circle at top right, #d9daab 0%, rgba(191,191,150,0.35) 30%, rgba(191,191,150,0.08) 50%, transparent 70%), linear-gradient(135deg, #0345DA 0%, #0345DA 40%, #0345DA 70%, #0345DA 100%)",
+          }}
         >
           
 

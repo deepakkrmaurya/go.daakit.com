@@ -141,8 +141,28 @@ export default function VendorRemittanceRecord() {
 
   const activeFilters = Number(Boolean(appliedFilters.awb_number)) +
     Number(appliedFilters.startDate !== getDefaultFilters().startDate || appliedFilters.endDate !== getDefaultFilters().endDate);
+  const [loadingPage, setLoadingPage] = useState(true);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingPage(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
   return (
+  <>
+    {
+      loadingPage ? (
+         <div className=" w-full h-[90vh] flex justify-center items-center">
+          <div>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+
+            <p className="mt-2">Loading Remittance Records...</p>
+          </div>
+        </div>
+      ):(
+        
     <div className="flex h-[calc(100dvh-80px)] min-h-0 w-full flex-col overflow-hidden bg-[#F5F7FB] text-slate-900 dark:bg-neutral-950 dark:text-white">
       {/* Fixed page heading */}
       <header className="z-20 shrink-0 border-b border-slate-200  px-4 py-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-6 sm:py-5">
@@ -255,7 +275,7 @@ export default function VendorRemittanceRecord() {
           <table className="w-full min-w-[780px] border-separate border-spacing-0 text-left text-sm">
             <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-neutral-800">
               <tr>
-                {["AWB Number", "Amount", "UTR Number", "Upload Date", "Document"].map((heading) => (
+                {["AWB Number", "Amount", "UTR Number", "Upload Date"].map((heading) => (
                   <th key={heading} scope="col" className="whitespace-nowrap border-b border-slate-200 bg-slate-50 px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
                     {heading}
                   </th>
@@ -280,13 +300,13 @@ export default function VendorRemittanceRecord() {
                   <td className="whitespace-nowrap px-5 py-4 font-semibold tabular-nums text-slate-800 dark:text-neutral-100">{formatAmount(record.amount)}</td>
                   <td className="whitespace-nowrap px-5 py-4 font-medium text-slate-700 dark:text-neutral-200">{record.utr_number || "—"}</td>
                   <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-600 dark:text-neutral-300">{formatDate(record.created_at)}</td>
-                  <td className="whitespace-nowrap px-5 py-4">
+                  {/* <td className="whitespace-nowrap px-5 py-4">
                     {record.file_url ? (
                       <a href={`${baseURL}/${String(record.file_url).replace(/^\/+/, "")}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-[#0446DB]/20 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-[#0446DB] transition hover:border-[#0446DB]/50 hover:bg-blue-100 dark:border-blue-500/25 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20">
                         <Download className="h-3.5 w-3.5" /> Download
                       </a>
                     ) : <span className="text-xs text-slate-400">Not available</span>}
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>
@@ -314,5 +334,8 @@ export default function VendorRemittanceRecord() {
       </section>
       <div className="h-3 shrink-0 sm:h-5" />
     </div>
+      )
+    }
+  </>
   );
 }

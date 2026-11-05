@@ -331,6 +331,7 @@ export default function GoogleMap({ onLocationSelect, initialLocation, fetchCurr
                                     onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                                 />
                                 <button
+                                type="button"
                                     onClick={handleSearch}
                                     style={{
                                         padding: "8px 10px",
@@ -397,6 +398,7 @@ export default function GoogleMap({ onLocationSelect, initialLocation, fetchCurr
                             )}
 
                             <button
+                            type="button"
                                 onClick={recenterToCurrent}
                                 style={{
                                     position: "absolute",

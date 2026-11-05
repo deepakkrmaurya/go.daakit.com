@@ -911,8 +911,28 @@ export default function VendorRemittanceRecord() {
 
   const activeFilters = Number(Boolean(appliedFilters.vendor_id)) + Number(Boolean(appliedFilters.awb_number)) +
     Number(appliedFilters.startDate !== getDefaultFilters().startDate || appliedFilters.endDate !== getDefaultFilters().endDate);
+  const [loadingPage, setLoadingPage] = useState(true);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingPage(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
   return (
+    <>
+    {
+      loadingPage ? (
+         <div className=" w-full h-[90vh] flex justify-center items-center">
+          <div>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+
+            <p className="mt-2">Loading Remittance Records...</p>
+          </div>
+        </div>
+      ):(
+        
     <div className="flex h-[calc(100dvh-80px)] min-h-0 w-full flex-col overflow-hidden bg-[#F5F7FB] text-slate-900 dark:bg-neutral-950 dark:text-white">
       {/* Fixed page heading */}
       <header className="z-20 shrink-0 border-b border-slate-200  px-4 py-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-6 sm:py-5">
@@ -1185,5 +1205,8 @@ export default function VendorRemittanceRecord() {
       </section>
       <div className="h-1 shrink-0 sm:h-2" />
     </div>
+      )
+    }
+    </>
   );
 }

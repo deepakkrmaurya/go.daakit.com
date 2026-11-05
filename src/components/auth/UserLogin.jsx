@@ -10,7 +10,7 @@ import DaakitGoLogo from "../../assets/DaakitGo-Logo.jpg";
 import DaakitMap from "../../assets/daakitmap.png";
 import Warehouse1 from "../../assets/fulfillmenthype_warehouse.png";
 import Warehouse2 from "../../assets/warehouse5.png";
-
+import LoginIllustration from "@/assets/image.png";
 import axiosInstance from "../../Helper/axiosInstance";
 import { UserRoles } from "@/utils/UserRole";
 
@@ -79,6 +79,8 @@ function UserLogin() {
           },
         },
       );
+
+     
 
       localStorage.setItem(
         "permission",
@@ -199,33 +201,15 @@ function UserLogin() {
       ===================================================== */}
       <section
         className="relative hidden w-[51%] shrink-0 overflow-hidden rounded-tr-[58px] lg:flex"
-        style={{
-          background:
-            "radial-gradient(circle at 100% 0%,rgba(232,225,160,.8),rgba(141,170,198,.55) 28%,rgba(4,70,219,0) 55%),linear-gradient(135deg,#0647d9,#245acb)",
-        }}
+       
       >
-        {/* Decorative Background */}
-        <div className="pointer-events-none absolute -left-32 top-[35%] h-[350px] w-[350px] rounded-full bg-white/[0.04]" />
-
-        <div className="pointer-events-none absolute -bottom-40 -right-32 h-[450px] w-[450px] rounded-full bg-white/[0.05]" />
-
-        <div className="pointer-events-none absolute right-[20%] top-[15%] h-40 w-40 rounded-full bg-white/[0.03]" />
+      
 
         {/* Content */}
         <div className="relative z-10 flex h-full w-full flex-col px-10 py-10 xl:px-12 xl:py-12">
           {/* Company Badge */}
           <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
-
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
-              </span>
-
-              <span className="text-[11px] font-bold tracking-[0.12em] text-white/90">
-                DAAKIT TECHNOLOGY
-              </span>
-            </div>
+            
 
             {/* Main Heading */}
             <h1 className="max-w-[650px] text-[clamp(2.3rem,3.1vw,3.8rem)] font-extrabold leading-[1.06] tracking-tight text-white">
@@ -268,25 +252,31 @@ function UserLogin() {
           ================================================= */}
           <div className="mt-auto flex min-h-0 flex-1 items-end justify-center pb-3 pt-6">
             <div className="relative h-[40vh] min-h-[280px] w-full max-w-[680px] overflow-hidden">
-              <div
-                className="flex h-full w-full transition-transform duration-700 ease-in-out"
-                style={{
-                  transform: `translateX(-${index * 100}%)`,
-                }}
-              >
-                {slider.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex h-full w-full flex-shrink-0 items-center justify-center px-5 pb-7"
-                  >
-                    <img
-                      src={item.link}
-                      alt={item.alt}
-                      className="max-h-full w-full object-contain drop-shadow-2xl"
-                    />
-                  </div>
-                ))}
-              </div>
+               <div
+            className="
+              relative
+              z-10
+              mt-auto
+              flex
+              min-h-0
+              flex-1
+              items-end
+              justify-center
+              pt-[clamp(0.5rem,2vh,1rem)]
+            "
+          >
+            <img
+              src={LoginIllustration}
+              alt="DAAKit Auth"
+              className="
+                h-auto
+                max-h-[45vh]
+                w-full
+                object-contain
+                max-[1300px]:max-h-[40vh]
+              "
+            />
+          </div>
 
               {/* Slider Indicators */}
               <div className="absolute bottom-1 left-1/2 flex -translate-x-1/2 items-center gap-2">
@@ -323,7 +313,12 @@ function UserLogin() {
       {/* =====================================================
           RIGHT LOGIN SECTION
       ===================================================== */}
-      <section className="flex min-w-0 flex-1 bg-[#0446DB] p-2 lg:pl-4">
+      <section className="flex min-w-0 flex-1 bg-[#0446DB] p-2 lg:pl-4"
+       style={{
+          background:
+            "radial-gradient(circle at 100% 0%,rgba(232,225,160,.8),rgba(141,170,198,.55) 28%,rgba(4,70,219,0) 55%),linear-gradient(135deg,#0647d9,#245acb)",
+        }}
+      >
         <div className="flex min-h-[calc(100vh-16px)] w-full flex-col overflow-y-auto rounded-[3px] border border-gray-200 bg-white lg:h-[calc(100vh-16px)]">
           <div className="mx-auto flex w-full max-w-[850px] flex-1 flex-col px-5 py-8 sm:px-10 lg:px-12 xl:px-14">
             {/* Logo */}

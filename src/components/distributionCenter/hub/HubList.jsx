@@ -93,7 +93,29 @@ export default function DcHubList() {
     }
   }, []);
 
+    const [loadingPage, setLoadingPage] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingPage(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
+    <>
+    {
+      loadingPage ? (
+         <div className=" w-full h-[90vh] flex justify-center items-center">
+          <div>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+
+            <p className="mt-2">Loading Hub List...</p>
+          </div>
+        </div>
+      ):(
+        
     <div className="flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-[#F6F8FC] text-slate-900 dark:bg-neutral-950 dark:text-white">
       {/* Fixed within this page: only the middle content scrolls. */}
       <header className="z-20 shrink-0 border-b border-slate-200  pb-3 dark:border-neutral-800 dark:bg-neutral-900 ">
@@ -204,5 +226,8 @@ export default function DcHubList() {
         </div>
       )}
     </div>
+      )
+    }
+    </>
   );
 }

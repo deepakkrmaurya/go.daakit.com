@@ -323,9 +323,7 @@ export default function DcCreateHub() {
                   {field({ name: "hub_name", label: "Hub Name", placeholder: "e.g. Gurugram DC Hub", icon: Building2, required: true })}
                   {field({ name: "hub_code", label: "Hub Code", placeholder: "e.g. GGN-DC-001", icon: Hash, required: true })}
                 </div>
-                <div className="mt-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-[#0446DB] dark:border-blue-900 dark:bg-blue-950/20 dark:text-blue-300">
-                  Hub type: <strong>DC</strong> (assigned automatically by the API)
-                </div>
+                
               </section>
 
               <section className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 sm:p-5">

@@ -587,17 +587,10 @@ const RegistrationPage = () => {
   const LeftPanel = () => (
   <aside
     className="relative hidden h-screen w-[51%] overflow-hidden lg:flex"
-    style={{
-      background:
-        "linear-gradient(145deg, #0338B8 0%, #0446DB 48%, #1D62E8 100%)",
-    }}
+    
   >
     {/* Background effects */}
-    <div className="pointer-events-none absolute -right-28 -top-28 h-[360px] w-[360px] rounded-full bg-white/[0.07] blur-2xl" />
-
-    <div className="pointer-events-none absolute -bottom-40 -left-40 h-[420px] w-[420px] rounded-full bg-blue-950/20 blur-2xl" />
-
-    <div className="pointer-events-none absolute right-[8%] top-[20%] h-[220px] w-[220px] rounded-full bg-cyan-300/[0.08] blur-3xl" />
+    
 
     {/* Main Content */}
     <div className="relative z-10 flex h-full w-full flex-col px-10 py-10 xl:px-14 xl:py-12">
@@ -1138,9 +1131,18 @@ const RegistrationPage = () => {
 
         {/* RIGHT SIDE */}
 
-        <div className="relative flex flex-1 flex-col overflow-hidden bg-[#0446DB] px-2 py-2 sm:px-3 lg:px-4">
-          <div className="flex flex-1 items-stretch justify-center overflow-hidden">
-            <div className="signup-scrollbar relative z-10 flex h-full max-h-[calc(100vh-16px)] w-full flex-col overflow-y-auto rounded-[3px] border border-gray-200 bg-white px-6 py-5 shadow-sm sm:px-10 lg:px-12 xl:px-14">
+        <div className="relative flex flex-1 flex-col overflow-hidden bg-[#0446DB] px-2 py-2 sm:px-3 lg:px-4"
+        style={{
+            background:
+              "radial-gradient(circle at top right, #d9daab 0%, rgba(191,191,150,0.35) 30%, rgba(191,191,150,0.08) 50%, transparent 70%), linear-gradient(135deg, #0345DA 0%, #0345DA 40%, #0345DA 70%, #0345DA 100%)",
+          }}
+        >
+          <div className="flex flex-1 items-stretch justify-center overflow-hidden"
+          
+          >
+            <div className="signup-scrollbar relative z-10 flex h-full max-h-[calc(100vh-16px)] w-full flex-col overflow-y-auto rounded-[3px] border border-gray-200 bg-white px-6 py-5 shadow-sm sm:px-10 lg:px-12 xl:px-14"
+            
+            >
               {/* LOGO */}
 
               <div className="mb-4 flex flex-col items-center">

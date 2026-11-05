@@ -2350,9 +2350,10 @@ export default function DcVendorListing({
       // data.append("vendor_id", String(selectedVendor.vendor_id));
       // data.append("kyc_verified", 1);
       const data = {
-        vendor_id: selectedVendor.vendor_id,
+        vendor_id: selectedVendor.id,
         kyc_verified: 1,
       };
+      console.log(data,selectedVendor)
       const { data: result } = await AxiosInstance.post(KYC_ENDPOINT, data);
       if (result?.success !== true) throw new Error(result?.message || "KYC approval failed");
       toast.success(result.message || "KYC verified successfully");
@@ -2372,10 +2373,10 @@ export default function DcVendorListing({
     const nextStatus = Number(statusVendor.is_active) === 1 ? 0 : 1;
 
     setStatusSaving(true);
-
+    console.log(statusVendor)
     try {
       const { data } = await AxiosInstance.post(STATUS_ENDPOINT, {
-        vendor_id: statusVendor.vendor_id,
+        vendor_id: statusVendor.id,
 
         is_active: nextStatus,
       });
@@ -2567,7 +2568,7 @@ export default function DcVendorListing({
                           className="hover:bg-slate-50/80 dark:hover:bg-neutral-800/40"
                         >
                           <td className="whitespace-nowrap px-4 py-4 font-medium text-[#0446DB]">
-                            #{vendor.vendor_id}
+                            #{vendor.id}
                           </td>
 
                           <td className="px-4 py-4">
@@ -2913,7 +2914,7 @@ export default function DcVendorListing({
                           className="mb-2 ml-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           <ShieldCheck size={17} />
-                          Verify KYCd
+                          Verify KYC
                         </button>
                       )}
 
@@ -3396,19 +3397,18 @@ export default function DcVendorListing({
                     </span>
                   </label>
                 </div>
-                <AlertDialogFooter className="shrink-0 border-t border-slate-200 bg-white px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950">
+                <AlertDialogFooter className="shrink-0 border-t border-slate-200 bg-white px-5 mb-0 dark:border-neutral-800 dark:bg-neutral-950">
                   <button
                     type="button"
                     disabled={kycSaving}
                     onClick={() => setKycEditing(null)}
-                    className="rounded-lg border border-slate-200 px-4 py-2 text-sm"
-                  >
+                    className="rounded-sm border border-slate-200 px-4 py-2 text-sm">
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={kycSaving}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0446DB] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#0446DB] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
                   >
                     {kycSaving && <Loader2 size={16} className="animate-spin" />} Save KYC
                   </button>

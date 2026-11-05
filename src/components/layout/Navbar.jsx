@@ -16,18 +16,13 @@ import {
   ShieldCheck,
   Weight,
   HandCoins,
+  Box,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { useEffect, useState, useRef } from "react";
 
-import {
-  FaBolt,
-  FaStore,
-  FaUser,
-  FaUserPlus,
-  FaUserShield,
-  FaWarehouse,
-} from "react-icons/fa";
+import { FaBolt, FaStore, FaUser, FaUserPlus, FaUserShield, FaWarehouse } from "react-icons/fa";
 
 import DaakitIcon from "@/assets/logo-1.png";
 
@@ -118,10 +113,31 @@ import AxiosInstance from "@/Helper/axiosInstance";
 import GlassSurface from "../UiComponents/GlassSurface";
 import { FiAlertTriangle, FiSettings } from "react-icons/fi";
 import OrderSearch from "../common/InputGroupDropdown";
-import { DashboardIcon, FinanceIcon, OperationIcon,MapOrderIcon,OrderIcon,RemittanceIcon,RiderLocationIcon ,RateListIcon ,
-  RatePerIcon,HubIcon,SupportIcon,TransactionIcon,RechargeIcon,
-  PricingPlanIcon,PricingCalcuIcon,ChnagePasswordIcon,SecurityKeyIcon,
-  LabelIcon,InsuranceIcon,SettingIcon
+import {
+  DashboardIcon,
+  FinanceIcon,
+  OperationIcon,
+  MapOrderIcon,
+  OrderIcon,
+  RemittanceIcon,
+  RiderLocationIcon,
+  RateListIcon,
+  RatePerIcon,
+  HubIcon,
+  SupportIcon,
+  TransactionIcon,
+  RechargeIcon,
+  PricingPlanIcon,
+  PricingCalcuIcon,
+  ChnagePasswordIcon,
+  SecurityKeyIcon,
+  LabelIcon,
+  InsuranceIcon,
+  SettingIcon,
+  AssignedPickupsIcon,
+  LoadoutIcon,
+  VASIcon,
+  ETAWidget,
 } from "../common/svg/Icons";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
@@ -199,11 +215,7 @@ const LogoIcon = () => {
       to="#"
       className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black dark:text-white"
     >
-      <img
-        src={DaakitIcon}
-        alt="Daakit"
-        className="h-10 w-10 shrink-0 rounded-md object-contain"
-      />
+      <img src={DaakitIcon} alt="Daakit" className="h-10 w-10 shrink-0 rounded-md object-contain" />
     </Link>
   );
 };
@@ -212,9 +224,7 @@ function Navbar({ allowedRoles, children }) {
   const [open, setOpen] = useState(false);
 
   const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia("(max-width: 767px)").matches
-      : false,
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false,
   );
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -225,9 +235,7 @@ function Navbar({ allowedRoles, children }) {
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
-  const [permissions, setPermissions] = useState(
-    `${localStorage.getItem("permission")}`,
-  );
+  const [permissions, setPermissions] = useState(`${localStorage.getItem("permission")}`);
 
   const token = localStorage.getItem("token");
 
@@ -293,31 +301,30 @@ function Navbar({ allowedRoles, children }) {
     }
   };
 
- 
-
   const getNavLinks = () => {
     const navConfig = {
       admin: [
         {
           label: "Dashboard",
           href: "/admin/analytics",
-          icon: (
-            <DashboardIcon/>
-          ),
+          icon: <DashboardIcon />,
         },
         {
           label: "Operation",
           href: "#",
-          icon: (
-            <OperationIcon />
-          ),
+          icon: <OperationIcon />,
           subItems: [
+            {
+              label: "Loadout",
+              href: "/admin/loadout",
+              icon: <LuPackageOpen className="h-4 w-4" />,
+            },
             {
               label: "Orders",
               href: "/admin/order-details",
               icon: <TbPackage className="h-4 w-4" />,
             },
-            
+
             {
               label: "NDR (Exception)",
               href: "/admin/ndr",
@@ -347,7 +354,7 @@ function Navbar({ allowedRoles, children }) {
             <MdOutlineAppRegistration className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
           ),
           subItems: [
-            {label: "DC List", href: "/admin/dc/list", icon: <FaWarehouse className="h-4 w-4" />,},
+            { label: "DC List", href: "/admin/dc/list", icon: <FaWarehouse className="h-4 w-4" /> },
             {
               label: "Merchant",
               href: "/admin/merchant-details",
@@ -378,9 +385,7 @@ function Navbar({ allowedRoles, children }) {
         {
           label: "Finance",
           href: "#",
-          icon: (
-            <FinanceIcon />
-          ),
+          icon: <FinanceIcon />,
           subItems: [
             {
               label: "Billing & Invoices",
@@ -400,14 +405,10 @@ function Navbar({ allowedRoles, children }) {
           ],
         },
 
-      
-
         {
           label: "Settings",
           href: "#",
-          icon: (
-            <FiSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-          ),
+          icon: <FiSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
           subItems: [
             {
               label: "Coupon",
@@ -440,82 +441,177 @@ function Navbar({ allowedRoles, children }) {
               icon: (
                 <FaMapMarkedAlt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
               ),
-             },
+            },
           ],
         },
       ],
 
       user: [
-        ...(permissions.includes("DASHBOARD_VIEW") ||
-        permissions.includes("ADMIN_FULL_ACCESS")
+        ...(permissions.includes("DASHBOARD_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
           ? [
               {
                 label: "Dashboard",
                 href: "/user/analytics",
-                icon: (
-                  <IoHomeOutline className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-                ),
+                icon: <DashboardIcon />,
               },
             ]
           : []),
 
         ...(permissions.includes("ODR_VIEW") ||
+        permissions.includes("NDR_VIEW") ||
+        permissions.includes("LOADOUT_VIEW") ||
         permissions.includes("ADMIN_FULL_ACCESS")
           ? [
               {
-                label: "All Orders",
-                href: "/user/order-details",
-                icon: (
-                  <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-                ),
+                label: "Operation",
+                href: "#",
+                icon: <OperationIcon />,
+                subItems: [
+                  // Orders Permission
+                  ...(permissions.includes("ODR_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "Orders",
+                          href: "/user/order-details",
+                          icon: (
+                            <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                          ),
+                        },
+                      ]
+                    : []),
+
+                  // NDR Permission
+                  ...(permissions.includes("NDR_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "NDR",
+                          href: "/user/ndr",
+                          icon: (
+                            <NoSymbolIcon className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                          ),
+                        },
+                      ]
+                    : []),
+                  // Loadout Permission
+                  ...(permissions.includes("LOADOUT_VIEW") ||
+                  permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "loadout",
+                          href: "/user/loadout",
+                          icon: (
+                            <LoadoutIcon  />
+                          ),
+                        },
+                      ]
+                    : []),
+                ],
               },
             ]
           : []),
 
-        ...(permissions.includes("NDR_VIEW") ||
-        permissions.includes("ADMIN_FULL_ACCESS")
+
+        ...(
+          permissions.includes("VIEW_DC") || 
+          permissions.includes("VIEW_RIDER") || 
+          permissions.includes("ADMIN_FULL_ACCESS")
           ? [
               {
-                label: "NDR",
-                href: "/user/ndr",
-                icon: (
-                  <NoSymbolIcon className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-                ),
+                label: "Onboarding",
+                href: "#",
+                icon: <MdOutlineAppRegistration className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
+                subItems: [
+                  // Orders Permission
+                  ...(permissions.includes("VIEW_DC") || permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "DC List",
+                          href: "/user/dc/list",
+                          icon: (
+                            <FaWarehouse className="h-4 w-4" />
+                          ),
+                        },
+                      ]
+                    : []),
+                  ...(permissions.includes("VIEW_RIDER") || permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "Vendor Riders",
+                          href: "/user/rider/details",
+                          icon: (
+                            <MdOutlineBusinessCenter className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                          ),
+                        },
+                      ]
+                    : []),
+                  ...(permissions.includes("ODR_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "Vendor",
+                          href: "/user/order-details",
+                          icon: (
+                            <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                          ),
+                        },
+                      ]
+                    : []),
+                  ...(permissions.includes("ODR_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "Vendor Riders",
+                          href: "/user/order-details",
+                          icon: (
+                            <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                          ),
+                        },
+                      ]
+                    : []),
+
+                  
+                  
+                ],
               },
             ]
           : []),
+
+
+
+
+
+
       ],
 
       vendor: [
         {
           label: "Dashboard",
           href: "/vendor/analytics",
-          icon: (
-            <DashboardIcon />
-          ),
+          icon: <DashboardIcon />,
         },
 
         {
           label: "Operation",
           href: "#",
-          icon: (
-            <OperationIcon />
-          ),
+          icon: <OperationIcon />,
           subItems: [
             {
-              label: "Orders",
-              href: "/vendor/rider-orders",
-              icon: <OrderIcon className="h-5 w-5"/>,
+              label: "Assigned Pickups",
+              href: "/vendor/assign/pickup",
+              icon: <AssignedPickupsIcon />,
             },
             {
               label: "Loadout",
               href: "/vendor/loadout",
-              icon: <LuPackageOpen  className="h-5 w-5" />,
+              icon: <LuPackageOpen className="h-5 w-5" />,
+            },
+            {
+              label: "Orders",
+              href: "/vendor/rider-orders",
+              icon: <OrderIcon className="h-5 w-5" />,
             },
             {
               label: "New Mapped Orders",
               href: "/vendor/mapped-orders",
-              icon: <MapOrderIcon className="h-5 w-5"/>,
+              icon: <MapOrderIcon className="h-5 w-5" />,
             },
           ],
         },
@@ -523,9 +619,7 @@ function Navbar({ allowedRoles, children }) {
         {
           label: "Finance",
           href: "#",
-          icon: (
-            <FinanceIcon />
-          ),
+          icon: <FinanceIcon />,
           subItems: [
             {
               label: "Remittances",
@@ -570,7 +664,7 @@ function Navbar({ allowedRoles, children }) {
             {
               label: "Rider Performance",
               href: "/vendor/shipment-tracking",
-              icon: <RatePerIcon/>,
+              icon: <RatePerIcon />,
             },
           ],
         },
@@ -578,14 +672,12 @@ function Navbar({ allowedRoles, children }) {
         {
           label: "Hub",
           href: "#",
-          icon: (
-            <MdWarehouse className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-          ),
+          icon: <MdWarehouse className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
           subItems: [
             {
               label: "Hub List",
               href: "/vendor/hub_list",
-              icon: <HubIcon/>,
+              icon: <HubIcon />,
             },
           ],
         },
@@ -593,9 +685,7 @@ function Navbar({ allowedRoles, children }) {
         {
           label: "Support",
           href: "/vendor/support",
-          icon: (
-            <SupportIcon />
-          ),
+          icon: <SupportIcon />,
         },
       ],
 
@@ -603,27 +693,28 @@ function Navbar({ allowedRoles, children }) {
         {
           label: "Dashboard",
           href: "/dc/analytics",
-          icon: (
-            <DashboardIcon />
-          ),
+          icon: <DashboardIcon />,
         },
 
         {
           label: "Operation",
           href: "#",
-          icon: (
-            <OperationIcon />
-          ),
+          icon: <OperationIcon />,
           subItems: [
             {
-              label: "Orders",
-              href: "/dc/rider-orders",
-              icon: <TbPackage className="h-4 w-4" />,
+              label: "Assigned Pickups",
+              href: "/dc/assign/pickup",
+              icon: <AssignedPickupsIcon />,
             },
             {
               label: "Loadout",
               href: "/dc/loadout",
-              icon: <LuPackageOpen  className="h-4 w-4" />,
+              icon: <LoadoutIcon />,
+            },
+            {
+              label: "Orders",
+              href: "/dc/rider-orders",
+              icon: <TbPackage className="h-4 w-4" />,
             },
             // {
             //   label: "New Mapped Orders",
@@ -636,19 +727,17 @@ function Navbar({ allowedRoles, children }) {
         {
           label: "Finance",
           href: "#",
-          icon: (
-            <FinanceIcon />
-          ),
+          icon: <FinanceIcon />,
           subItems: [
             {
               label: "Self Remittance",
               href: "/dc/remittance-record",
-              icon: <RemittanceIcon/>,
+              icon: <RemittanceIcon />,
             },
             {
               label: "vendor Remittance",
               href: "/dc/vendor/remittance-record",
-              icon: <HandCoins size={18} strokeWidth={1.8}/>,
+              icon: <HandCoins size={18} strokeWidth={1.8} />,
             },
           ],
         },
@@ -691,24 +780,19 @@ function Navbar({ allowedRoles, children }) {
         {
           label: "Vendor Management",
           href: "#",
-          icon: (
-            <FaUsersGear className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-          ),
+          icon: <FaUsersGear className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
           subItems: [
             {
               label: "Vendor",
               href: "/dc/vendor/listing",
               icon: <MdPersonAddAlt1 className="h-4 w-4" />,
             },
-          
           ],
         },
         {
           label: "Hub",
           href: "#",
-          icon: (
-            <MdWarehouse className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-          ),
+          icon: <MdWarehouse className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
           subItems: [
             {
               label: "Hub List",
@@ -721,27 +805,22 @@ function Navbar({ allowedRoles, children }) {
         {
           label: "Support",
           href: "/dc/support",
-          icon: (
-            <LifeBuoy className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-          ),
+          icon: <LifeBuoy className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
         },
       ],
 
-      merchant: decoded.tech_based !== "1"
+      merchant:
+        decoded.tech_based !== "1"
           ? [
               {
                 label: "Dashboard",
                 href: "/merchant/analytics",
-                icon: (
-                  <DashboardIcon />
-                ),
+                icon: <DashboardIcon />,
               },
               {
                 label: "Operation",
                 href: "#",
-                icon: (
-                  <OperationIcon />
-                ),
+                icon: <OperationIcon />,
                 subItems: [
                   {
                     label: "Unverified Orders",
@@ -761,7 +840,6 @@ function Navbar({ allowedRoles, children }) {
                 ],
               },
 
-              // { label: "CX", href: "/merchant/cx", icon: <FaGears className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> },
               {
                 label: "Weight Discrepancies",
                 href: "/merchant/weight",
@@ -772,9 +850,7 @@ function Navbar({ allowedRoles, children }) {
               {
                 label: "Finance",
                 href: "#",
-                icon: (
-                  <FinanceIcon />
-                ),
+                icon: <FinanceIcon />,
                 subItems: [
                   {
                     label: "Billing",
@@ -812,9 +888,7 @@ function Navbar({ allowedRoles, children }) {
               {
                 label: "Setting",
                 href: "#",
-                icon: (
-                  <SettingIcon />
-                ),
+                icon: <SettingIcon />,
                 subItems: [
                   {
                     label: "Change Password",
@@ -832,9 +906,22 @@ function Navbar({ allowedRoles, children }) {
                     icon: <LabelIcon />,
                   },
                   {
-                    label: "Integration",
+                    label: "Order Slab Allocation",
+                    href: "/merchant/orderSlabAllocation",
+                    icon: <SlidersHorizontal  className="h-4 w-4" />,
+                  },
+                ],
+              },
+
+              {
+                label: "VAS",
+                href: "#",
+                icon: <VASIcon />,
+                subItems: [
+                  {
+                    label: "ETA Widget",
                     href: "/merchant/integration",
-                    icon: <MdLink className="h-4 w-4" />,
+                    icon: <ETAWidget />,
                   },
                   {
                     label: "Insurance",
@@ -1012,11 +1099,7 @@ function Navbar({ allowedRoles, children }) {
 
   const handleLogout = async () => {
     try {
-      const role =
-        decoded.usertype ||
-        decoded.type ||
-        decoded.userType ||
-        decoded?.user_type;
+      const role = decoded.usertype || decoded.type || decoded.userType || decoded?.user_type;
 
       if (role === "vendor") {
         clearStorageAndRedirect();
@@ -1067,9 +1150,7 @@ function Navbar({ allowedRoles, children }) {
 
   const getTechMerchantProfile = async () => {
     try {
-      const res = await AxiosInstance.get(
-        "/api/tech-merchant/getMerchantProfile",
-      );
+      const res = await AxiosInstance.get("/api/tech-merchant/getMerchantProfile");
 
       setProfile(res.data.data);
     } catch (error) {
@@ -1167,8 +1248,8 @@ function Navbar({ allowedRoles, children }) {
             isOpen ? "justify-between px-2" : "justify-center px-0",
           )}
         >
-          <span className="flex min-w-0 items-center gap-2">
-            {link.icon}
+          <span className="flex min-w-0  items-center gap-2">
+            <span className=" text-xl">{link.icon}</span>
 
             {isOpen && (
               <span className="truncate whitespace-pre text-sm text-neutral-700 transition duration-150 group-hover/sidebar:translate-x-1 dark:text-neutral-200">
@@ -1400,9 +1481,7 @@ function Navbar({ allowedRoles, children }) {
 
             `,
 
-              mobileOpen
-                ? "pointer-events-auto opacity-100"
-                : "pointer-events-none opacity-0",
+              mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
             )}
           />
 
@@ -1742,17 +1821,7 @@ function Navbar({ allowedRoles, children }) {
                 <div className="min-w-0 flex-1" />
 
                 {/* ACTIONS */}
-                <div>
-
-                 
-                  
-                  {
-                    decoded?.usertype=='admin' && (
-
-                      <OrderSearch/>
-                    )
-                  }
-                </div>
+                <div>{decoded?.usertype == "admin" && <OrderSearch />}</div>
 
                 <div
                   className="
@@ -1769,8 +1838,7 @@ function Navbar({ allowedRoles, children }) {
                 >
                   {/* WALLET */}
 
-                  {(decoded?.role === "merchant" ||
-                    decoded?.userType === "merchant") && (
+                  {(decoded?.role === "merchant" || decoded?.userType === "merchant") && (
                     <Link
                       to={
                         decoded?.tech_based === "1"
@@ -1838,9 +1906,7 @@ function Navbar({ allowedRoles, children }) {
                       <span className="flex items-center">
                         <IndianRupee className="h-3.5 w-3.5" />
 
-                        {Number(profile?.wallet_balance || 0).toLocaleString(
-                          "en-IN",
-                        )}
+                        {Number(profile?.wallet_balance || 0).toLocaleString("en-IN")}
                       </span>
                     </Link>
                   )}
@@ -1899,11 +1965,7 @@ function Navbar({ allowedRoles, children }) {
 
                   "
                   >
-                    {darkMode ? (
-                      <Sun className="h-5 w-5" />
-                    ) : (
-                      <Moon className="h-5 w-5" />
-                    )}
+                    {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                   </button>
 
                   {/* DIVIDER */}

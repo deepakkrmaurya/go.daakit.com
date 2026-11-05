@@ -8,7 +8,7 @@ import DaakitGoLogo from "../../assets/DaakitGo-Logo.jpg";
 import DaakitMap from "../../assets/daakitmap.png";
 import axiosInstance from "../../Helper/axiosInstance";
 import { FiEye, FiEyeOff, FiLock, FiShield } from "react-icons/fi";
-
+import LoginIllustration from "@/assets/image.png";
 const baseURL = import.meta.env.VITE_BASE_URL;
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
@@ -66,10 +66,7 @@ function AdminLogin() {
     <main className="flex min-h-screen bg-[#0446DB] lg:h-screen lg:overflow-hidden">
       <section
         className="relative hidden w-[51%] shrink-0 overflow-hidden rounded-tr-[58px] lg:flex"
-        style={{
-          background:
-            "radial-gradient(circle at 100% 0%,rgba(232,225,160,.8),rgba(141,170,198,.55) 28%,rgba(4,70,219,0) 55%),linear-gradient(135deg,#0647d9,#245acb)",
-        }}
+        
       >
         <div className="relative z-10 flex h-full w-full flex-col px-12 py-14">
   {/* Content */}
@@ -120,17 +117,40 @@ function AdminLogin() {
   </div>
 
   {/* Existing Image */}
-  <div className="mt-auto flex min-h-0 flex-1 items-end justify-center pb-6 pt-6">
-    <img
-      src={DaakitMap}
-      alt="DAAKitGo logistics"
-      className="max-h-[43vh] w-[92%] object-contain"
-    />
-  </div>
+   <div
+            className="
+              relative
+              z-10
+              mt-auto
+              flex
+              min-h-0
+              flex-1
+              items-end
+              justify-center
+              pt-[clamp(0.5rem,2vh,1rem)]
+            "
+          >
+            <img
+              src={LoginIllustration}
+              alt="DAAKit Auth"
+              className="
+                h-auto
+                max-h-[45vh]
+                w-full
+                object-contain
+                max-[1300px]:max-h-[40vh]
+              "
+            />
+          </div>
 </div>
       </section>
 
-      <section className="flex min-w-0 flex-1 bg-[#0446DB] p-2 lg:pl-4">
+      <section className="flex min-w-0 flex-1 bg-[#0446DB] p-2 lg:pl-4"
+      style={{
+          background:
+            "radial-gradient(circle at 100% 0%,rgba(232,225,160,.8),rgba(141,170,198,.55) 28%,rgba(4,70,219,0) 55%),linear-gradient(135deg,#0647d9,#245acb)",
+        }}
+      >
         <div className="flex h-[calc(100vh-16px)] w-full flex-col overflow-y-auto rounded-[3px] border border-gray-200 bg-white">
           <div className="mx-auto flex w-full max-w-[850px] flex-1 flex-col px-5 py-8 sm:px-10 lg:px-12 xl:px-14">
             <div className="flex justify-center pt-6 lg:pt-14">

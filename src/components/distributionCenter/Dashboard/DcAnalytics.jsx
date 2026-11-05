@@ -1330,7 +1330,7 @@ export default function DcAnalytics() {
           params: advanceFilters,
           signal: controller.signal,
         });
-        const payload = response.data?.data?.codSummary ? response.data.data : response.data;
+        const payload = response?.data?.data?.codSummary ? response?.data?.data : response?.data;
         if (response.data?.success === false || payload?.success === false) {
           throw new Error(payload?.message || response.data?.message || "Failed to fetch DC analytics");
         }
@@ -1516,7 +1516,7 @@ export default function DcAnalytics() {
                         <p className={`mt-2 text-xs font-semibold ${itemTone.text}`}>{row.label}</p>
                         <p className="mt-1 text-lg font-extrabold">{codView === "Count" ? fmt(row.count) : money(row.amount)}</p>
                         <p className="mt-1 text-[10px] text-slate-500">{codView === "Count" ? money(row.amount) : `${fmt(row.count)} records`}</p>
-                        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-neutral-700"><div className={`h-full rounded-full ${itemTone.bar}`} style={{width: `${share}%`}} /></div>
+                        {/* <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-neutral-700"><div className={`h-full rounded-full ${itemTone.bar}`} style={{width: `${share}%`}} /></div> */}
                       </div>
                     );
                   })}

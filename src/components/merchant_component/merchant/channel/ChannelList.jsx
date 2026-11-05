@@ -7,7 +7,7 @@ import {
   Trash2,
 } from "lucide-react";
 import AxiosInstance from "../../../../Helper/axiosInstance";
-
+import easyCom  from '@/assets/Easycom.png'
 const ChannelList = () => {
   const navigate = useNavigate();
 
@@ -105,6 +105,9 @@ const ChannelList = () => {
                   <th className="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">
                     Channel Name
                   </th>
+                  <th className="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Connection Name
+                  </th>
 
                   <th className="px-5 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">
                     Store Name
@@ -135,24 +138,34 @@ const ChannelList = () => {
                     >
                       
                       {/* Channel Name */}
-                      <td className="px-5 py-4 text-center">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                      <td className="px-5 py-4  text-center">
+                        <div className=" flex justify-center items-center gap-2">
+                          <div className=" h-10 w-10 rounded-sm">
+                        <img src={easyCom} height={10} className=" rounded-sm" alt="" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
                           {channel.provider_name || "—"}
                         </p>
 
                         <p className="mt-0.5 text-[10px] uppercase text-slate-400">
                           {channel.provider_code || "—"}
                         </p>
+                        </div>
+                        </div>
                       </td>
-
-                      {/* Store Name */}
                       <td className="px-5 py-4 text-center">
                         <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                           {channel.connection_name || "—"}
                         </p>
+                        </td>
+
+                      {/* Store Name */}
+                      <td className="px-5 py-4 text-center">
+                       
 
                         {channel.credentials?.email && (
-                          <p className="mt-1 text-[10px] text-slate-400">
+                          <p className="mt-1 text-sm text-slate-400">
                             {channel.credentials.email}
                           </p>
                         )}

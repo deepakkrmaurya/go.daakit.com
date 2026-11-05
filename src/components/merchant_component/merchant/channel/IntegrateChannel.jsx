@@ -15,7 +15,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import toast from "react-hot-toast";
-import AxiosInstance from "../../../../Helper/axiosInstance";
+import AxiosInstance from "@/Helper/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const IntegrateChannel = () => {
   return (
@@ -213,6 +214,9 @@ const EasycomDialog = () => {
     setShowPassword(false);
   };
 
+
+  const navigate = useNavigate()
+
   const handleContinue = async (e) => {
     e?.preventDefault();
 
@@ -253,16 +257,13 @@ const EasycomDialog = () => {
         location_key: form.location_key.trim(),
         location_name: form.location_name.trim(),
 
-        // Agar backend me required ho to uncomment kar dena
-        // local_warehouse_id: form.local_warehouse_id,
-        // connection_name: form.connection_name.trim(),
-        // environment: form.environment,
+        
       };
 
       console.log("EasyEcom Payload:", payload);
 
       const response = await AxiosInstance.post(
-        "/api/oms/easyecom/authenticate",
+        "/api/oms/easyecom/get_tooken",
         payload
       );
 
@@ -280,6 +281,7 @@ const EasycomDialog = () => {
 
       setOpen(false);
       resetForm();
+      navigate('/merchant/channels')
 
       // Agar OMS list refresh karni ho:
       // getOms();

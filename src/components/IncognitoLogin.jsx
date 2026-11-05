@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { Loader } from "lucide-react";
+import AxiosInstance from "@/Helper/axiosInstance";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -60,6 +61,29 @@ function IncognitoLogin() {
             } finally {
               setLoading(false);
             }      
+        } else if(role === "dc"){
+          try {
+           const {data} = await axios.post(
+                `${baseURL}/api/user/dcLogin`,
+                { dc_id: email },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+         
+           if(data?.success && data?.token){
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user_type", "dc");
+            toast.success( data?.message || "Login successful");
+            navigate("/dc/analytics");
+           }
+          } catch (error) {
+             
+          }finally {
+            setLoading(false);
+          }
         }
     };
 

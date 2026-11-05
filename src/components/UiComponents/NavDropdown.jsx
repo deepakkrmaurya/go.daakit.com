@@ -53,7 +53,7 @@ export function DropdownMenuDemo({ profile, decoded, handleLogout, UserRoles }) 
         </DropdownMenuItem>
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
-
+           
           {
             decoded?.usertype !== "admin" && !UserRoles.includes(decoded?.usertype) && (
 
@@ -85,7 +85,17 @@ export function DropdownMenuDemo({ profile, decoded, handleLogout, UserRoles }) 
                   </Link>
 
                 </>
-              ) : (  
+              ) : decoded.user_type == 'dc' ? (
+                <>
+                <Link
+                    to="/dc/profile"
+                  >
+                    <DropdownMenuItem>
+                      Profile
+                    </DropdownMenuItem>
+                  </Link>
+                </>
+              ): (  
                 <>
                   <DropdownMenuItem>
                     Wallet :  {parseInt(profile?.wallet_balance)}

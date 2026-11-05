@@ -346,7 +346,7 @@ export default function DcRiderOnboarding({
                        {" "}
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
                              {" "}
-          <button
+          {/* <button
             type="button"
             onClick={downloadSample}
             disabled={sampleLoading}
@@ -359,9 +359,9 @@ export default function DcRiderOnboarding({
               <Download size={16} />
             )}{" "}
                         Sample CSV                    {" "}
-          </button>
+          </button> */}
                              {" "}
-          <button
+          {/* <button
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={csvLoading}
@@ -378,7 +378,7 @@ export default function DcRiderOnboarding({
             accept=".csv,text/csv"
             className="hidden"
             onChange={handleCsvUpload}
-          />
+          /> */}
                            {" "}
         </div>
                      {" "}
