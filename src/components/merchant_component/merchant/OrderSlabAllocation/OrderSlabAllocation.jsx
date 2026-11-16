@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import {
@@ -101,13 +103,29 @@ const SLABS = [
     subtitle: "Up to 1 kg",
     weightSlabG: 1000,
   },
+  
   {
     id: "SLAB_2000GM",
     title: "2,000 g",
     subtitle: "Up to 2 kg",
     weightSlabG: 2000,
   },
+  {
+    id: "SLAB_5000GM",
+    title: "5,000 g",
+    subtitle: "Up to 5 kg",
+    weightSlabG: 5000,
+  },
 ];
+
+// Only show weight slabs supported by the selected service.
+const SERVICE_SLABS = {
+  SDD: [500, 2000, 5000],
+  NDD: [500, 2000, 5000],
+  HDL60MIN: [500, 1000],
+  HLD120MIN: [500, 1000],
+  HLD4HRS: [500, 1000],
+};
 
 const SERVICES = [
   {
@@ -123,13 +141,13 @@ const SERVICES = [
     dot: "bg-purple-600",
   },
   {
-    id: "HLD60MIN",
-    title: "HLD60MIN",
+    id: "HDL60MIN",
+    title: "HDL60MIN",
     subtitle: "Hyperlocal 60-min delivery",
     dot: "bg-teal-600",
   },
   {
-    id: "HLD60MIN",
+    id: "HLD120MIN",
     title: "HLD120MIN",
     subtitle: "Hyperlocal 120-min delivery",
     dot: "bg-teal-600",
@@ -145,10 +163,10 @@ const SERVICES = [
 const SERVICE_STYLES = {
   SDD: "bg-blue-50 text-blue-700 border-blue-100",
   NDD: "bg-purple-50 text-purple-700 border-purple-100",
-  HLD4HR: "bg-teal-50 text-teal-700 border-teal-100",
+  HLD4HRS: "bg-teal-50 text-teal-700 border-teal-100",
   HLD: "bg-teal-50 text-teal-700 border-teal-100",
-  HDL60MINS: "bg-teal-50 text-teal-700 border-teal-100",
-  HLD120MINS: "bg-teal-50 text-teal-700 border-teal-100",
+  HDL60MIN: "bg-teal-50 text-teal-700 border-teal-100",
+  HLD120MIN: "bg-teal-50 text-teal-700 border-teal-100",
 };
 
 /* =========================================================
@@ -367,601 +385,336 @@ const normalizePincode = (v) =>
     .replace(/\D/g, "")
     .slice(0, 6);
 
+const normalizeCondition = (v) => {
+  if (!v) return null;
+  if (typeof v === "string") {
+    try { return JSON.parse(v); } catch { return null; }
+  }
+  return v;
+};
+
+const weightLabel = (w) => {
+  if (!w) return "Any weight";
+  if (["BETWEEN", "NOT_BETWEEN"].includes(w.operator))
+    return `${w.operator} (${w.from_g}, ${w.to_g}] g`;
+  return `${w.operator} ${w.value_g} g`;
+};
+
 const mapApiRuleToUi = (item) => {
-  const weightFrom = Number(item?.weight_from_g ?? 0);
-  const weightTo = Number(item?.weight_to_g ?? 0);
-  const weightSlab = Number(item?.weight_slab_g ?? 0);
-  const priority = Number(item?.priority ?? 0);
-  const isActive = Number(item?.is_active) === 1;
-
-  const pickupPincode = item?.pickup_pincode ? String(item.pickup_pincode) : "";
-  const destinationPincodes = Array.isArray(item?.destination_pincodes)
-    ? item.destination_pincodes.map(String)
-    : [];
-
-  const service = item?.service || "";
-
+  const pickupCondition = normalizeCondition(item.pickup_condition);
+  const destinationCondition = normalizeCondition(item.destination_condition);
+  const weightCondition = normalizeCondition(item.weight_condition);
+  const pickupPincodes = pickupCondition?.pincodes?.map(String) || [];
+  const destinationPincodes = destinationCondition?.pincodes?.map(String) || [];
+  const service = item.service || "";
+  const weightSlabG = Number(item.weight_slab_g || 0);
+  const isActive = Number(item.is_active) === 1 || item.is_active === true;
   return {
-    id: item?.id,
-    priority,
-    pickupPincode,
-    pickupPincodes: pickupPincode ? [pickupPincode] : [],
+    id: item.rule_id ?? item.id,
+    priority: Number(item.priority),
+    logicalOperator: item.logical_operator || "AND",
+    pickupCondition,
+    destinationCondition,
+    weightCondition,
+    pickupPincodes,
     destinationPincodes,
-    weightFromG: weightFrom,
-    weightToG: weightTo,
-    weightSlabG: weightSlab,
-    weight: `${weightFrom}–${weightTo.toLocaleString("en-IN")} g`,
+    pickupPincode: pickupPincodes[0] || "",
+    weight: weightLabel(weightCondition),
+    weightSlabG,
     service,
-    allocateTo: `${service}_${weightSlab}GM`,
+    allocateTo: `${service}-${weightSlabG}gm`,
     status: isActive ? "Active" : "Inactive",
     isActive,
-    createdAt: item?.created_at,
-    updatedAt: item?.updated_at,
-    rule: `${pickupPincode || "-"} ${service ? `· ${service}` : ""} · ${weightSlab} g`,
+    createdAt: item.created_at,
+    updatedAt: item.updated_at,
+    rule: `${item.logical_operator || "AND"} · ${service} · ${weightLabel(weightCondition)}`,
   };
 };
+
 
 /* =========================================================
    MAIN COMPONENT
 ========================================================= */
 
 export default function OrderSlabAllocation() {
-  /* -------------------- FORM -------------------- */
-  const [uploadingCsv, setUploadingCsv] = useState(false);
-  const [destinationCsvFile, setDestinationCsvFile] = useState(null);
   const [isActive, setIsActive] = useState(true);
-
+  const [enabled, setEnabled] = useState({ pickup: false, destination: false, weight: true });
+  const [logicalOperator, setLogicalOperator] = useState("AND");
+  const [pickupOperator, setPickupOperator] = useState("IN");
+  const [destinationOperator, setDestinationOperator] = useState("IN");
+  const [weightOperator, setWeightOperator] = useState("BETWEEN");
   const [pickupPincodes, setPickupPincodes] = useState([]);
   const [destinationPincodes, setDestinationPincodes] = useState([]);
-
   const [pickupInput, setPickupInput] = useState("");
   const [destinationInput, setDestinationInput] = useState("");
-
-  const pickupInputRef = useRef(null);
-
   const [minWeight, setMinWeight] = useState("0");
   const [maxWeight, setMaxWeight] = useState("500");
-
+  const [weightValue, setWeightValue] = useState("500");
   const [selectedSlab, setSelectedSlab] = useState("SLAB_500GM");
   const [selectedService, setSelectedService] = useState("SDD");
   const [priority, setPriority] = useState("1");
-
-  /* -------------------- RULES / API -------------------- */
+  const [destinationCsvFile, setDestinationCsvFile] = useState(null);
+  const [uploadingCsv, setUploadingCsv] = useState(false);
   const [rules, setRules] = useState([]);
   const [loadingRules, setLoadingRules] = useState(false);
   const [savingRule, setSavingRule] = useState(false);
   const [deletingRuleId, setDeletingRuleId] = useState(null);
   const [editingRuleId, setEditingRuleId] = useState(null);
-
   const [page, setPage] = useState(1);
-  const limit = 10;
-  const [pagination, setPagination] = useState({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-  });
-
-  /* -------------------- FILTERS -------------------- */
+  const limit = 20;
+  const [pagination, setPagination] = useState({ total: 0, page: 1, limit, totalPages: 1 });
   const [search, setSearch] = useState("");
   const [serviceFilter, setServiceFilter] = useState("All services");
-
-  const selectedSlabData = useMemo(
-    () => SLABS.find((s) => s.id === selectedSlab) || SLABS[0],
-    [selectedSlab],
+  const editFormRef = useRef(null);
+  const pickupInputRef = useRef(null);
+  const activeGroups = Object.values(enabled).filter(Boolean).length;
+  const availableSlabs = SLABS.filter(slab =>
+    (SERVICE_SLABS[selectedService] || []).includes(slab.weightSlabG)
   );
+  const selectedSlabData = availableSlabs.find(s => s.id === selectedSlab);
+  const slabValue = selectedSlabData?.weightSlabG;
 
-  /* =========================================================
-     FETCH RULES
-  ========================================================= */
   const fetchRules = async (requestedPage = page) => {
     try {
       setLoadingRules(true);
-      const response = await api.get(
-        `${API_BASE}/getMerchantServiceAllocationRules`,
-        { params: { page: requestedPage, limit } },
-      );
-
-      const apiRules = Array.isArray(response?.data?.data)
-        ? response.data.data
-        : [];
-      const mapped = apiRules.map(mapApiRuleToUi);
-
+      const response = await api.get(`${API_BASE}/getMerchantServiceAllocationRules`, {
+        params: { page: requestedPage, limit },
+      });
+      const body = response.data;
+      const raw = body?.data;
+      const items = Array.isArray(raw) ? raw :
+        Array.isArray(raw?.rules) ? raw.rules :
+        Array.isArray(raw?.rows) ? raw.rows :
+        Array.isArray(raw?.items) ? raw.items : [];
+      const mapped = items.map(mapApiRuleToUi);
       setRules(mapped);
-      setPagination(
-        response?.data?.pagination || {
-          total: mapped.length,
-          page: requestedPage,
-          limit,
-          totalPages: 1,
-        },
-      );
+      const pg = body?.pagination || raw?.pagination || {};
+      setPagination({
+        total: Number(pg.total ?? pg.totalRecords ?? mapped.length),
+        page: Number(pg.page ?? requestedPage),
+        limit: Number(pg.limit ?? limit),
+        totalPages: Number(pg.totalPages ?? pg.total_pages ?? 1),
+      });
     } catch (error) {
-      console.error(
-        "[Allocation Rules] GET Error:",
-        error?.response?.data || error,
-      );
+      console.error("[Allocation Rules] GET Error:", error?.response?.data || error);
       toast.error(getErrorMessage(error, "Failed to fetch allocation rules"));
       setRules([]);
-    } finally {
-      setLoadingRules(false);
-    }
+    } finally { setLoadingRules(false); }
   };
 
+  useEffect(() => { fetchRules(page); }, [page]);
   useEffect(() => {
-    fetchRules(page);
-  }, [page]);
-
-  const editFormRef = useRef(null);
-
-  useEffect(() => {
-    if (editingRuleId) {
-      setTimeout(() => {
-        editFormRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 100);
-    }
+    if (editingRuleId) editFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [editingRuleId]);
-  /* =========================================================
-     PINCODE HANDLERS
-  ========================================================= */
-  const addPincode = (value, type) => {
-    const code = normalizePincode(value);
-    if (!code) return;
 
-    if (code.length !== 6) {
-      toast.error("Please enter a valid 6 digit pincode");
-      return;
-    }
-
-    if (type === "pickup") {
-      setPickupPincodes([code]);
-      setPickupInput("");
-    } else {
-      if (destinationPincodes.includes(code)) {
-        toast.error("This pincode is already added");
-        return;
-      }
-      setDestinationPincodes((prev) => [...prev, code]);
-      setDestinationInput("");
-    }
+  const addPincode = (raw, type) => {
+    const code = normalizePincode(raw);
+    if (code.length !== 6) { toast.error("Enter a valid 6 digit pincode"); return; }
+    const setter = type === "pickup" ? setPickupPincodes : setDestinationPincodes;
+    setter(prev => [...new Set([...prev, code])]);
+    if (type === "pickup") setPickupInput(""); else setDestinationInput("");
   };
-
   const removePincode = (code, type) => {
-    if (type === "pickup") {
-      setPickupPincodes((prev) => prev.filter((c) => c !== code));
-      setPickupInput("");
-      setTimeout(() => pickupInputRef.current?.focus(), 50);
-    } else {
-      setDestinationPincodes((prev) => prev.filter((c) => c !== code));
-    }
+    const setter = type === "pickup" ? setPickupPincodes : setDestinationPincodes;
+    setter(prev => prev.filter(p => p !== code));
   };
-
-  const handlePincodeChange = (rawValue, type) => {
-    const value = normalizePincode(rawValue);
-
-    if (type === "pickup") {
-      setPickupInput(value);
-    } else {
-      setDestinationInput(value);
-    }
-
-    if (value.length === 6) {
-      setTimeout(() => addPincode(value, type), 100);
-    }
+  const handlePincodeChange = (raw, type) => {
+    const code = normalizePincode(raw);
+    if (code.length === 6) { addPincode(code, type); return; }
+    if (type === "pickup") setPickupInput(code); else setDestinationInput(code);
   };
-
   const handlePincodePaste = (e, type) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text");
-    const parts = pasted.split(/[\s,;]+/).filter(Boolean);
-
-    const valid = parts
-      .map((p) => String(p).replace(/\D/g, "").slice(0, 6))
-      .filter((p) => p.length === 6);
-
-    if (valid.length === 0) return;
-
-    if (type === "pickup") {
-      setPickupPincodes([valid[0]]);
-    } else {
-      setDestinationPincodes((prev) => {
-        const merged = new Set([...prev, ...valid]);
-        return Array.from(merged);
-      });
-      toast.success(`${valid.length} pincode(s) added`);
-    }
+    const values = e.clipboardData.getData("text").split(/[\s,;]+/).filter(Boolean);
+    const valid = values.filter(p => /^\d{6}$/.test(p));
+    if (valid.length !== values.length) toast.warn("Invalid pincodes skipped");
+    const setter = type === "pickup" ? setPickupPincodes : setDestinationPincodes;
+    setter(prev => [...new Set([...prev, ...valid])]);
+    if (type === "pickup") setPickupInput(""); else setDestinationInput("");
   };
 
-  /* =========================================================
-     RESET
-  ========================================================= */
   const resetForm = () => {
     setIsActive(true);
-    setPickupPincodes([]);
-    setDestinationPincodes([]);
-    setPickupInput("");
-    setDestinationInput("");
+    setEnabled({ pickup: false, destination: false, weight: true });
+    setLogicalOperator("AND");
+    setPickupOperator("IN"); setDestinationOperator("IN"); setWeightOperator("BETWEEN");
+    setPickupPincodes([]); setDestinationPincodes([]);
+    setPickupInput(""); setDestinationInput("");
     setDestinationCsvFile(null);
-    setMinWeight("0");
-    setMaxWeight("500");
+    setMinWeight("0"); setMaxWeight("500"); setWeightValue("500");
     setSelectedSlab("SLAB_500GM");
-    setSelectedService("SDD");
-    setPriority("1");
-    setEditingRuleId(null);
+    setSelectedService("SDD"); setPriority("1"); setEditingRuleId(null);
+  };
+  const resetChanges = () => { resetForm(); toast.info("Changes reset"); };
+
+  const buildPayload = () => {
+    const pick = [...new Set([...pickupPincodes, ...(pickupInput.length === 6 ? [pickupInput] : [])])];
+    const dest = [...new Set([...destinationPincodes, ...(destinationInput.length === 6 ? [destinationInput] : [])])];
+    if (!activeGroups) throw new Error("Enable at least one condition group");
+    if (enabled.pickup && !pick.length) throw new Error("Add at least one pickup pincode");
+    if (enabled.destination && !dest.length && !destinationCsvFile)
+      throw new Error("Add destination pincodes or upload a CSV");
+    if (enabled.pickup && pickupInput && pickupInput.length !== 6) throw new Error("Complete pickup pincode");
+    if (enabled.destination && destinationInput && destinationInput.length !== 6) throw new Error("Complete destination pincode");
+    let weightCondition = null;
+    if (enabled.weight) {
+      if (["BETWEEN", "NOT_BETWEEN"].includes(weightOperator)) {
+        if (minWeight === "" || maxWeight === "" ||
+          !Number.isInteger(Number(minWeight)) || !Number.isInteger(Number(maxWeight)) ||
+          Number(minWeight) < 0 || Number(maxWeight) <= Number(minWeight))
+          throw new Error("Enter a valid weight range (from < to)");
+        weightCondition = { operator: weightOperator, from_g: Number(minWeight), to_g: Number(maxWeight) };
+      } else {
+        if (weightValue === "" || !Number.isInteger(Number(weightValue)) || Number(weightValue) < 0)
+          throw new Error("Enter a valid non-negative weight in grams");
+        weightCondition = { operator: weightOperator, value_g: Number(weightValue) };
+      }
+    }
+    if (!Number.isInteger(slabValue) || slabValue <= 0 ||
+        !(SERVICE_SLABS[selectedService] || []).includes(slabValue))
+      throw new Error("Select a valid weight slab for the selected service");
+    if (!Number.isInteger(Number(priority)) || Number(priority) < 1) throw new Error("Priority must be a positive integer");
+    if (!SERVICES.some(s => s.id === selectedService)) throw new Error("Select a valid service");
+    return {
+      logical_operator: activeGroups === 1 ? "AND" : logicalOperator,
+      pickup_condition: enabled.pickup ? { operator: pickupOperator, pincodes: pick } : null,
+      destination_condition: enabled.destination ? { operator: destinationOperator, pincodes: dest } : null,
+      weight_condition: weightCondition,
+      weight_slab_g: slabValue,
+      service: selectedService,
+      priority: Number(priority),
+      is_active: isActive ? 1 : 0,
+    };
   };
 
-  const resetChanges = () => {
-    resetForm();
-    toast.success("Changes reset");
-  };
-
-  /* =========================================================
-     VALIDATION
-  ========================================================= */
-  const validateForm = () => {
-    if (minWeight === "" || maxWeight === "") {
-      toast.error("Please enter a valid weight range");
-      return false;
-    }
-    const min = Number(minWeight);
-    const max = Number(maxWeight);
-    if (
-      !Number.isInteger(min) ||
-      !Number.isInteger(max) ||
-      min < 0 ||
-      max <= min
-    ) {
-      toast.error("Please enter a valid weight range");
-      return false;
-    }
-    if (!selectedService) {
-      toast.error("Please select a service");
-      return false;
-    }
-    if (!selectedSlabData?.weightSlabG) {
-      toast.error("Please select a valid weight slab");
-      return false;
-    }
-    if (!priority || Number(priority) < 1) {
-      toast.error("Priority must be at least 1");
-      return false;
-    }
-    return true;
-  };
-
-  /* =========================================================
-     SAVE (CREATE / UPDATE) 
-  ========================================================= */
   const saveRule = async () => {
-    if (!validateForm()) return;
-
-    let finalPickup = [...pickupPincodes];
-    const pendingPickup = normalizePincode(pickupInput);
-    if (pendingPickup.length === 6) {
-      finalPickup = [pendingPickup];
-      setPickupPincodes(finalPickup);
-      setPickupInput("");
-    }
-
-    /* Auto-flush pending destination input */
-    let finalDestination = [...destinationPincodes];
-    const pendingDest = normalizePincode(destinationInput);
-    if (pendingDest.length === 6 && !finalDestination.includes(pendingDest)) {
-      finalDestination.push(pendingDest);
-      setDestinationPincodes(finalDestination);
-      setDestinationInput("");
-    }
-
-    if (finalPickup.length === 0) {
-      toast.error("Pickup pincode is required");
-      return;
-    }
-
-    if (finalDestination.length === 0 && !destinationCsvFile) {
-      toast.error("Add at least one destination pincode or upload CSV");
-      return;
-    }
-
+    let payload;
+    try { payload = buildPayload(); } catch (e) { toast.error(e.message); return; }
     try {
       setSavingRule(true);
-
-      let response;
-      if (destinationCsvFile) {
-        const formData = new FormData();
-        formData.append("file", destinationCsvFile);
-        formData.append("pickup_pincode", finalPickup[0]);
-        formData.append(
-          "destination_pincodes",
-          JSON.stringify(finalDestination),
-        );
-        formData.append("weight_from_g", String(Number(minWeight)));
-        formData.append("weight_to_g", String(Number(maxWeight)));
-        formData.append(
-          "weight_slab_g",
-          String(Number(selectedSlabData.weightSlabG)),
-        );
-        formData.append("service", selectedService);
-        formData.append("priority", String(Number(priority)));
-        formData.append("is_active", isActive ? "1" : "0");
-
-        if (editingRuleId) {
-          response = await api.put(
-            `${API_BASE}/updateMerchantServiceAllocationRule/${editingRuleId}`,
-            formData,
-            { headers: { "Content-Type": "multipart/form-data" } },
-          );
-        } else {
-          response = await api.post(
-            `${API_BASE}/createMerchantServiceAllocationRule`,
-            formData,
-            { headers: { "Content-Type": "multipart/form-data" } },
-          );
-          console.log("Bulk Upload API Response:", response?.data);
-        }
-      } else {
-        const payload = {
-          pickup_pincode: finalPickup[0],
-          destination_pincodes: finalDestination,
-          weight_from_g: Number(minWeight),
-          weight_to_g: Number(maxWeight),
-          weight_slab_g: Number(selectedSlabData.weightSlabG),
-          service: selectedService,
-          priority: Number(priority),
-          is_active: isActive ? 1 : 0,
-        };
-
-        if (editingRuleId) {
-          response = await api.put(
-            `${API_BASE}/updateMerchantServiceAllocationRule/${editingRuleId}`,
-            payload,
-          );
-        } else {
-          response = await api.post(
-            `${API_BASE}/createMerchantServiceAllocationRule`,
-            payload,
-          );
-        }
-      }
-
-      toast.success(
-        response?.data?.message ||
-          (editingRuleId
-            ? "Allocation rule updated successfully"
-            : "Allocation rule created successfully"),
-      );
-
-      setDestinationCsvFile(null);
+      // Both CREATE and UPDATE always send the exact same JSON contract.
+      // CSV pincodes are parsed into destination_condition.pincodes on the client.
+      const response = editingRuleId
+        ? await api.put(`${API_BASE}/updateMerchantServiceAllocationRule/${editingRuleId}`, payload)
+        : await api.post(`${API_BASE}/createMerchantServiceAllocationRule`, payload);
+      toast.success(response?.data?.message || (editingRuleId ? "Rule updated" : "Rule created"));
       resetForm();
       await fetchRules(page);
     } catch (error) {
-      console.error(
-        "[Allocation Rules] Save Error:",
-        error?.response?.data || error,
-      );
-      toast.error(
-        getErrorMessage(
-          error,
-          editingRuleId
-            ? "Failed to update allocation rule"
-            : "Failed to create allocation rule",
-        ),
-      );
-    } finally {
-      setSavingRule(false);
-    }
+      const existing = error?.response?.status === 409 ? error?.response?.data?.data : null;
+      if (existing?.existing_rule_id) {
+        toast.error(`Same rule already exists (#${existing.existing_rule_id}). Edit/reactivate it instead.`);
+      } else {
+        toast.error(getErrorMessage(error, "Failed to save allocation rule"));
+      }
+      console.error("[Allocation Rules] Save Error:", error?.response?.data || error);
+    } finally { setSavingRule(false); }
   };
-  /* =========================================================
-     EDIT
-  ========================================================= */
+
   const handleEdit = (item) => {
+    const pick = item.pickupCondition;
+    const dest = item.destinationCondition;
+    const weight = item.weightCondition;
     setEditingRuleId(item.id);
     setIsActive(item.isActive);
-    setPickupPincodes(item.pickupPincode ? [String(item.pickupPincode)] : []);
-    setDestinationPincodes(
-      Array.isArray(item.destinationPincodes)
-        ? item.destinationPincodes.map(String)
-        : [],
+    setEnabled({ pickup: !!pick, destination: !!dest, weight: !!weight });
+    setLogicalOperator(item.logicalOperator);
+    setPickupOperator(pick?.operator || "IN");
+    setDestinationOperator(dest?.operator || "IN");
+    setWeightOperator(weight?.operator || "BETWEEN");
+    setPickupPincodes(pick?.pincodes?.map(String) || []);
+    setDestinationPincodes(dest?.pincodes?.map(String) || []);
+    setPickupInput(""); setDestinationInput(""); setDestinationCsvFile(null);
+    setMinWeight(String(weight?.from_g ?? "0"));
+    setMaxWeight(String(weight?.to_g ?? "500"));
+    setWeightValue(String(weight?.value_g ?? "500"));
+    setSelectedService(item.service);
+    const allowedSlabs = SERVICE_SLABS[item.service] || [];
+    const knownSlab = SLABS.find(s =>
+      s.weightSlabG === item.weightSlabG && allowedSlabs.includes(s.weightSlabG)
     );
-    setPickupInput("");
-    setDestinationInput("");
-    setMinWeight(String(item.weightFromG ?? ""));
-    setMaxWeight(String(item.weightToG ?? ""));
-    setSelectedService(item.service || "SDD");
-
-    const matching = SLABS.find(
-      (s) => Number(s.weightSlabG) === Number(item.weightSlabG),
-    );
-    setSelectedSlab(matching?.id || SLABS[0].id);
-
-    setPriority(String(item.priority ?? 1));
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Never silently overwrite an existing unsupported slab during editing.
+    setSelectedSlab(knownSlab?.id || "");
+    if (!knownSlab) toast.warn("This rule has an unsupported slab. Select an available slab before updating.");
+    setPriority(String(item.priority));
     toast.info(`Rule #${item.id} loaded for editing`);
   };
 
-  /* =========================================================
-     DELETE
-  ========================================================= */
   const handleDelete = async (id) => {
-    if (
-      !window.confirm("Are you sure you want to delete this allocation rule?")
-    )
-      return;
-
+    if (!window.confirm("Are you sure you want to delete this allocation rule?")) return;
     try {
       setDeletingRuleId(id);
-      const response = await api.delete(
-        `${API_BASE}/deleteMerchantServiceAllocationRule/${id}`,
-      );
-      toast.success(
-        response?.data?.message || "Allocation rule deleted successfully",
-      );
-
-      if (rules.length === 1 && page > 1) {
-        setPage((p) => p - 1);
-      } else {
-        await fetchRules(page);
-      }
+      const response = await api.delete(`${API_BASE}/deleteMerchantServiceAllocationRule/${id}`);
+      toast.success(response?.data?.message || "Allocation rule deleted");
+      if (editingRuleId === id) resetForm();
+      if (rules.length === 1 && page > 1) setPage(p => p - 1);
+      else await fetchRules(page);
     } catch (error) {
-      console.error(
-        "[Allocation Rules] DELETE Error:",
-        error?.response?.data || error,
-      );
       toast.error(getErrorMessage(error, "Failed to delete allocation rule"));
-    } finally {
-      setDeletingRuleId(null);
-    }
+    } finally { setDeletingRuleId(null); }
   };
 
-  const handleDestinationCsvUpload = (e) => {
+  const handleDestinationCsvUpload = e => {
     const file = e.target.files?.[0];
     e.target.value = "";
-
     if (!file) return;
-
-    if (!file.name.toLowerCase().endsWith(".csv")) {
-      toast.error("Please upload a .csv file");
-      return;
+    if (!file.name.toLowerCase().endsWith(".csv") || file.size > 2 * 1024 * 1024) {
+      toast.error("Upload a .csv file under 2 MB"); return;
     }
-
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("CSV file must be under 2 MB");
-      return;
-    }
-
     setUploadingCsv(true);
-
     const reader = new FileReader();
-
-    reader.onload = (event) => {
+    reader.onload = event => {
       try {
-        const text = String(event.target.result || "");
-
-        const lines = text
-          .split(/\r?\n/)
-          .map((l) => l.trim())
-          .filter(Boolean);
-
-        const parsed = [];
-        const invalid = [];
-
-        for (const line of lines) {
-          // split by comma / semicolon / tab
-          const cells = line.split(/[,;\t]/).map((c) => c.trim());
-
-          for (const cell of cells) {
-            if (!cell) continue;
-
-            // skip headers (starts with letters)
-            if (/^[a-zA-Z]/.test(cell)) continue;
-
-            const digits = cell.replace(/\D/g, "");
-
-            if (digits.length !== 6) {
-              invalid.push(cell);
-              continue;
-            }
-
-            parsed.push(digits);
-          }
-        }
-
-        // Dedupe
-        const uniqueParsed = [...new Set(parsed)];
-
-        if (uniqueParsed.length === 0) {
-          toast.error("No valid 6-digit pincodes found in CSV");
-          setUploadingCsv(false);
-          return;
-        }
-
-        // ✅ Merge into chips (dedupe with existing)
-        setDestinationPincodes((prev) => {
-          const merged = new Set([...prev, ...uniqueParsed]);
-          return Array.from(merged);
-        });
-
-        // Save file for backend upload on Save
+        const cells = String(event.target.result || "").split(/[\s,;\t]+/).filter(Boolean);
+        const valid = [...new Set(cells.filter(c => /^\d{6}$/.test(c)))];
+        if (!valid.length) { toast.error("No valid six-digit pincodes found"); return; }
+        setDestinationPincodes(prev => [...new Set([...prev, ...valid])]);
         setDestinationCsvFile(file);
-
-        toast.success(
-          `${uniqueParsed.length} pincodes imported` +
-            (invalid.length ? ` · ${invalid.length} invalid skipped` : ""),
-        );
-      } catch (err) {
-        console.error("[CSV Parse] Error:", err);
-        toast.error("Failed to parse CSV file");
-      } finally {
-        setUploadingCsv(false);
-      }
+        setEnabled(prev => ({ ...prev, destination: true }));
+        toast.success(`${valid.length} pincodes imported`);
+      } catch { toast.error("Could not parse CSV"); }
+      finally { setUploadingCsv(false); }
     };
-
-    reader.onerror = () => {
-      toast.error("Failed to read CSV file");
-      setUploadingCsv(false);
-    };
-
+    reader.onerror = () => { toast.error("Failed to read CSV"); setUploadingCsv(false); };
     reader.readAsText(file);
   };
 
-  /* =========================================================
-     FILTERED RULES
-  ========================================================= */
+  
 
-  const filteredRules = useMemo(() => {
-    const q = search.trim().toLowerCase();
+const filteredRules = useMemo(() => {
+  const q = search.trim().toLowerCase();
 
-    return rules.filter((item) => {
-      const matchesService =
-        serviceFilter === "All services" || item.service === serviceFilter;
+  return rules.filter((item) => {
+    if (
+      serviceFilter !== "All services" &&
+      item.service !== serviceFilter
+    ) {
+      return false;
+    }
 
-      if (!matchesService) return false;
+    if (!q) return true;
 
-      if (!q) return true;
+    return [
+      item.status,
+      item.rule,
+      item.service,
+      item.allocateTo,
+      item.weight,
+      item.priority,
+      item.logicalOperator,
+      ...(item.pickupPincodes || []),
+      ...(item.destinationPincodes || []),
+    ].some((value) =>
+      String(value ?? "").toLowerCase().includes(q)
+    );
+  });
+}, [rules, search, serviceFilter]);
 
-      const status = String(item.status ?? "").toLowerCase();
 
-      // Active / Inactive
-      if (q === "active" || q === "inactive") {
-        return status === q;
-      }
-
-      // Normalize Rule ID
-      const ruleId = String(item.id ?? "").toLowerCase();
-      const normalizedSearch = q.replace(/^0+/, "") || "0";
-
-      // Rule ID search
-      if (ruleId === normalizedSearch) {
-        return true;
-      }
-
-      // Other fields search
-      const text = [
-        String(item.rule ?? ""),
-        String(item.pickupPincode ?? ""),
-        ...(item.destinationPincodes || []).map(String),
-        String(item.service ?? ""),
-        String(item.allocateTo ?? ""),
-        String(item.weight ?? ""),
-        String(item.priority ?? ""),
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return text.includes(q);
-    });
-  }, [rules, search, serviceFilter]);
-
-  const activeCount = rules.filter((r) => r.isActive).length;
-
-  /* =========================================================
-     PAGINATION
-  ========================================================= */
+  const activeCount = rules.filter(r => r.isActive).length;
   const canPrev = page > 1;
-  const canNext = page < Number(pagination?.totalPages || 1);
+  const canNext = page < Number(pagination.totalPages || 1);
+
 
   /* =========================================================
      RENDER
@@ -979,14 +732,14 @@ export default function OrderSlabAllocation() {
                 Order slab allocation
               </h1>
               <p className="mt-1 text-[12px] text-gray-600 sm:text-[14px]">
-                Route every eligible order into the right service slab using its
-                destination pincode, applicable weight and booking cut-off.
+                Allocate services using optional pickup, destination and weight
+                conditions with AND/OR and priority.
               </p>
             </div>
 
             <span className="inline-flex w-fit items-center gap-1 rounded-full bg-white px-3 py-1 text-[12px] font-bold text-[#138A4A] sm:text-[14px]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
-              {activeCount} active rules
+              {activeCount} active on this page
             </span>
           </div>
         </div>
@@ -996,10 +749,9 @@ export default function OrderSlabAllocation() {
         {/* Stepper */}
         <div className="mb-5 overflow-x-auto rounded-xl border border-[#DFE5EC] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.02)]">
           <div className="flex min-w-[360px] items-center px-3 py-2.5 sm:min-w-[420px] sm:px-5 sm:py-3">
-            <StepItem number="1" title="Pincode" />
-            <StepItem number="2" title="Weight" />
-            <StepItem number="3" title="Cut-off" />
-            <StepItem number="4" title="Allocate slab" active last />
+            <StepItem number="1" title="Conditions" />
+            <StepItem number="2" title="Operators" />
+            <StepItem number="3" title="Allocation" active last />
           </div>
         </div>
 
@@ -1041,281 +793,132 @@ export default function OrderSlabAllocation() {
           </div>
 
           <div className="px-4 sm:px-5">
-            {/* Section 01 */}
-            <div className="border-b border-[#EDF0F4] py-5 sm:py-6">
-              <div className="mb-5 flex items-center gap-3">
-                <SectionNumber>01</SectionNumber>
-                <h2 className="text-[15px] font-bold text-[#172033] sm:text-[14px]">
-                  Define the rule scope
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                {/* Pickup (single) */}
+            {/* Condition groups: optional, at least one must be enabled */}
+            <div className="py-5 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <FieldLabel required>Pickup Pincode</FieldLabel>
-
-                  <div className="flex min-h-9 flex-wrap items-center gap-1.5 rounded-lg border border-[#D8E0EA] bg-white px-2 py-1.5 focus-within:border-[#0446DB] sm:min-h-10">
-                    {pickupPincodes.length > 0 ? (
-                      pickupPincodes.map((code) => (
-                        <span
-                          key={`pickup-${code}`}
-                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold sm:text-[11px]"
-                          style={{ background: BRAND_SOFT, color: BRAND }}
-                        >
-                          {code}
-                          <button
-                            type="button"
-                            onClick={() => removePincode(code, "pickup")}
-                            className="cursor-pointer rounded-full"
-                            aria-label={`Remove pickup ${code}`}
-                          >
-                            <X size={10} />
-                          </button>
-                        </span>
-                      ))
-                    ) : (
-                      <input
-                        ref={pickupInputRef}
-                        value={pickupInput}
-                        onChange={(e) =>
-                          handlePincodeChange(e.target.value, "pickup")
-                        }
-                        onPaste={(e) => handlePincodePaste(e, "pickup")}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && pickupInput.length === 6) {
-                            e.preventDefault();
-                            addPincode(pickupInput, "pickup");
-                          }
-                        }}
-                        onBlur={() => {
-                          if (pickupInput.length === 6) {
-                            addPincode(pickupInput, "pickup");
-                          }
-                        }}
-                        placeholder="Enter Pickup Pincode"
-                        maxLength={6}
-                        inputMode="numeric"
-                        autoFocus
-                        className="h-7 min-w-[135px] flex-1 bg-transparent px-1 text-[11px] outline-none placeholder:text-[#A4AFBF]"
-                      />
-                    )}
-                  </div>
+                  <h2 className="text-[15px] font-bold">Define rule conditions</h2>
+                  <p className="mt-1 text-xs text-[#7B8798]">Enable one, two or all three conditions.</p>
                 </div>
-
-                {/* Destination (multiple) */}
-                <div>
-                  <FieldLabel required>Destination Pincodes</FieldLabel>
-
-                  {/* Pincode Input */}
-                  <div
-                    className={`flex min-h-9 flex-wrap items-center gap-1.5 rounded-lg border bg-white px-2 py-1.5 transition-colors sm:min-h-10 ${
-                      destinationCsvFile
-                        ? "border-[#D8E0EA] bg-[#F8FAFC]"
-                        : "border-[#D8E0EA] focus-within:border-[#0446DB]"
-                    }`}
-                  >
-                    {destinationPincodes.map((code) => (
-                      <span
-                        key={`destination-${code}`}
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold sm:text-[11px]"
-                        style={{
-                          background: BRAND_SOFT,
-                          color: BRAND,
-                        }}
-                      >
-                        {code}
-
-                        <button
-                          type="button"
-                          onClick={() => removePincode(code, "destination")}
-                          className="cursor-pointer rounded-full transition-colors hover:text-red-500"
-                          aria-label={`Remove destination ${code}`}
-                        >
-                          <X size={10} />
-                        </button>
-                      </span>
-                    ))}
-
-                    <input
-                      value={destinationInput}
-                      onChange={(e) =>
-                        handlePincodeChange(e.target.value, "destination")
-                      }
-                      onPaste={(e) => handlePincodePaste(e, "destination")}
-                      onKeyDown={(e) => {
-                        if (
-                          e.key === "Enter" &&
-                          destinationInput.length === 6
-                        ) {
-                          e.preventDefault();
-                          addPincode(destinationInput, "destination");
-                        }
-
-                        if (
-                          e.key === "Backspace" &&
-                          destinationInput === "" &&
-                          destinationPincodes.length > 0
-                        ) {
-                          setDestinationPincodes((prev) => prev.slice(0, -1));
-                        }
-                      }}
-                      placeholder={
-                        destinationCsvFile ? "CSV uploaded" : "Add pincode"
-                      }
-                      maxLength={6}
-                      inputMode="numeric"
-                      disabled={!!destinationCsvFile}
-                      className={`h-7 min-w-[100px] flex-1 bg-transparent px-1 text-[11px] outline-none placeholder:text-[#A4AFBF] ${
-                        destinationCsvFile
-                          ? "cursor-not-allowed text-[#98A2B3]"
-                          : ""
-                      }`}
-                    />
+                {activeGroups > 1 && (
+                  <div className="flex items-center gap-2">
+                    <FieldLabel>Combine with</FieldLabel>
+                    <Select value={logicalOperator} onChange={e => setLogicalOperator(e.target.value)}>
+                      <option value="AND">AND (all must match)</option>
+                      <option value="OR">OR (any can match)</option>
+                    </Select>
                   </div>
-
-                  {/* CSV Actions */}
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {/* Upload CSV */}
-                    <label
-                      className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-[#D8E0EA] bg-white px-2.5 text-[11px] font-semibold transition-all sm:text-[12px] ${
-                        uploadingCsv
-                          ? "cursor-wait opacity-60"
-                          : "hover:border-[#0446DB] hover:bg-[#EEF4FF]"
-                      }`}
-                      style={{ color: BRAND }}
-                    >
-                      {uploadingCsv ? (
-                        <>
-                          <RotateCcw size={13} className="animate-spin" />
-                          Parsing CSV...
-                        </>
-                      ) : (
-                        <>
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                            <polyline points="17 8 12 3 7 8" />
-                            <line x1="12" y1="3" x2="12" y2="15" />
-                          </svg>
-                          Upload bulk CSV
-                        </>
-                      )}
-
-                      <input
-                        type="file"
-                        accept=".csv"
-                        onChange={handleDestinationCsvUpload}
-                        disabled={uploadingCsv}
-                        className="hidden"
-                      />
-                    </label>
-                    {/* Uploaded File */}
-                    {destinationCsvFile && (
-                      <div className="inline-flex h-8 max-w-full items-center gap-2 rounded-md border border-[#D8E0EA] bg-[#F8FAFC] px-2.5">
-                        <span className="max-w-[180px] truncate text-[11px] font-medium text-[#475569]">
-                          {destinationCsvFile.name}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDestinationCsvFile(null);
-                            setDestinationInput("");
-                            setDestinationPincodes([]);
-                          }}
-                          className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-[#94A3B8] transition-all hover:bg-red-500 hover:text-white"
-                          aria-label="Clear uploaded CSV"
-                          title="Clear CSV"
-                        >
-                          <X size={12} />
-                        </button>
+                )}
+              </div>
+              {[
+                { key: "pickup", title: "Pickup pincode", operator: pickupOperator, setOperator: setPickupOperator,
+                  codes: pickupPincodes, input: pickupInput, setInput: setPickupInput },
+                { key: "destination", title: "Destination pincode", operator: destinationOperator,
+                  setOperator: setDestinationOperator, codes: destinationPincodes, input: destinationInput, setInput: setDestinationInput },
+              ].map(group => (
+                <div key={group.key} className="rounded-xl border border-[#DDE4EC] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-[13px] font-bold">{group.title}</h3>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span>{enabled[group.key] ? "Enabled" : "Disabled"}</span>
+                      <Toggle enabled={enabled[group.key]} onChange={() => setEnabled(prev => ({ ...prev, [group.key]: !prev[group.key] }))} />
+                    </div>
+                  </div>
+                  {enabled[group.key] && (
+                    <div className="mt-3 space-y-3">
+                      <div className="max-w-[220px]">
+                        <FieldLabel>Operator</FieldLabel>
+                        <Select value={group.operator} onChange={e => group.setOperator(e.target.value)}>
+                          <option value="IN">IN</option>
+                          <option value="NOT_IN">NOT IN</option>
+                        </Select>
                       </div>
-                    )}
-                  </div>
-
-                 
+                      <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-lg border border-[#D8E0EA] px-2 py-1.5">
+                        {group.codes.map(code => (
+                          <span key={code} className="inline-flex items-center gap-1 rounded-md bg-[#EEF4FF] px-2 py-1 text-[11px] font-semibold text-[#0446DB]">
+                            {code}
+                            <button type="button" onClick={() => removePincode(code, group.key)} aria-label={`Remove ${code}`}><X size={12}/></button>
+                          </span>
+                        ))}
+                        <input
+                          ref={group.key === "pickup" ? pickupInputRef : undefined}
+                          value={group.input}
+                          onChange={e => handlePincodeChange(e.target.value, group.key)}
+                          onPaste={e => handlePincodePaste(e, group.key)}
+                          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (group.input.length === 6) addPincode(group.input, group.key); } }}
+                          placeholder="Enter 6-digit pincode" inputMode="numeric" maxLength={6}
+                          className="h-7 min-w-[160px] flex-1 bg-transparent text-xs outline-none"/>
+                      </div>
+                      {group.key === "destination" && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <label className="cursor-pointer rounded-md border border-[#D8E0EA] px-3 py-2 text-xs font-semibold text-[#0446DB]">
+                            {uploadingCsv ? "Reading CSV..." : "Import destination CSV"}
+                            <input type="file" accept=".csv" className="hidden" disabled={uploadingCsv} onChange={handleDestinationCsvUpload}/>
+                          </label>
+                          {destinationCsvFile && <span className="text-xs text-[#667085]">{destinationCsvFile.name} (imported into list)
+                            <button type="button" className="ml-2 text-red-500" onClick={() => setDestinationCsvFile(null)}>Clear file</button>
+                          </span>}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
+              ))}
+              <div className="rounded-xl border border-[#DDE4EC] p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-[13px] font-bold">Weight condition</h3>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span>{enabled.weight ? "Enabled" : "Disabled"}</span>
+                    <Toggle enabled={enabled.weight} onChange={() => setEnabled(prev => ({ ...prev, weight: !prev.weight }))}/>
+                  </div>
+                </div>
+                {enabled.weight && (
+                  <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div><FieldLabel>Operator</FieldLabel>
+                      <Select value={weightOperator} onChange={e => setWeightOperator(e.target.value)}>
+                        {["BETWEEN", "NOT_BETWEEN", "EQ", "GT", "GTE", "LT", "LTE"].map(op => <option key={op} value={op}>{op}</option>)}
+                      </Select>
+                    </div>
+                    {["BETWEEN", "NOT_BETWEEN"].includes(weightOperator) ? (
+                      <>
+                        <div><FieldLabel>From (g, exclusive)</FieldLabel><Input type="number" min="0" step="1" value={minWeight} onChange={e => setMinWeight(e.target.value)}/></div>
+                        <div><FieldLabel>To (g, inclusive)</FieldLabel><Input type="number" min="1" step="1" value={maxWeight} onChange={e => setMaxWeight(e.target.value)}/></div>
+                      </>
+                    ) : <div><FieldLabel>Value (g)</FieldLabel><Input type="number" min="0" step="1" value={weightValue} onChange={e => setWeightValue(e.target.value)}/></div>}
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Section 02 */}
-            <div className="border-b border-[#EDF0F4] py-5 sm:py-6">
-              <div className="mb-5 flex items-center gap-3">
-                <SectionNumber>02</SectionNumber>
-                <div>
-                  <h2 className="text-[15px] font-bold text-[#172033] sm:text-[14px]">
-                    Set weight conditions
-                  </h2>
-                  <p className="mt-0.5 text-[12px] text-[#7B8798] sm:text-[11px]">
-                    Define the applicable weight range for this rule.
-                  </p>
-                </div>
-              </div>
-
-              <div className="max-w-[520px]">
-                <FieldLabel required>Min weight</FieldLabel>
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      type="number"
-                      min="0"
-                      value={minWeight}
-                      onChange={(e) => setMinWeight(e.target.value)}
-                      className="pr-8"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#98A2B3]">
-                      g
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-[#7B8798]">to</span>
-                  <div className="relative flex-1">
-                    <Input
-                      type="number"
-                      min="0"
-                      value={maxWeight}
-                      onChange={(e) => setMaxWeight(e.target.value)}
-                      className="pr-8"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#98A2B3]">
-                      g
-                    </span>
-                  </div>
-                </div>
-                <p className="mt-1.5 text-[11px] text-[#98A2B3]">
-                  Maximum weight is inclusive.
-                </p>
-              </div>
-            </div>
-
-            {/* Section 03 */}
-            <div className="py-5 sm:py-6">
-              <div className="mb-5 flex items-center gap-3">
-                <SectionNumber>03</SectionNumber>
-                <div>
-                  <h2 className="text-[15px] font-bold text-[#172033] sm:text-[14px]">
-                    Choose the allocation result
-                  </h2>
-                  <p className="mt-0.5 text-[12px] text-[#7B8798] sm:text-[11px]">
-                    Select the weight slab and service type for this rule.
-                  </p>
-                </div>
-              </div>
-
+            {/* Allocation output */}
+            <div className="border-t border-[#EDF0F4] py-5">
+              <div className="mb-4 flex items-center gap-3"><SectionNumber>02</SectionNumber><h2 className="text-[15px] font-bold">Choose allocation result</h2></div>
               <div>
-                <FieldLabel required className="uppercase tracking-[0.05em]">
-                  Select weight slab
-                </FieldLabel>
-                <div className="grid grid-cols- gap-2.5 md:grid-cols-3">
-                  {SLABS.map((slab) => (
+                <FieldLabel required>Select service</FieldLabel>
+                <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3">
+                  {SERVICES.map(service => (
+                    <ServiceCard
+                      key={service.id}
+                      service={service}
+                      selected={selectedService === service.id}
+                      onClick={() => {
+                        if (selectedService === service.id) return;
+                        setSelectedService(service.id);
+                        // Reset the slab so an old service's slab is never submitted.
+                        setSelectedSlab("SLAB_500GM");
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="mt-5">
+                <FieldLabel required>Select weight slab</FieldLabel>
+                <p className="mb-2 text-xs text-[#7B8798]">
+                  {selectedService === "SDD" || selectedService === "NDD"
+                    ? "Available slabs: 500g, 2000g, 5000g"
+                    : "Available slabs: 500g, 1000g"}
+                </p>
+                <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3">
+                  {availableSlabs.map(slab => (
                     <SlabCard
                       key={slab.id}
                       slab={slab}
@@ -1325,33 +928,9 @@ export default function OrderSlabAllocation() {
                   ))}
                 </div>
               </div>
-
-              <div className="mt-5">
-                <FieldLabel required className="uppercase tracking-[0.05em]">
-                  Select service
-                </FieldLabel>
-                <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3">
-                  {SERVICES.map((service) => (
-                    <ServiceCard
-                      key={service.id}
-                      service={service}
-                      selected={selectedService === service.id}
-                      onClick={() => setSelectedService(service.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-4 max-w-[315px]">
-                <FieldLabel required>Rule priority</FieldLabel>
-                <Select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                >
-                  <option value="1">1 · High</option>
-                  <option value="2">2 · Medium</option>
-                  <option value="3">3 · Low</option>
-                </Select>
+              <div className="mt-4 max-w-[315px]"><FieldLabel required>Rule priority (smaller wins)</FieldLabel>
+                 
+                <Input type="number" min="1" step="1" value={priority} onChange={e => setPriority(e.target.value)}/>
               </div>
             </div>
 
@@ -1379,7 +958,7 @@ export default function OrderSlabAllocation() {
                   ? "Saving..."
                   : editingRuleId
                     ? "Update rule"
-                    : "Save & activate rule"}
+                    : "Save rule"}
               </button>
             </div>
           </div>
@@ -1406,7 +985,7 @@ export default function OrderSlabAllocation() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search rule ID or status"
+                  placeholder="Search status, service, weight..."
                   className="h-9 w-full rounded-lg border border-[#D8E0EA] bg-white pl-9 pr-3 text-[13px] outline-none focus:border-[#0446DB]"
                 />
               </div>
@@ -1419,7 +998,7 @@ export default function OrderSlabAllocation() {
                 <option>All services</option>
                 <option>SDD</option>
                 <option>NDD</option>
-                <option>HLD60MIN</option>
+                <option>HDL60MIN</option>
                 <option>HLD120MIN</option>
                 <option>HLD4HRS</option>
               </Select>
@@ -1516,13 +1095,13 @@ export default function OrderSlabAllocation() {
                     <div>
                       <span className="block text-[#98A2B3]">Pickup</span>
                       <strong className="mt-1 block text-[#344054]">
-                        {item.pickupPincodes.length} pincodes
+                        {item.pickupCondition ? `${item.pickupCondition.operator}: ${item.pickupPincodes.length} pincodes` : "Any"}
                       </strong>
                     </div>
                     <div>
                       <span className="block text-[#98A2B3]">Destination</span>
                       <strong className="mt-1 block text-[#344054]">
-                        {item.destinationPincodes.length} pincodes
+                        {item.destinationCondition ? `${item.destinationCondition.operator}: ${item.destinationPincodes.length} pincodes` : "Any"}
                       </strong>
                     </div>
                     <div>
@@ -1605,14 +1184,14 @@ export default function OrderSlabAllocation() {
                     >
                       <td className="px-3 py-4">
                         <span className="inline-flex rounded-md bg-[#F1F5F9] px-2 py-1 text-[13px] font-bold text-[#172033]">
-                          {String(item.id).padStart(3, "0")}
+                          {String(item.id)}
                         </span>
                       </td>
                       <td className="px-3 py-4 text-[13px] text-[#475467]">
-                        {item.pickupPincodes.length} pincodes
+                        {item.pickupCondition ? `${item.pickupCondition.operator}: ${item.pickupPincodes.length} pincodes` : "Any"}
                       </td>
                       <td className="px-3 py-4 text-[13px] text-[#475467]">
-                        {item.destinationPincodes.length} pincodes
+                        {item.destinationCondition ? `${item.destinationCondition.operator}: ${item.destinationPincodes.length} pincodes` : "Any"}
                       </td>
                       <td className="px-3 py-4 text-[13px] text-[#475467]">
                         {item.weight}
@@ -1629,9 +1208,35 @@ export default function OrderSlabAllocation() {
                       <td className="px-3 py-4">
                         <StatusBadge status={item.status} />
                       </td>
-                      <td className="px-3 py-4 text-[13px] font-bold text-[#172033]">
-                        {item.priority}
+                      
+                      <td className="px-3 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold ${
+                            Number(item.priority) === 1
+                              ? "border-red-200 bg-red-50 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400"
+                              : Number(item.priority) === 2
+                              ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400"
+                              : "border-green-200 bg-green-50 text-green-700 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-400"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              Number(item.priority) === 1
+                                ? "bg-red-500"
+                                : Number(item.priority) === 2
+                                ? "bg-amber-500"
+                                : "bg-green-500"
+                            }`}
+                          />
+
+                          {Number(item.priority) === 1
+                            ? "High"
+                            : Number(item.priority) === 2
+                            ? "Medium"
+                            : "Low"}
+                        </span>
                       </td>
+
                       <td className="px-3 py-4">
                         <div className="flex items-center gap-1.5">
                           <button

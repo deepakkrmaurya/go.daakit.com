@@ -499,6 +499,7 @@ const Analytics = lazy(() => import("./components/admin/dasboard/Analytics"));
 const Navbar = lazy(() => import("./components/layout/Navbar"));
 const OrderDetails = lazy(() => import("./components/admin/order/OrderDetails"));
 const CODRemittances = lazy(() => import("./components/admin/CODRemittances"));
+const UserCODRemittances = lazy(() => import("./components/User/remittance/CodRemittance"));
 const RiderOnboarding = lazy(() => import("./components/admin/RiderOnboarding"));
 const OrderAssignment = lazy(() => import("./components/admin/OrderAssignment"));
 const RoutePlanning = lazy(() => import("./components/admin/RoutePlanning"));
@@ -525,17 +526,21 @@ const MerchantAnalytics = lazy(() => import("./components/merchant_component/mer
 const MerchantOrderTracking = lazy(() => import("./components/merchant_component/MerchantOrderTracking"),);
 const MerchantNDR = lazy(() => import("./components/merchant_component/merchant/ndr/MerchantNDR"));
 const MerchantRemittances = lazy(() => import("./components/admin/MerchantRemittances"));
+const UserMerchantRemittances = lazy(() => import("./components/User/remittance/UserMerchantRemittance"));
 const MerchantDetails = lazy(() => import("./components/admin/MerchantDetails"));
 const UserMerchantDetails = lazy(() => import("./components/User/merchant/UserMerchant"));
 const UserRiderList = lazy(() => import("./components/User/rider/UserRiderList"));
+const UserVendorStats = lazy(() => import("./components/User/vendor/UserVendorList"));
 const MerchantCOD = lazy(() => import("./components/merchant_component/MerchantCOD"));
 const TrackAWBOrder = lazy(() => import("./components/TrackAWBOrder"));
 const RemittanceStatusVendor = lazy(() => import("./components/admin/remittance/RemittanceStatusVendor"));
+const UserRemittanceStatusVendor = lazy(() => import("./components/User/remittance/UserVendorRemittance"));
 const VendorRemittanceRecord = lazy(() => import("./components/vendor_components/remittance/VendorRemittanceRecord"));
 const DcRemittanceRecord = lazy(() => import("./components/distributionCenter/remmitance/DcRemittanceRecord"));
 const DcVendorRemittanceRecord = lazy(() => import("./components/distributionCenter/remmitance/VendorRemmitanceRecord"));
 const RidersMap = lazy(() => import("./components/admin/RidersMap"));
 const VendorRidersMap = lazy(() => import("./components/vendor_components/VendorRidersMap"));
+const DcVendorRidersMap = lazy(() => import("./components/distributionCenter/rider/RiderLoaction"));
 const MerchantCX = lazy(() => import("./components/merchant_component/MerchantCX"));
 const IncognitoLogin = lazy(() => import("./components/IncognitoLogin"));
 const MerchantOrderDetails = lazy(() => import("./components/merchant_component/merchant/order/MerchantOrderDetails"));
@@ -612,65 +617,6 @@ import LazyLoading from "./components/layout/LazyLoding";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "./context/ThemeContext";
 
-// import { jwtDecode } from "jwt-decode";*
-
-// import { UserRoles } from "@/utils/UserRole";*
-
-// import BookOrders from "./components/admin/order/BookOrders";*
-
-// import NewMappingOrders from "./components/admin/order/NewMappingOrders";*
-
-// import AssignmentConsole from "./components/User/AssignmentConsole";*
-
-// import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";*
-
-// import { ScrollToTop } from "./components/UiComponents/ScrollToTop";*
-
-// import ShipmentTracking from "./components/vendor_components/ShipmentTracking";*
-
-// import TeachDraftsList from "./components/merchant_component/techbasedMerchant/order/DraftOrder";*
-
-// import TeachBulkUpload from "./components/merchant_component/techbasedMerchant/order/BulkUpload";*
-
-// import BillingAndInvoices from "./components/admin/BillingAndInvoices";*
-
-// import Billing from "./components/merchant_component/merchant/billing/Billing";*
-
-// import IntegrateChannel from "./components/merchant_component/merchant/channel/IntegrateChannel";*
-
-// import ChannelList from "./components/merchant_component/merchant/channel/ChannelList";*
-
-// import AddShopifyDetails from "./components/merchant_component/merchant/channel/AddShopifyDetails";*
-
-// import RidrShipmentTracking from "./components/merchant_component/techbasedMerchant/riders/riderOrderTracking";*
-
-// import TechInsurance from "./components/merchant_component/techbasedMerchant/insurance/Techinsurance";*
-
-// import DcUserLogin from "./components/auth/DcLogin";*
-
-// import DevAnalytics from "./components/admin/dev/DevAnalytics";*
-
-// import DistributionCenterOnboarding from "./components/admin/dc/DistributionCenterOnboarding";*
-
-// import DistributionCenterListing from "./components/admin/dc/DistributionCenterListing";*
-
-// import WeightDiscrepancies from "./components/merchant_component/WeightDiscrepancies";*
-
-// import WeightMIS from "./components/admin/WeightReconciliation/WeightMIS";*
-
-// import Dispute from "./components/admin/WeightReconciliation/Dispute";*
-
-// import { ProtectedLayout } from "./components/layout/ProtectedLayout";*
-
-// import DcVendorListing from "./components/distributionCenter/vendor/DcVendorListing";*
-
-// import InspectController from "./Helper/InspectController";*
-
-// import  WeightReconciliation  from "./components/admin/WeightReconciliation/WeightReconciliation";*
-
-// import DcLoadout from "./components/distributionCenter/order/DcLoadout";*
-
-// import VendorLoadout from "./components/vendor_components/order/VendorLoadout";*
 
 import { jwtDecode } from "jwt-decode";
 import { UserRoles } from "@/utils/UserRole";
@@ -843,7 +789,13 @@ function App() {
           { path: "/user/dc/list",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["VIEW_DC", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserDistributionCenterListing /></UserProtectedRouteLayout>)},
           { path: "/user/merchant/details",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["LOADOUT_VIEW", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserMerchantDetails /></UserProtectedRouteLayout>)},
           { path: "/user/rider/details",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["VIEW_RIDER", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserRiderList /></UserProtectedRouteLayout>)},
+          { path: "/user/vendor/details",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["VIEW_VENDOR", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserVendorStats /></UserProtectedRouteLayout>)},
+          { path: "/user/cod-remittances",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["REMITTANCE_VIEW", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserCODRemittances /></UserProtectedRouteLayout>)},
+          { path: "/user/merchant-remittances",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["REMITTANCE_MERCHANT_VIEW", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserMerchantRemittances /></UserProtectedRouteLayout>)},
+          { path: "/user/vendor-remittances",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["REMITTANCE_VENDOR_SUBMISSIONS_VIEW", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserRemittanceStatusVendor /></UserProtectedRouteLayout>)},
+          
 
+          
         // Vendor routes*
 
       
@@ -992,7 +944,7 @@ function App() {
               path: "map",
               element: (
                 <Suspense fallback={<LoadingFallback />}>
-                  <VendorRidersMap />
+                  <DcVendorRidersMap />
                 </Suspense>
               ),
             },
@@ -1611,7 +1563,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      {/* <InspectController /> */}
+      <InspectController />
 
       <RouterProvider router={appRouter} fallbackElement={<LoadingFallback />} />
 

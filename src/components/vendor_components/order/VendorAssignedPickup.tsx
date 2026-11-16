@@ -1372,7 +1372,8 @@ function FragmentRow({ item, expanded, onToggle, onDownload, downloading, downlo
           </button>
         </td>
         <td className="px-4 py-3">
-          <button type="button" onClick={onDownload} disabled={downloadDisabled}
+          <button type="button" onClick={onDownload} 
+          disabled={downloadDisabled}
             title={!item.awbs?.length ? "No pickup-ready AWBs to export" : `Download PDF for ${item.loadout_code}`}
             className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-blue-200 px-3 py-1.5 text-xs font-semibold text-[#0446DB] hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-blue-900 dark:hover:bg-neutral-800">
             {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}

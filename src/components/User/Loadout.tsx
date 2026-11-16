@@ -39,6 +39,7 @@
 // import AxiosInstance from "@/Helper/axiosInstance";
 // import CustomButton from "../common/CustomButton";
 // import { FaFilter } from "react-icons/fa";
+// import logo from "@/assets/DaakitGo-Logo-removebg.png";
 
 // const BASE = "/api/loadout";
 // const baseURL = import.meta.env.VITE_BASE_URL;
@@ -67,8 +68,14 @@
 // type CsvValidation = { csv_awb_count?: number; total_loadout_shipments?: number; projected_rto_delivered_count?: number; projected_rto_undelivered_count?: number };
 // type ReverseResult = { total_shipments?: number; rto_delivered_count?: number; rto_undelivered_count?: number; webhook_dispatch_started?: boolean };
 // type ApiResponse<T> = { success?: boolean; message?: string; data?: T; code?: string };
-// const EMPTY_FILTERS: Filters = { start_date: "", end_date: "", city: "", code: "" };
 // const todayISO = (): string => { const d = new Date(); const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return local.toISOString().slice(0, 10); };
+// const defaultDateFilters = (): Filters => {
+//   const endDate = new Date();
+//   const startDate = new Date(endDate);
+//   startDate.setDate(startDate.getDate() - 9);
+//   const toLocalISO = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+//   return { start_date: toLocalISO(startDate), end_date: toLocalISO(endDate), city: "", code: "" };
+// };
 
 // /* ============================ HELPERS ============================ */
 // function formatDate(value?: string | null): string {
@@ -111,14 +118,9 @@
 //   const [dcs, setDcs] = useState<DistributionCenter[]>([]);
 
 //     const [drawerOpen, setDrawerOpen] = useState(false);
-//   const [filters, setFilters] = useState<Filters>({
-//     start_date: "",
-//     end_date: "",
-//     city: "",
-//     code: "",
-//   });
+//   const [filters, setFilters] = useState<Filters>(defaultDateFilters);
 //   const [filtersVersion, setFiltersVersion] = useState(0);
-//   const [appliedFilters, setAppliedFilters] = useState<Filters>(EMPTY_FILTERS);
+//   const [appliedFilters, setAppliedFilters] = useState<Filters>(defaultDateFilters);
 //   const applyFilters = (): void => {
 //     if (filters.start_date && filters.start_date > todayISO()) {
 //       toast.warning("Start date cannot be in the future");
@@ -137,14 +139,16 @@
 //     setDrawerOpen(false);
 //   };
 //   const resetFilters = (): void => {
-//     setFilters({ ...EMPTY_FILTERS });
-//     setAppliedFilters({ ...EMPTY_FILTERS });
+//     const defaults = defaultDateFilters();
+//     setFilters(defaults);
+//     setAppliedFilters(defaults);
 //     setFiltersVersion((v) => v + 1);
 //   };
 
 //   const [creating, setCreating] = useState(false);
 //   const [selected, setSelected] = useState<Loadout | null>(null);
 //   const [loadingDetails, setLoadingDetails] = useState(false);
+//   const [downloadingPdf, setDownloadingPdf] = useState(false);
 
 //   const [awb, setAwb] = useState("");
 //   const [scanning, setScanning] = useState(false);
@@ -641,6 +645,150 @@
 //     }
 //   };
 
+
+//   /* ======================= DOWNLOAD LOADOUT PDF ======================= */
+//   // Client-side export using the already-loaded details. Existing APIs are not touched.
+//   const downloadLoadoutPdf = async () => {
+//     if (!selected || downloadingPdf) return;
+//     setDownloadingPdf(true);
+//     try {
+//       const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+//         import("jspdf"),
+//         import("jspdf-autotable"),
+//       ]);
+//       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+//       const pageWidth = pdf.internal.pageSize.getWidth();
+//       const pageHeight = pdf.internal.pageSize.getHeight();
+//       const left = 12;
+//       const right = pageWidth - left;
+//       const ink: [number, number, number] = [23, 37, 61];
+//       const muted: [number, number, number] = [99, 111, 129];
+//       const border: [number, number, number] = [218, 226, 236];
+//       const brandBlue: [number, number, number] = [4, 70, 219];
+//       const orders = (selected.orders ?? []).filter((order) => order.scan_status === "accepted");
+//       const text = (value: unknown): string => String(value ?? "-").replace(/[^\x20-\x7E]/g, " ").trim() || "-";
+//       const short = (value: unknown, width: number): string => {
+//         let result = text(value);
+//         while (result.length > 3 && pdf.getTextWidth(result) > width) result = result.slice(0, -4) + "...";
+//         return result;
+//       };
+//       const line = (y: number) => {
+//         pdf.setDrawColor(...border);
+//         pdf.setLineWidth(0.3);
+//         pdf.line(left, y, right, y);
+//       };
+//       let logoData: string | null = null;
+//       let logoSize: { w: number; h: number } | null = null;
+//       try {
+//         const image = new Image();
+//         const src = typeof logo === "string" ? logo : (logo as { src?: string }).src ?? "";
+//         const loaded = await new Promise<HTMLImageElement>((resolve, reject) => {
+//           image.onload = () => resolve(image);
+//           image.onerror = () => reject(new Error("Logo unavailable"));
+//           image.src = src;
+//         });
+//         const canvas = document.createElement("canvas");
+//         canvas.width = loaded.naturalWidth;
+//         canvas.height = loaded.naturalHeight;
+//         const context = canvas.getContext("2d");
+//         if (context) {
+//           context.drawImage(loaded, 0, 0);
+//           logoData = canvas.toDataURL("image/png");
+//           const scale = Math.min(27 / canvas.width, 17 / canvas.height);
+//           logoSize = { w: canvas.width * scale, h: canvas.height * scale };
+//         }
+//       } catch {
+//         // A missing logo should not prevent an otherwise valid PDF export.
+//       }
+//       const drawHeader = (continued = false) => {
+//         if (logoData && logoSize) pdf.addImage(logoData, "PNG", left, 13, logoSize.w, logoSize.h);
+//         else {
+//           pdf.setFont("helvetica", "bold");
+//           pdf.setFontSize(13);
+//           pdf.setTextColor(...brandBlue);
+//           pdf.text("DAAKit", left, 22);
+//         }
+//         pdf.setFont("helvetica", "bold");
+//         pdf.setFontSize(15);
+//         pdf.setTextColor(...ink);
+//         pdf.text("Loadout Details", left + 31, 19);
+//         pdf.setFont("helvetica", "normal");
+//         pdf.setFontSize(9);
+//         pdf.setTextColor(...muted);
+//         pdf.text(continued ? "Accepted AWB List (continued)" : "Accepted AWB List", left + 31, 26);
+//         pdf.setFontSize(8);
+//         pdf.text("Loadout Code", right, 14.5, { align: "right" });
+//         pdf.setFillColor(231, 240, 255);
+//         pdf.roundedRect(right - 51, 18, 51, 11, 1.5, 1.5, "F");
+//         pdf.setFont("helvetica", "bold");
+//         pdf.setFontSize(9.5);
+//         pdf.setTextColor(...brandBlue);
+//         pdf.text(short(selected.loadout_code, 46), right - 25.5, 25, { align: "center" });
+//         line(37);
+//       };
+//       drawHeader();
+//       pdf.setFillColor(248, 250, 253);
+//       pdf.setDrawColor(...border);
+//       pdf.roundedRect(left, 42, right - left, 32, 2.5, 2.5, "FD");
+//       pdf.setDrawColor(227, 233, 242);
+//       pdf.line(109, 46, 109, 69);
+//       const detail = (label: string, value: unknown, x: number, valueX: number, y: number, maxWidth: number) => {
+//         pdf.setFont("helvetica", "bold");
+//         pdf.setFontSize(8.1);
+//         pdf.setTextColor(...muted);
+//         pdf.text(`${label} :`, x, y);
+//         pdf.setFont("helvetica", "normal");
+//         pdf.setFontSize(8.5);
+//         pdf.setTextColor(...ink);
+//         pdf.text(short(value, maxWidth), valueX, y);
+//       };
+//       detail("LOADOUT TYPE", selected.loadout_type === "forward" ? "Forward Loadout" : "Reverse Loadout", left + 5, left + 38, 50, 57);
+//       detail("CREATED AT", formatDate(selected.created_at), 114, 138, 50, 56);
+//       detail("SOURCE HUB", selected.source_hub_city, left + 5, left + 38, 60, 57);
+//       detail("STATUS", selected.status.toUpperCase(), 114, 138, 60, 56);
+//       detail("ACCEPTED SHIPMENTS", String(orders.length), left + 5, left + 48, 69, 23);
+//       line(80);
+//       pdf.setFont("helvetica", "bold");
+//       pdf.setFontSize(11);
+//       pdf.setTextColor(...ink);
+//       pdf.text("Accepted AWBs", left, 88);
+//       autoTable(pdf, {
+//         startY: 94,
+//         margin: { left, right: left, bottom: 28, top: 45 },
+//         head: [["#", "AWB Number", "Order ID", "Scan Status", "Reason"]],
+//         body: orders.map((order, index) => [
+//           String(index + 1), text(order.awb_number), text(order.order_id),
+//           text(order.scan_status), text(order.rejection_reason || "-"),
+//         ]),
+//         theme: "grid",
+//         styles: { font: "helvetica", fontSize: 8, cellPadding: 3, textColor: ink, lineColor: border, lineWidth: 0.16, overflow: "linebreak" },
+//         headStyles: { fillColor: [239, 243, 248], textColor: ink, fontStyle: "bold", lineColor: border },
+//         alternateRowStyles: { fillColor: [251, 252, 254] },
+//         columnStyles: { 0: { cellWidth: 11, halign: "center" }, 1: { cellWidth: 57 }, 2: { cellWidth: 38 }, 3: { cellWidth: 33 }, 4: { cellWidth: 47 } },
+//         didDrawPage: (data) => { if (data.pageNumber > 1) drawHeader(true); },
+//       });
+//       const generated = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+//       const pages = pdf.getNumberOfPages();
+//       for (let page = 1; page <= pages; page++) {
+//         pdf.setPage(page);
+//         line(pageHeight - 24);
+//         pdf.setFont("helvetica", "normal");
+//         pdf.setFontSize(7.4);
+//         pdf.setTextColor(...ink);
+//         pdf.text(`Generated On: ${generated}`, left, pageHeight - 17);
+//         pdf.text("Generated By: Loadout User", left, pageHeight - 12);
+//         pdf.text(`Page ${page} of ${pages}`, right, pageHeight - 17, { align: "right" });
+//       }
+//       pdf.setProperties({ title: `DAAKit Loadout - ${text(selected.loadout_code)}` });
+//       pdf.save(`DAAKit_Loadout_${selected.loadout_code.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`);
+//       toast.success("Loadout PDF downloaded");
+//     } catch (error) {
+//       toast.error(errorMessage(error));
+//     } finally {
+//       setDownloadingPdf(false);
+//     }
+//   };
+
 //   /* ======================= DERIVED ======================= */
 //   const filteredLoadouts = useMemo(() => {
 //     const q = search.trim().toLowerCase();
@@ -712,11 +860,160 @@
 //   /* ======================= RENDER ======================= */
 //   return (
 //     <div className="flex min-h-[calc(100dvh-100px)] flex-col gap-3 bg-[#F7F8FA] p-3 text-slate-900 sm:gap-4 sm:p-0 dark:bg-neutral-950 dark:text-white">
-//       <div className="shrink-0 sm:pt-0">
-//         <h1 className="text-lg font-bold sm:text-2xl">Loadout</h1>
+//       <div className="flex justify-between">
+//        <div>
+//          <h1 className="text-lg font-bold sm:text-2xl">Loadout</h1>
 //         <p className="mt-0.5 text-xs text-slate-500 sm:mt-1 sm:text-sm">
 //           Create loadouts, scan AWBs, validate reverse CSVs and close batches.
 //         </p>
+//        </div>
+//         <div className="">
+
+
+            
+//                 <Drawer direction="right" open={drawerOpen} onOpenChange={setDrawerOpen}>
+//                   <DrawerTrigger asChild>
+//                     <CustomButton
+//                       variant="outline"
+//                       size="md"
+//                       icon={FaFilter}
+//                       className="rounded-sm"
+//                     >
+//                       <span>Filter</span>
+//                     </CustomButton>
+//                   </DrawerTrigger>
+
+//                   <DrawerContent className="ml-auto flex h-full w-full max-w-md flex-col overflow-hidden rounded-none border-l border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+
+//                     {/* Fixed Header */}
+//                     <DrawerHeader className="shrink-0 border-b border-neutral-200 px-5 py-4 text-left dark:border-neutral-800">
+//                       <DrawerTitle className="flex items-center gap-3 text-base font-semibold text-neutral-900 dark:text-white">
+//                         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+//                           <FaFilter className="text-sm" />
+//                         </span>
+//                         Filter Orders
+//                       </DrawerTitle>
+
+//                       <DrawerDescription className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+//                         Apply filters to find specific orders.
+//                       </DrawerDescription>
+//                     </DrawerHeader>
+
+//                     {/* Scrollable Body */}
+//                     <form id="loadout-filter-form" onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); applyFilters(); }} className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+//                       <div className="grid grid-cols-1 gap-5">
+
+//                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+//                           <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
+//                             Start Date
+//                             <input
+//                               type="date"
+//                               value={filters.start_date}
+//                               max={todayISO()}
+//                               onChange={(e) =>
+//                                 setFilters((f) => ({
+//                                   ...f,
+//                                   start_date: e.target.value,
+//                                   end_date: f.end_date && e.target.value > f.end_date ? e.target.value : f.end_date,
+//                                 }))
+//                               }
+//                               onClick={(e) => {
+//                                 try {
+//                                   e.currentTarget.showPicker();
+//                                 } catch {
+//                                   // Browser fallback
+//                                 }
+//                               }}
+//                               className="h-10 w-full min-w-0 rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+//                             />
+//                           </label>
+
+//                           <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
+//                             End Date
+//                             <input
+//                               type="date"
+//                               value={filters.end_date}
+//                               min={filters.start_date || undefined}
+//                               max={todayISO()}
+//                               onChange={(e) =>
+//                                 setFilters((f) => ({
+//                                   ...f,
+//                                   end_date: e.target.value && f.start_date && e.target.value < f.start_date ? f.start_date : e.target.value,
+//                                 }))
+//                               }
+//                               onClick={(e) => {
+//                     try {
+//                       e.currentTarget.showPicker();
+//                     } catch {
+//                       // Browser fallback
+//                     }
+//                   }}
+//                               className="h-10 w-full min-w-0 rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+//                             />
+//                           </label>
+//                         </div>
+
+//                         <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
+//                           City
+//                           <input
+//                             type="text"
+//                             value={filters.city}
+//                             onChange={(e) =>
+//                               setFilters((f) => ({ ...f, city: e.target.value }))
+//                             }
+//                             placeholder="Enter city name"
+//                             className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+//                           />
+//                         </label>
+
+//                         <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
+//                           Loadout Code
+//                           <input
+//                             type="text"
+//                             value={filters.code}
+//                             onChange={(e) =>
+//                               setFilters((f) => ({ ...f, code: e.target.value }))
+//                             }
+//                             placeholder="Enter loadout code"
+//                             className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+//                           />
+//                         </label>
+//                       </div>
+//                     </form>
+
+//                     {/* Fixed Footer */}
+//                     <DrawerFooter className="shrink-0 border-t border-neutral-200 bg-neutral-50/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
+//                       <div className="grid grid-cols-2 gap-3">
+//                         <Button type="button" variant="outline" onClick={resetFilters} className="h-10 cursor-pointer rounded-sm border-neutral-300 bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">Reset</Button>
+//                         <Button type="submit" form="loadout-filter-form" className="h-10 cursor-pointer gap-2 rounded-sm bg-[#0446DB] text-sm font-medium text-white hover:bg-blue-700"><FaFilter className="text-xs" />Apply Filter</Button>
+//                       </div>
+
+//                       <DrawerClose asChild>
+//                         <Button
+//                           type="button"
+//                           variant="ghost"
+//                           className="h-9 cursor-pointer rounded-sm text-sm text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+//                         >
+//                           Cancel
+//                         </Button>
+//                       </DrawerClose>
+//                     </DrawerFooter>
+//                   </DrawerContent>
+//                 </Drawer>
+
+//             <button
+//               type="button"
+//               onClick={() => void fetchLoadouts()}
+              
+//               className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-slate-200 px-3 text-xs dark:border-neutral-700 sm:text-sm cursor-pointer"
+//             >
+//               <RefreshCw
+//                 size={16}
+//                 className={loadingList ? "animate-spin" : ""}
+//               />{" "}
+//               Refresh
+//             </button>
+//           </div>
 //       </div>
 
 //       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
@@ -870,146 +1167,7 @@
 //             </div>
 //           )}
 
-//           <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
-
-
-            
-// <Drawer direction="right" open={drawerOpen} onOpenChange={setDrawerOpen}>
-//   <DrawerTrigger asChild>
-//     <CustomButton
-//       variant="outline"
-//       size="md"
-//       icon={FaFilter}
-//       className="rounded-sm"
-//     >
-//       <span>Filter</span>
-//     </CustomButton>
-//   </DrawerTrigger>
-
-//   <DrawerContent className="ml-auto flex h-full w-full max-w-md flex-col overflow-hidden rounded-none border-l border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-
-//     {/* Fixed Header */}
-//     <DrawerHeader className="shrink-0 border-b border-neutral-200 px-5 py-4 text-left dark:border-neutral-800">
-//       <DrawerTitle className="flex items-center gap-3 text-base font-semibold text-neutral-900 dark:text-white">
-//         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-//           <FaFilter className="text-sm" />
-//         </span>
-//         Filter Orders
-//       </DrawerTitle>
-
-//       <DrawerDescription className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//         Apply filters to find specific orders.
-//       </DrawerDescription>
-//     </DrawerHeader>
-
-//     {/* Scrollable Body */}
-//     <form id="loadout-filter-form" onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); applyFilters(); }} className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-//       <div className="grid grid-cols-1 gap-5">
-
-//         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-//           <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
-//             Start Date
-//             <input
-//               type="date"
-//               value={filters.start_date}
-//               max={filters.end_date && filters.end_date < todayISO() ? filters.end_date : todayISO()}
-//               onChange={(e) =>
-//                 setFilters((f) => ({ ...f, start_date: e.target.value }))
-//               }
-//               onClick={(e) => {
-//                 try {
-//                   e.currentTarget.showPicker();
-//                 } catch {
-//                   // Browser fallback
-//                 }
-//               }}
-//               className="h-10 w-full min-w-0 rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-//             />
-//           </label>
-
-//           <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
-//             End Date
-//             <input
-//               type="date"
-//               value={filters.end_date}
-//               min={filters.start_date || undefined}
-//               max={todayISO()}
-//               onChange={(e) =>
-//                 setFilters((f) => ({ ...f, end_date: e.target.value }))
-//               }
-//               onClick={(e) => {
-//     try {
-//       e.currentTarget.showPicker();
-//     } catch {
-//       // Browser fallback
-//     }
-//   }}
-//               className="h-10 w-full min-w-0 rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-//             />
-//           </label>
-//         </div>
-
-//         <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
-//           City
-//           <input
-//             type="text"
-//             value={filters.city}
-//             onChange={(e) =>
-//               setFilters((f) => ({ ...f, city: e.target.value }))
-//             }
-//             placeholder="Enter city name"
-//             className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-//           />
-//         </label>
-
-//         <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
-//           Loadout Code
-//           <input
-//             type="text"
-//             value={filters.code}
-//             onChange={(e) =>
-//               setFilters((f) => ({ ...f, code: e.target.value }))
-//             }
-//             placeholder="Enter loadout code"
-//             className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-//           />
-//         </label>
-//       </div>
-//     </form>
-
-//     {/* Fixed Footer */}
-//     <DrawerFooter className="shrink-0 border-t border-neutral-200 bg-neutral-50/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
-//       <div className="grid grid-cols-2 gap-3">
-//         <Button type="button" variant="outline" onClick={resetFilters} className="h-10 cursor-pointer rounded-sm border-neutral-300 bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">Reset</Button>
-//         <Button type="submit" form="loadout-filter-form" className="h-10 cursor-pointer gap-2 rounded-sm bg-[#0446DB] text-sm font-medium text-white hover:bg-blue-700"><FaFilter className="text-xs" />Apply Filter</Button>
-//       </div>
-
-//       <DrawerClose asChild>
-//         <Button
-//           type="button"
-//           variant="ghost"
-//           className="h-9 cursor-pointer rounded-sm text-sm text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-//         >
-//           Cancel
-//         </Button>
-//       </DrawerClose>
-//     </DrawerFooter>
-//   </DrawerContent>
-// </Drawer>
-
-//             <button
-//               type="button"
-//               onClick={() => void fetchLoadouts()}
-              
-//               className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-slate-200 px-3 text-xs dark:border-neutral-700 sm:text-sm cursor-pointer"
-//             >
-//               <RefreshCw
-//                 size={16}
-//                 className={loadingList ? "animate-spin" : ""}
-//               />{" "}
-//               Refresh
-//             </button>
-//           </div>
+          
 //         </div>
 
 //         {/* filters */}
@@ -2009,6 +2167,15 @@
 //             <div className="sticky bottom-0 hidden shrink-0 flex-wrap justify-end gap-2 border-t border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900 sm:flex sm:p-4">
 //               <button
 //                 type="button"
+//                 onClick={() => void downloadLoadoutPdf()}
+//                 disabled={downloadingPdf}
+//                 className="inline-flex items-center justify-center gap-2 rounded-sm border border-[#0446DB] px-4 py-2 text-sm font-medium text-[#0446DB] hover:bg-blue-50 disabled:opacity-50 dark:hover:bg-neutral-800"
+//               >
+//                 {downloadingPdf ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+//                 {downloadingPdf ? "Generating PDF..." : "Download PDF"}
+//               </button>
+//               <button
+//                 type="button"
 //                 onClick={() => void fetchDetails(selected.id)}
 //                 disabled={loadingDetails}
 //                 className="inline-flex items-center gap-2 rounded-sm border border-slate-200 px-4 py-2 text-sm dark:border-neutral-700 cursor-pointer"
@@ -2043,6 +2210,15 @@
 //           {/* MOBILE sticky action bar */}
 //           <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center sm:hidden">
 //             <div className="pointer-events-auto flex w-full max-w-5xl gap-2 border-t border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
+//               <button
+//                 type="button"
+//                 onClick={() => void downloadLoadoutPdf()}
+//                 disabled={downloadingPdf}
+//                 className="inline-flex flex-1 items-center justify-center gap-1 rounded-sm border border-[#0446DB] px-2 py-2.5 text-xs font-medium text-[#0446DB] disabled:opacity-50"
+//               >
+//                 {downloadingPdf ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+//                 PDF
+//               </button>
 //               <button
 //                 type="button"
 //                 onClick={() => void fetchDetails(selected.id)}
@@ -2084,7 +2260,6 @@
 
 
 
-
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import axios from "axios";
@@ -2120,6 +2295,7 @@ import {
   Copy,
   Inbox,
   Download,
+  FileSpreadsheet,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import AxiosInstance from "@/Helper/axiosInstance";
@@ -2145,7 +2321,9 @@ type Loadout = {
   id: number;
    loadout_code: string;
     loadout_type: LoadoutType; status: string;
-  target_vendor_name?: string | null; target_dc_name?: string | null;
+  target_vendor_name?: string | null;
+   target_dc_name?: string | null;
+   source_hub_id?: string | null;
   source_hub_city?: string | null; target_id?: number | null; target_type?: TargetType;
   created_at?: string | null; closed_at?: string | null;
   accepted_count?: number; rejected_count?: number; total_scanned?: number;
@@ -2841,7 +3019,7 @@ export default function DcLoadout() {
       autoTable(pdf, {
         startY: 94,
         margin: { left, right: left, bottom: 28, top: 45 },
-        head: [["#", "AWB Number", "Order ID", "Scan Status", "Reason"]],
+        head: [["#", "AWB Number", "Order ID", "Scan Status"]],
         body: orders.map((order, index) => [
           String(index + 1), text(order.awb_number), text(order.order_id),
           text(order.scan_status), text(order.rejection_reason || "-"),
@@ -2945,12 +3123,161 @@ export default function DcLoadout() {
 
   /* ======================= RENDER ======================= */
   return (
-    <div className="flex min-h-[calc(100dvh-100px)] flex-col gap-3 bg-[#F7F8FA] p-3 text-slate-900 sm:gap-4 sm:p-0 dark:bg-neutral-950 dark:text-white">
-      <div className="shrink-0 sm:pt-0">
-        <h1 className="text-lg font-bold sm:text-2xl">Loadout</h1>
+    <div className="flex h-[calc(100dvh-100px)] min-h-0 flex-col gap-3 overflow-hidden bg-[#F7F8FA] p-3 text-slate-900 sm:gap-4 sm:p-0 dark:bg-neutral-950 dark:text-white">
+      <div className="sticky top-0 z-20 flex shrink-0 items-start justify-between gap-3 bg-[#F7F8FA] dark:bg-neutral-950">
+       <div>
+         <h1 className="text-lg font-bold sm:text-2xl">Loadout</h1>
         <p className="mt-0.5 text-xs text-slate-500 sm:mt-1 sm:text-sm">
           Create loadouts, scan AWBs, validate reverse CSVs and close batches.
         </p>
+       </div>
+        <div className="">
+
+
+            
+                <Drawer direction="right" open={drawerOpen} onOpenChange={setDrawerOpen}>
+                  <DrawerTrigger asChild>
+                    <CustomButton
+                      variant="outline"
+                      size="md"
+                      icon={FaFilter}
+                      className="rounded-sm"
+                    >
+                      <span>Filter</span>
+                    </CustomButton>
+                  </DrawerTrigger>
+
+                  <DrawerContent className="ml-auto flex h-full w-full max-w-md flex-col overflow-hidden rounded-none border-l border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+
+                    {/* Fixed Header */}
+                    <DrawerHeader className="shrink-0 border-b border-neutral-200 px-5 py-4 text-left dark:border-neutral-800">
+                      <DrawerTitle className="flex items-center gap-3 text-base font-semibold text-neutral-900 dark:text-white">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+                          <FaFilter className="text-sm" />
+                        </span>
+                        Filter Orders
+                      </DrawerTitle>
+
+                      <DrawerDescription className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                        Apply filters to find specific orders.
+                      </DrawerDescription>
+                    </DrawerHeader>
+
+                    {/* Scrollable Body */}
+                    <form id="loadout-filter-form" onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); applyFilters(); }} className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+                      <div className="grid grid-cols-1 gap-5">
+
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                            Start Date
+                            <input
+                              type="date"
+                              value={filters.start_date}
+                              max={todayISO()}
+                              onChange={(e) =>
+                                setFilters((f) => ({
+                                  ...f,
+                                  start_date: e.target.value,
+                                  end_date: f.end_date && e.target.value > f.end_date ? e.target.value : f.end_date,
+                                }))
+                              }
+                              onClick={(e) => {
+                                try {
+                                  e.currentTarget.showPicker();
+                                } catch {
+                                  // Browser fallback
+                                }
+                              }}
+                              className="h-10 w-full min-w-0 rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                            />
+                          </label>
+
+                          <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                            End Date
+                            <input
+                              type="date"
+                              value={filters.end_date}
+                              min={filters.start_date || undefined}
+                              max={todayISO()}
+                              onChange={(e) =>
+                                setFilters((f) => ({
+                                  ...f,
+                                  end_date: e.target.value && f.start_date && e.target.value < f.start_date ? f.start_date : e.target.value,
+                                }))
+                              }
+                              onClick={(e) => {
+                    try {
+                      e.currentTarget.showPicker();
+                    } catch {
+                      // Browser fallback
+                    }
+                  }}
+                              className="h-10 w-full min-w-0 rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                            />
+                          </label>
+                        </div>
+
+                        <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                          City
+                          <input
+                            type="text"
+                            value={filters.city}
+                            onChange={(e) =>
+                              setFilters((f) => ({ ...f, city: e.target.value }))
+                            }
+                            placeholder="Enter city name"
+                            className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                          />
+                        </label>
+
+                        <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                          Loadout Code
+                          <input
+                            type="text"
+                            value={filters.code}
+                            onChange={(e) =>
+                              setFilters((f) => ({ ...f, code: e.target.value }))
+                            }
+                            placeholder="Enter loadout code"
+                            className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                          />
+                        </label>
+                      </div>
+                    </form>
+
+                    {/* Fixed Footer */}
+                    <DrawerFooter className="shrink-0 border-t border-neutral-200 bg-neutral-50/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button type="button" variant="outline" onClick={resetFilters} className="h-10 cursor-pointer rounded-sm border-neutral-300 bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">Reset</Button>
+                        <Button type="submit" form="loadout-filter-form" className="h-10 cursor-pointer gap-2 rounded-sm bg-[#0446DB] text-sm font-medium text-white hover:bg-blue-700"><FaFilter className="text-xs" />Apply Filter</Button>
+                      </div>
+
+                      <DrawerClose asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="h-9 cursor-pointer rounded-sm text-sm text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                        >
+                          Cancel
+                        </Button>
+                      </DrawerClose>
+                    </DrawerFooter>
+                  </DrawerContent>
+                </Drawer>
+
+            <button
+              type="button"
+              onClick={() => void fetchLoadouts()}
+              
+              className="inline-flex ml-2 h-10 items-center justify-center gap-2 rounded-sm border border-slate-200 px-3 text-xs dark:border-neutral-700 sm:text-sm cursor-pointer"
+            >
+              <RefreshCw
+                size={16}
+                className={loadingList ? "animate-spin" : ""}
+              />{" "}
+              Refresh
+            </button>
+          </div>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
@@ -3104,153 +3431,7 @@ export default function DcLoadout() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
-
-
-            
-<Drawer direction="right" open={drawerOpen} onOpenChange={setDrawerOpen}>
-  <DrawerTrigger asChild>
-    <CustomButton
-      variant="outline"
-      size="md"
-      icon={FaFilter}
-      className="rounded-sm"
-    >
-      <span>Filter</span>
-    </CustomButton>
-  </DrawerTrigger>
-
-  <DrawerContent className="ml-auto flex h-full w-full max-w-md flex-col overflow-hidden rounded-none border-l border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-
-    {/* Fixed Header */}
-    <DrawerHeader className="shrink-0 border-b border-neutral-200 px-5 py-4 text-left dark:border-neutral-800">
-      <DrawerTitle className="flex items-center gap-3 text-base font-semibold text-neutral-900 dark:text-white">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-          <FaFilter className="text-sm" />
-        </span>
-        Filter Orders
-      </DrawerTitle>
-
-      <DrawerDescription className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-        Apply filters to find specific orders.
-      </DrawerDescription>
-    </DrawerHeader>
-
-    {/* Scrollable Body */}
-    <form id="loadout-filter-form" onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); applyFilters(); }} className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-      <div className="grid grid-cols-1 gap-5">
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
-            Start Date
-            <input
-              type="date"
-              value={filters.start_date}
-              max={todayISO()}
-              onChange={(e) =>
-                setFilters((f) => ({
-                  ...f,
-                  start_date: e.target.value,
-                  end_date: f.end_date && e.target.value > f.end_date ? e.target.value : f.end_date,
-                }))
-              }
-              onClick={(e) => {
-                try {
-                  e.currentTarget.showPicker();
-                } catch {
-                  // Browser fallback
-                }
-              }}
-              className="h-10 w-full min-w-0 rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
-            End Date
-            <input
-              type="date"
-              value={filters.end_date}
-              min={filters.start_date || undefined}
-              max={todayISO()}
-              onChange={(e) =>
-                setFilters((f) => ({
-                  ...f,
-                  end_date: e.target.value && f.start_date && e.target.value < f.start_date ? f.start_date : e.target.value,
-                }))
-              }
-              onClick={(e) => {
-    try {
-      e.currentTarget.showPicker();
-    } catch {
-      // Browser fallback
-    }
-  }}
-              className="h-10 w-full min-w-0 rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-            />
-          </label>
-        </div>
-
-        <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
-          City
-          <input
-            type="text"
-            value={filters.city}
-            onChange={(e) =>
-              setFilters((f) => ({ ...f, city: e.target.value }))
-            }
-            placeholder="Enter city name"
-            className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300">
-          Loadout Code
-          <input
-            type="text"
-            value={filters.code}
-            onChange={(e) =>
-              setFilters((f) => ({ ...f, code: e.target.value }))
-            }
-            placeholder="Enter loadout code"
-            className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-[#0446DB] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-          />
-        </label>
-      </div>
-    </form>
-
-    {/* Fixed Footer */}
-    <DrawerFooter className="shrink-0 border-t border-neutral-200 bg-neutral-50/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
-      <div className="grid grid-cols-2 gap-3">
-        <Button type="button" variant="outline" onClick={resetFilters} className="h-10 cursor-pointer rounded-sm border-neutral-300 bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">Reset</Button>
-        <Button type="submit" form="loadout-filter-form" className="h-10 cursor-pointer gap-2 rounded-sm bg-[#0446DB] text-sm font-medium text-white hover:bg-blue-700"><FaFilter className="text-xs" />Apply Filter</Button>
-      </div>
-
-      <DrawerClose asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          className="h-9 cursor-pointer rounded-sm text-sm text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-        >
-          Cancel
-        </Button>
-      </DrawerClose>
-    </DrawerFooter>
-  </DrawerContent>
-</Drawer>
-
-            <button
-              type="button"
-              onClick={() => void fetchLoadouts()}
-              
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-slate-200 px-3 text-xs dark:border-neutral-700 sm:text-sm cursor-pointer"
-            >
-              <RefreshCw
-                size={16}
-                className={loadingList ? "animate-spin" : ""}
-              />{" "}
-              Refresh
-            </button>
-          </div>
+          
         </div>
 
         {/* filters */}
@@ -3331,7 +3512,7 @@ export default function DcLoadout() {
                         ? `Vendor #${item.target_id}`
                         : "—"}
               </div>
-
+{/* source_hub_id */}
               <div className="mt-2 grid grid-cols-3 gap-2 text-center text-[11px]">
                 <div className="rounded bg-slate-50 py-1 dark:bg-neutral-800">
                   <div className="text-slate-500">Scanned</div>
@@ -3399,18 +3580,18 @@ export default function DcLoadout() {
         {/* ====== DESKTOP TABLE ====== */}
         <div className="hidden min-h-0 flex-1 overflow-auto md:block">
           <table className="w-full min-w-[1000px] text-left text-sm">
-            <thead className="sticky top-0 z-10 bg-slate-50 text-xs uppercase text-slate-500 dark:bg-neutral-800">
+            <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-neutral-800">
               <tr>
-                <th className="px-4 py-3">Loadout</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3">Source</th>
-                <th className="px-4 py-3">Target</th>
-                <th className="px-4 py-3">Created</th>
-                <th className="px-4 py-3">Scanned</th>
-                <th className="px-4 py-3">Accepted</th>
-                <th className="px-4 py-3">Rejected</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Action</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Loadout</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Type</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Source</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Target</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Created</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Scanned</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Accepted</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Rejected</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Status</th>
+                <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 dark:bg-neutral-800">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
@@ -3458,7 +3639,7 @@ export default function DcLoadout() {
                           ? `DC #${item.target_id}`
                           : item.target_type === "vendor"
                             ? `Vendor #${item.target_id}`
-                            : "—"}
+                            :  item?.source_hub_id ? `Hub #${item?.source_hub_id}` : "—"}
                   </td>
                   <td className="px-4 py-3 text-xs">
                     {formatDate(item.created_at)}
@@ -3522,7 +3703,7 @@ export default function DcLoadout() {
         </div>
 
         {/* ======================= PAGINATION FOOTER ======================= */}
-        <div className="flex shrink-0 flex-col items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-neutral-800 sm:flex-row">
+        <div className="sticky bottom-0 z-20 flex shrink-0 flex-col items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 sm:flex-row">
           <div className="text-[11px] text-slate-500 sm:text-xs">
             Showing{" "}
             <span className="font-medium text-slate-900 dark:text-white">
@@ -3735,10 +3916,7 @@ export default function DcLoadout() {
                           </div>
                         </>
                       )}
-                      <div className="col-span-2">
-                        <span className="text-slate-400">Reason: </span>
-                        {o.rejection_reason || "-"}
-                      </div>
+                      
                     </div>
                   </div>
                 ))}
@@ -3751,14 +3929,14 @@ export default function DcLoadout() {
               </div>
 
               {/* ====== ORDERS: desktop table ====== */}
-              <div className="hidden overflow-x-auto rounded-sm border border-slate-200 md:block dark:border-neutral-800">
+              <div className="hidden max-h-[360px] overflow-auto rounded-sm border border-slate-200 md:block dark:border-neutral-800">
                 <table className="w-full min-w-[800px] text-left text-sm">
                   <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-neutral-800">
                     <tr>
-                      <th className="px-3 py-3">AWB Number</th>
-                      <th className="px-3 py-3">Order ID</th>
-                      <th className="px-3 py-3">Scan Status</th>
-                      <th className="px-3 py-3">Reason</th>
+                      <th className="sticky top-0 z-10 bg-slate-50 px-3 py-3 dark:bg-neutral-800">AWB Number</th>
+                      <th className="sticky top-0 z-10 bg-slate-50 px-3 py-3 dark:bg-neutral-800">Order ID</th>
+                      <th className="sticky top-0 z-10 bg-slate-50 px-3 py-3 dark:bg-neutral-800">Scan Status</th>
+                      
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
@@ -3769,9 +3947,7 @@ export default function DcLoadout() {
                         </td>
                         <td className="px-3 py-3">{o.order_id ?? "-"}</td>
                         <td className="px-3 py-3">{o.scan_status}</td>
-                        <td className="px-3 py-3">
-                          {o.rejection_reason || "-"}
-                        </td>
+                       
                       </tr>
                     ))}
                     {(selected.orders ?? []).length === 0 && (
@@ -4235,7 +4411,7 @@ export default function DcLoadout() {
                   </div>
                 )}
 
-              {selected.loadout_type === "reverse" &&
+              {/* {selected.loadout_type === "reverse" &&
                 selected.status === "closed" &&
                 !reverseResult && (
                   <div className="rounded-sm border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
@@ -4243,7 +4419,60 @@ export default function DcLoadout() {
                       <CheckCircle2 size={14} /> Reverse loadout closed
                     </div>
                   </div>
-                )}
+                )} */}
+
+                {selected?.loadout_type === "reverse" &&
+              selected?.status === "closed" &&
+              !reverseResult && (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+
+                  {/* Success Message */}
+                  <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
+                    <CheckCircle2 size={18} className="text-emerald-600" />
+                    Reverse Loadout Closed
+                  </div>
+
+                  <p className="text-xs text-emerald-700">
+                    This reverse loadout has been successfully closed.
+                    You can download the available documents below.
+                  </p>
+
+                  {/* Download Buttons */}
+                  {(selected?.proof_pdf_path || selected?.awb_csv_path) && (
+                    <div className="flex flex-wrap items-center gap-2 border-t border-emerald-200 pt-3">
+
+                      {/* Proof PDF */}
+                      {selected?.proof_pdf_path && (
+                        <a
+                          href={`https://go-admin.daakit.com/${selected.proof_pdf_path}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="inline-flex items-center gap-2 rounded-md border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-50"
+                        >
+                          <FileText size={15} />
+                          Proof PDF
+                          <Download size={14} />
+                        </a>
+                      )}
+
+                      {/* AWB CSV */}
+                      {selected?.awb_csv_path && (
+              <a
+                href={`https://go-admin.daakit.com/${selected.awb_csv_path}`}
+                download="awb_list.csv"
+                className="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-700 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-50"
+              >
+                <FileSpreadsheet size={15} />
+                Download AWB CSV 
+                <Download size={14} />
+              </a>
+            )}
+
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* modal footer — desktop */}

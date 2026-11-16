@@ -128,19 +128,20 @@ function DcUserLogin() {
           captcha_key:captchaToken
         },
       );
-
-      const token = res.data.token;
+      
+      
+      const token = res?.data?.token;
         
       if (token) {
         localStorage.setItem("token", token);
-
         // localStorage.setItem("userType",'dc',);
         navigate("/dc/analytics");
-
         toast.success("Login successful");
       }
     } catch (err) {
       setCaptchaToken('')
+
+     
       toast.error(
         err.response?.data?.message ||
           err.message ||

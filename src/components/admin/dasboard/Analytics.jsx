@@ -2943,699 +2943,397 @@ export default function Analytics() {
 
             <div className=" mx-auto  dark:bg-neutral-800  relative z-10">
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-6 lg:gap-6 mb-8">
-
-                <div className="col-span-2 min-w-0 lg:col-span-1">
-
-                  <HoverCard openDelay={250}>
-
-                    <HoverCardTrigger render={<div />}>
-
-                      <div className="bg-white  dark:bg-neutral-900 dark:border-neutral-900  rounded-2xl rounded-sm hover:rounded-sm transition-all duration-300 p-3 sm:p-6 border  border-gray-300 group hover:border-[#0446DB]/20">
-
-                        <div className="flex justify-between items-start mb-4">
-
-                          <div>
-
-                            <h2 className=" sm:text-lg font-medium dark:text-white text-gray-700 mb-1">
-
-                              Total Orders
-
-                            </h2>
+              
 
 
 
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              
+                <div className="mb-8 grid grid-cols-2 items-start gap-3 sm:gap-4 md:grid-cols-3 2xl:grid-cols-6 lg:gap-6">
 
-                              <BottomScrollCounter
+                  {/* ================= TOTAL ORDERS ================= */}
+                  <div className="col-span-2 min-w-0 md:col-span-1">
+                    <HoverCard openDelay={250}>
+                      <HoverCardTrigger render={<div />}>
+                        <div className="group flex w-full min-w-0 flex-col rounded-sm border border-gray-300 bg-white p-3 transition-all duration-300 hover:border-[#0446DB]/20 dark:border-gray-800 dark:bg-neutral-900 sm:p-4">
 
-                                prevValue={200}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h2 className="mb-1 text-sm font-semibold text-gray-700 dark:text-white">
+                                Total Orders
+                              </h2>
 
-                                newValue={totalOrdersKpi?.toLocaleString("en-IN") || 0}
-
-                                className=""
-
-                              />
-
-
-
-                              {/* {totalOrdersKpi.toLocaleString("en-IN")} */}
-
+                              <div className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
+                                <BottomScrollCounter
+                                  prevValue={200}
+                                  newValue={totalOrdersKpi?.toLocaleString("en-IN") || 0}
+                                  className=""
+                                />
+                              </div>
                             </div>
 
+                            <div className="shrink-0 rounded-xl bg-indigo-100 p-2 transition-colors group-hover:bg-indigo-200">
+                              <TotalOrderIcon />
+                            </div>
                           </div>
 
+                          <div className="mt-4 w-full min-w-0">
+                            <div className="mb-1 flex justify-between gap-2 text-[11px] text-gray-600 dark:text-white sm:text-xs">
+                              <span>Completion Rate</span>
+                              <span className="shrink-0 font-semibold">
+                                {100}%
+                              </span>
+                            </div>
 
-
-                          <div className="p-2 sm:p-3 bg-indigo-100 rounded-xl group-hover:bg-indigo-200 transition-colors">
-
-                            <TotalOrderIcon />
-
-                          </div>
-
-                        </div>
-
-
-
-                        <div className="mt-4">
-
-                          <div className="flex justify-between text-[11px] sm:text-sm dark:text-white text-gray-600 mb-1">
-
-                            <span>Completion Rate</span>
-
-
-
-                            <span className="font-semibold">{100}%</span>
-
-                          </div>
-
-
-
-                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-
-                            <div
-
-                              className="h-2 bg-[#0446DB] rounded-full"
-
-                              style={{
-
-                                width: `${percentOfOrders(totalOrdersKpi)}%`,
-
-                              }}
-
-                            ></div>
-
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                              <div
+                                className="h-2 rounded-full bg-[#0446DB]"
+                                style={{
+                                  width: `${percentOfOrders(totalOrdersKpi)}%`,
+                                }}
+                              />
+                            </div>
                           </div>
 
                         </div>
+                      </HoverCardTrigger>
 
-                      </div>
+                      <HoverCardContent
+                        side="top"
+                        align="start"
+                        className="w-64 text-sm"
+                      >
+                        Total number of orders in the selected reporting period.
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
 
-                    </HoverCardTrigger>
+                  {/* ================= OPEN ORDERS ================= */}
+                  <div className="min-w-0">
+                    <HoverCard openDelay={250}>
+                      <HoverCardTrigger render={<div />}>
+                        <div className="group flex w-full min-w-0 flex-col rounded-sm border border-gray-300 bg-white p-3 transition-all duration-300 hover:border-amber-200 dark:border-gray-800 dark:bg-neutral-900 sm:p-4">
 
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h2 className="mb-1 text-sm font-semibold text-gray-700 dark:text-white">
+                                Open Orders
+                              </h2>
 
+                              <div className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
+                                <BottomScrollCounter
+                                  prevValue={200}
+                                  newValue={openOrderKpi?.toLocaleString("en-IN") || 0}
+                                  className=""
+                                />
+                              </div>
+                            </div>
 
-                    <HoverCardContent side="top" align="start" className="w-64 text-sm">
+                            <div className="shrink-0 rounded-xl bg-amber-100 p-2 transition-colors group-hover:bg-amber-200">
+                              <PenOrdersIcon />
+                            </div>
+                          </div>
 
-                      Total number of orders in the selected reporting period.
+                          <div className="mt-4 w-full min-w-0">
+                            <div className="mb-1 flex justify-between gap-2 text-[11px] text-gray-600 dark:text-white sm:text-xs">
+                              <span>Open Orders</span>
+                              <span className="shrink-0 font-semibold text-amber-600">
+                                {percentOfOrders(openOrderKpi)}%
+                              </span>
+                            </div>
 
-                    </HoverCardContent>
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                              <div
+                                className="h-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 transition-all duration-500"
+                                style={{
+                                  width: `${Math.min(
+                                    100,
+                                    Math.max(
+                                      0,
+                                      Number(percentOfOrders(openOrderKpi)) || 0
+                                    )
+                                  )}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
 
-                  </HoverCard>
+                        </div>
+                      </HoverCardTrigger>
+
+                      <HoverCardContent
+                        side="top"
+                        align="start"
+                        className="w-80 text-sm"
+                      >
+                        <p className="mb-2 font-semibold">Open Orders</p>
+                        <p>
+                          Includes all orders with active statuses, such as Booked,
+                          Pending Pickup, Picked Up, In Transit, Out for Delivery,
+                          Undelivered, and Undelivered Assigned.
+                        </p>
+                        <p className="mt-2 text-gray-500">
+                          Excludes: NDR, Lost, Cancelled, Delivered,
+                          RTO In Transit, and RTO Delivered.
+                        </p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+
+                  {/* ================= FIRST ATTEMPT SUCCESS ================= */}
+                  <div className="min-w-0">
+                    <HoverCard openDelay={250}>
+                      <HoverCardTrigger render={<div />}>
+                        <div className="group flex w-full min-w-0 flex-col rounded-sm border border-gray-300 bg-white p-3 transition-all duration-300 hover:border-purple-200 dark:border-gray-800 dark:bg-neutral-900 sm:p-4">
+
+                          <div className="flex min-w-0 items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h2 className="mb-1 whitespace-nowrap text-[clamp(10px,0.82vw,14px)] font-semibold leading-5 tracking-tight text-gray-700 dark:text-white">
+                                First-attempt Success
+                              </h2>
+
+                              <div className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
+                                <BottomScrollCounter
+                                  prevValue={200}
+                                  newValue={firstAttemptSuccessRate?.numerator ?? 0}
+                                  className=""
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-100 transition-colors group-hover:bg-purple-200">
+                              <svg
+                                className="h-5 w-5 text-purple-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 w-full min-w-0">
+                            <div className="mb-1 flex justify-between gap-2 text-[11px] text-gray-600 dark:text-white sm:text-xs">
+                              <span>FASR</span>
+                              <span className="shrink-0 font-semibold text-purple-600">
+                                {firstAttemptSuccessRate?.percentage ?? 0}%
+                              </span>
+                            </div>
+
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 transition-all duration-500"
+                                style={{
+                                  width: `${Math.min(
+                                    100,
+                                    Math.max(
+                                      0,
+                                      Number(firstAttemptSuccessRate?.percentage) || 0
+                                    )
+                                  )}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                        </div>
+                      </HoverCardTrigger>
+
+                      <HoverCardContent
+                        side="top"
+                        align="start"
+                        className="w-64 text-sm"
+                      >
+                        <p className="mb-2 font-semibold">
+                          First-attempt Success (FASR)
+                        </p>
+                        <p>
+                          Orders delivered successfully on the very first attempt
+                          without any NDR or re-attempt.
+                        </p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+
+                  {/* ================= ORDERS DELIVERED ================= */}
+                  <div className="min-w-0">
+                    <HoverCard openDelay={250}>
+                      <HoverCardTrigger render={<div />}>
+                        <div className="group flex w-full min-w-0 flex-col rounded-sm border border-gray-300 bg-white p-3 transition-all duration-300 hover:border-green-200 dark:border-gray-800 dark:bg-neutral-900 sm:p-4">
+
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h2 className="mb-1 whitespace-nowrap text-[clamp(11px,0.85vw,14px)] font-semibold text-gray-700 dark:text-white">
+                                Orders Delivered
+                              </h2>
+
+                              <div className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
+                                <BottomScrollCounter
+                                  prevValue={200}
+                                  newValue={deliveredOrdersKpi.toLocaleString("en-IN")}
+                                  className=""
+                                />
+                              </div>
+                            </div>
+
+                            <div className="shrink-0 rounded-xl bg-green-100 p-2 transition-colors group-hover:bg-green-200">
+                              <OrdersDelivered />
+                            </div>
+                          </div>
+
+                          <div className="mt-4 w-full min-w-0">
+                            <div className="mb-1 flex justify-between gap-2 text-[11px] text-gray-600 dark:text-white sm:text-xs">
+                              <span>Success Rate</span>
+                              <span className="shrink-0 font-semibold text-green-600">
+                                {percentOfOrders(deliveredOrdersKpi)}%
+                              </span>
+                            </div>
+
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                              <div
+                                className="h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600"
+                                style={{
+                                  width: `${percentOfOrders(deliveredOrdersKpi)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                        </div>
+                      </HoverCardTrigger>
+
+                      <HoverCardContent
+                        side="top"
+                        align="start"
+                        className="w-64 text-sm"
+                      >
+                        Orders successfully delivered to customers.
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+
+                  {/* ================= NDR ORDERS ================= */}
+                  <div className="min-w-0">
+                    <HoverCard openDelay={250}>
+                      <HoverCardTrigger render={<div />}>
+                        <div className="group flex w-full min-w-0 flex-col rounded-sm border border-gray-300 bg-white p-3 transition-all duration-300 hover:border-red-200 dark:border-gray-800 dark:bg-neutral-900 sm:p-4">
+
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h2 className="mb-1 text-sm font-semibold text-gray-700 dark:text-white">
+                                NDR's
+                              </h2>
+
+                              <div className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
+                                <BottomScrollCounter
+                                  prevValue={200}
+                                  newValue={ndrOrdersKpi.toLocaleString("en-IN")}
+                                  className=""
+                                />
+                              </div>
+                            </div>
+
+                            <div className="shrink-0 rounded-xl bg-red-100 p-2 transition-colors group-hover:bg-red-200">
+                              <GiCancel className="text-xl text-red-600 sm:text-2xl" />
+                            </div>
+                          </div>
+
+                          <div className="mt-4 w-full min-w-0">
+                            <div className="mb-1 flex justify-between gap-2 text-[11px] text-gray-600 dark:text-white sm:text-xs">
+                              <span>NDR's Rate</span>
+                              <span className="shrink-0 font-semibold text-red-600">
+                                {percentOfOrders(ndrOrdersKpi)}%
+                              </span>
+                            </div>
+
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                              <div
+                                className="h-2 rounded-full bg-gradient-to-r from-red-500 to-pink-600"
+                                style={{
+                                  width: `${percentOfOrders(ndrOrdersKpi)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                        </div>
+                      </HoverCardTrigger>
+
+                      <HoverCardContent
+                        side="top"
+                        align="start"
+                        className="w-64 text-sm"
+                      >
+                        Non-Delivery Report orders that need delivery follow-up.
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+
+                  {/* ================= RTO DELIVERED ================= */}
+                  <div className="min-w-0">
+                    <HoverCard openDelay={250}>
+                      <HoverCardTrigger render={<div />}>
+                        <div className="group flex w-full min-w-0 flex-col rounded-sm border border-gray-300 bg-white p-3 transition-all duration-300 hover:border-amber-200 dark:border-gray-800 dark:bg-neutral-900 sm:p-4">
+
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h2 className="mb-1 whitespace-nowrap text-sm font-semibold text-gray-700 dark:text-white">
+                                RTO Delivered
+                              </h2>
+
+                              <div className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
+                                <BottomScrollCounter
+                                  prevValue={200}
+                                  newValue={rtoOrdersKpi.toLocaleString("en-IN")}
+                                  className=""
+                                />
+                              </div>
+                            </div>
+
+                            <div className="shrink-0 rounded-xl bg-amber-100 p-2 transition-colors group-hover:bg-amber-200">
+                              <TbTruckReturn className="text-xl text-amber-600 sm:text-2xl" />
+                            </div>
+                          </div>
+
+                          <div className="mt-4 w-full min-w-0">
+                            <div className="mb-1 flex justify-between gap-2 text-[11px] text-gray-600 dark:text-white sm:text-xs">
+                              <span>RTO Recovery</span>
+                              <span className="shrink-0 font-semibold text-amber-600">
+                                {percentOfOrders(rtoOrdersKpi)}%
+                              </span>
+                            </div>
+
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                              <div
+                                className="h-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-600"
+                                style={{
+                                  width: `${percentOfOrders(rtoOrdersKpi)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                        </div>
+                      </HoverCardTrigger>
+
+                      <HoverCardContent
+                        side="top"
+                        align="start"
+                        className="w-64 text-sm"
+                      >
+                        Return-to-Origin orders successfully returned to the sender.
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
 
                 </div>
 
-
-
-                {/* Total Orders Card */}
-
-
-
-                {/* Open Order */}
-
-
-
-                <HoverCard openDelay={250}>
-
-                  <HoverCardTrigger render={<div />}>
-
-                    <div className="bg-white dark:bg-neutral-900 dark:border-gray-800 rounded-sm transition-all duration-300 p-3 sm:p-6 border border-gray-300 group hover:border-amber-200">
-
-                      <div className="flex justify-between items-start mb-4">
-
-                        <div>
-
-                          <h2 className="text-sm  dark:text-white font-semibold text-gray-700 mb-1">
-
-                            Open Orders
-
-                          </h2>
-
-
-
-                          <div className="text-xl sm:text-3xl font-bold dark:text-white text-gray-900">
-
-                            <BottomScrollCounter
-
-                              prevValue={200}
-
-                              newValue={openOrderKpi?.toLocaleString("en-IN") || 0}
-
-                              className=""
-
-                            />
-
-                          </div>
-
-                        </div>
-
-
-
-                        <div className="p-2 sm:p-3 bg-amber-100 rounded-xl group-hover:bg-amber-200 transition-colors">
-
-                          <PenOrdersIcon />
-
-                        </div>
-
-                      </div>
-
-
-
-                      <div className="mt-4">
-
-                        <div className="flex justify-between dark:text-white text-[11px] sm:text-[11px] sm:text-sm text-gray-600 mb-1">
-
-                          <span className="">Open Orders</span>
-
-
-
-                          <span className="font-semibold text-amber-600">
-
-                            {percentOfOrders(openOrderKpi)}%
-
-                          </span>
-
-                        </div>
-
-
-
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-
-                          <div
-
-                            className="h-2 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full transition-all duration-500"
-
-                            style={{
-
-                              width: `${Math.min(
-
-                                100,
-
-
-
-                                Math.max(0, Number(percentOfOrders(openOrderKpi)) || 0),
-
-                              )}%`,
-
-                            }}
-
-                          />
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  </HoverCardTrigger>
-
-
-
-                  <HoverCardContent side="top" align="start" className="w-80 text-sm">
-
-                    <p className="font-semibold mb-2">Open Orders</p>
-
-
-
-                    <p>
-
-                      Includes all orders with active statuses, such as Booked, Pending Pickup,
-
-                      Picked Up, In Transit, Out for Delivery, Undelivered, and Undelivered
-
-                      Assigned.
-
-                    </p>
-
-
-
-                    <p className="mt-2 text-gray-500">
-
-                      Excludes: NDR, Lost, Cancelled, Delivered, RTO In Transit, and RTO Delivered.
-
-                    </p>
-
-                  </HoverCardContent>
-
-                </HoverCard>
-
-
-
-
-
-                {/* First-attempt Success Card (Static Data - UI Fixed) */}
-
-                <HoverCard openDelay={250}>
-
-                  <HoverCardTrigger render={<div />}>
-
-                    <div className="bg-white dark:bg-neutral-900 dark:border-gray-800 rounded-2xl rounded-sm hover:rounded-sm transition-all duration-300 p-3 sm:p-6 border border-gray-300 group hover:border-purple-200 flex flex-col justify-between">
-
-                      <div className="flex justify-between items-start">
-
-                        <div>
-
-                          {/* Added whitespace-nowrap so title stays in one line */}
-
-                          <h2 className="text-sm font-semibold dark:text-white text-gray-700 mb-1 whitespace-nowrap">
-
-                            First-attempt Success
-
-                          </h2>
-
-
-
-                          <div className="text-2xl font-bold text-gray-900 dark:text-white">
-
-                            <BottomScrollCounter
-
-                              prevValue={200}
-
-                              newValue={firstAttemptSuccessRate?.numerator} // Static Data*
-
-                              className=""
-
-                            />
-
-                          </div>
-
-                        </div>
-
-
-
-                        {/* Icon Container (Purple Theme) */}
-
-                        <div className="p-1 sm:p-2 bg-purple-100 rounded-xl group-hover:bg-purple-200 transition-colors">
-
-                          <svg
-
-                            className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600"
-
-                            fill="none"
-
-                            stroke="currentColor"
-
-                            viewBox="0 0 24 24"
-
-                            xmlns="http://www.w3.org/2000/svg"
-
-                          >
-
-                            <path
-
-                              strokeLinecap="round"
-
-                              strokeLinejoin="round"
-
-                              strokeWidth={2}
-
-                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-
-                            />
-
-                          </svg>
-
-                        </div>
-
-                      </div>
-
-
-
-                      {/* Progress Bar Section */}
-
-                      <div className="mt-4">
-
-                        <div className="flex justify-between dark:text-white text-[11px] sm:text-xm text-gray-600 mb-1">
-
-                          <span>FASR</span>
-
-                          <span className="font-semibold text-purple-600">
-
-                            {firstAttemptSuccessRate?.percentage !== undefined ? firstAttemptSuccessRate.percentage : 0}
-
-                            %
-
-                          </span>
-
-                        </div>
-
-
-
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-
-                          <div
-
-                            className="h-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full transition-all duration-500"
-
-                            style={{ width: `${firstAttemptSuccessRate?.percentage !== undefined ? firstAttemptSuccessRate.percentage : 0}%`}}
-
-                          />
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  </HoverCardTrigger>
-
-
-
-                  <HoverCardContent
-
-                    side="top"
-
-                    align="start"
-
-                    className="w-64 text-sm"
-
-                  >
-
-                    <p className="font-semibold mb-2">
-
-                      First-attempt Success (FASR)
-
-                    </p>
-
-                    <p>
-
-                      Orders delivered successfully on the very first attempt
-
-                      without any NDR or re-attempt.
-
-                    </p>
-
-                  </HoverCardContent>
-
-                </HoverCard>
-
-
-
-                {/* Orders Delivered Card */}
-
-
-
-                <HoverCard openDelay={250}>
-
-                  <HoverCardTrigger render={<div />}>
-
-                    <div className="bg-white dark:bg-neutral-900 dark:border-gray-800 rounded-2xl rounded-sm hover:rounded-sm transition-all duration-300 p-3 sm:p-6 border border-gray-300 group hover:border-green-200">
-
-                      <div className="flex justify-between items-start mb-4">
-
-                        <div>
-
-                          <h2 className=" text-sm  dark:text-white font-semibold text-gray-700 mb-1">
-
-                            Orders Delivered
-
-                          </h2>
-
-
-
-                          <div className="text-xl sm:text-3xl dark:text-white font-bold text-gray-900">
-
-                            <BottomScrollCounter
-
-                              prevValue={200}
-
-                              newValue={deliveredOrdersKpi.toLocaleString("en-IN")}
-
-                              className=""
-
-                            />
-
-                          </div>
-
-                        </div>
-
-
-
-                        <div className="p-2 sm:p-3 bg-green-100  rounded-xl group-hover:bg-green-200 transition-colors">
-
-                          <OrdersDelivered />
-
-                        </div>
-
-                      </div>
-
-
-
-                      <div className="mt-4">
-
-                        <div className="flex justify-between dark:text-white text-[11px] sm:text-[11px] sm:text-sm text-gray-600 mb-1">
-
-                          <span>Success Rate</span>
-
-
-
-                          <span className="font-semibold text-green-600">
-
-                            {percentOfOrders(deliveredOrdersKpi)}%
-
-                          </span>
-
-                        </div>
-
-
-
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-
-                          <div
-
-                            className="h-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full"
-
-                            style={{
-
-                              width: `${percentOfOrders(deliveredOrdersKpi)}%`,
-
-                            }}
-
-                          ></div>
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  </HoverCardTrigger>
-
-
-
-                  <HoverCardContent side="top" align="start" className="w-64 text-sm">
-
-                    Orders successfully delivered to customers.
-
-                  </HoverCardContent>
-
-                </HoverCard>
-
-
-
-                {/* Orders Cancelled Card */}
-
-
-
-                <HoverCard openDelay={250}>
-
-                  <HoverCardTrigger render={<div />}>
-
-                    <div className="bg-white dark:bg-neutral-900 dark:border-gray-800 rounded-2xl rounded-sm hover:rounded-sm transition-all duration-300 p-3 sm:p-6 border border-gray-300 group hover:border-red-200">
-
-                      <div className="flex justify-between items-start mb-4">
-
-                        <div>
-
-                          <h2 className="text-sm  font-semibold dark:text-white text-gray-700 mb-1">
-
-                            NDR's
-
-                          </h2>
-
-
-
-                          <div className="text-xl sm:text-3xl font-bold dark:text-white text-gray-900">
-
-                            <BottomScrollCounter
-
-                              prevValue={200}
-
-                              newValue={ndrOrdersKpi.toLocaleString("en-IN")}
-
-                              className=""
-
-                            />
-
-                          </div>
-
-                        </div>
-
-
-
-                        <div className="p-2 sm:p-3 bg-red-100 rounded-xl group-hover:bg-red-200 transition-colors">
-
-                          <GiCancel className="text-xl sm:text-2xl text-red-600" />
-
-                        </div>
-
-                      </div>
-
-
-
-                      <div className="mt-4">
-
-                        <div className="flex justify-between dark:text-white text-[11px] sm:text-[11px] sm:text-sm text-gray-600 mb-1">
-
-                          <span>NDR's Rate</span>
-
-
-
-                          <span className="font-semibold text-red-600">
-
-                            {percentOfOrders(ndrOrdersKpi)}%
-
-                          </span>
-
-                        </div>
-
-
-
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-
-                          <div
-
-                            className="h-2 bg-gradient-to-r from-red-500 to-pink-600 rounded-full"
-
-                            style={{
-
-                              width: `${percentOfOrders(ndrOrdersKpi)}%`,
-
-                            }}
-
-                          ></div>
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  </HoverCardTrigger>
-
-
-
-                  <HoverCardContent side="top" align="start" className="w-64 text-sm">
-
-                    Non-Delivery Report orders that need delivery follow-up.
-
-                  </HoverCardContent>
-
-                </HoverCard>
-
-
-
-                {/* RTO Delivered Card */}
-
-
-
-                <HoverCard openDelay={250}>
-
-                  <HoverCardTrigger render={<div />}>
-
-                    <div className="bg-white dark:bg-neutral-900 dark:border-gray-800 rounded-2xl rounded-sm hover:rounded-sm transition-all duration-300 p-3 sm:p-6 border border-gray-300 group hover:border-amber-200">
-
-                      <div className="flex justify-between items-start mb-4">
-
-                        <div>
-
-                          <h2 className="text-sm dark:text-white font-semibold text-gray-700 mb-1">
-
-                            RTO Delivered
-
-                          </h2>
-
-
-
-                          <div className="text-xl sm:text-3xl font-bold dark:text-white text-gray-900">
-
-                            <BottomScrollCounter
-
-                              prevValue={200}
-
-                              newValue={rtoOrdersKpi.toLocaleString("en-IN")}
-
-                              className=""
-
-                            />
-
-                          </div>
-
-                        </div>
-
-
-
-                        <div className="p-2 sm:p-3 bg-amber-100 rounded-xl group-hover:bg-amber-200 transition-colors">
-
-                          <TbTruckReturn className="text-xl sm:text-2xl text-amber-600" />
-
-                        </div>
-
-                      </div>
-
-
-
-                      <div className="mt-4">
-
-                        <div className="flex justify-between dark:text-white text-[11px] sm:text-[11px] sm:text-sm text-gray-600 mb-1">
-
-                          <span>RTO Recovery</span>
-
-
-
-                          <span className="font-semibold text-amber-600">
-
-                            {percentOfOrders(rtoOrdersKpi)}%
-
-                          </span>
-
-                        </div>
-
-
-
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-
-                          <div
-
-                            className="h-2 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full"
-
-                            style={{
-
-                              width: `${percentOfOrders(rtoOrdersKpi)}%`,
-
-                            }}
-
-                          ></div>
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  </HoverCardTrigger>
-
-
-
-                  <HoverCardContent side="top" align="start" className="w-64 text-sm">
-
-                    Return-to-Origin orders successfully returned to the sender.
-
-                  </HoverCardContent>
-
-                </HoverCard>
-
-              </div>
 
 
 
@@ -3937,12 +3635,13 @@ export default function Analytics() {
 
                 <div className="grid grid-cols-1  gap-3 items-stretch">
                   {/* Delivery Performance - 70% */}
+                  
                   <div className="min-w-0 h-full">
                     <PerformanceTrendChart
                       title="Delivery performance trend"
                       subtitle="Daily delivery conversion for created-order cohorts"
                       xAxisData={trends?.map((item) => item?.date)}
-                      seriesData={trends?.metrics?.map((item) => item?.delivered_orders)}
+                      seriesData={trends?.map((item) => item?.metrics?.delivered_orders)}
                       height={265}
                     />
                   </div>

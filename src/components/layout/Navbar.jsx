@@ -18,6 +18,7 @@ import {
   HandCoins,
   Box,
   SlidersHorizontal,
+  Network,
 } from "lucide-react";
 
 import { useEffect, useState, useRef } from "react";
@@ -467,6 +468,21 @@ function Navbar({ allowedRoles, children }) {
                 href: "#",
                 icon: <OperationIcon />,
                 subItems: [
+                   // Loadout Permission
+                   
+                  ...(permissions.includes("LOADOUT_VIEW") ||
+                  permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "Loadout",
+                          href: "/user/loadout",
+                          icon: (
+                            <LoadoutIcon  />
+                          ),
+                        },
+                      ]
+                    : []),
+
                   // Orders Permission
                   ...(permissions.includes("ODR_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
                     ? [
@@ -492,19 +508,7 @@ function Navbar({ allowedRoles, children }) {
                         },
                       ]
                     : []),
-                  // Loadout Permission
-                  ...(permissions.includes("LOADOUT_VIEW") ||
-                  permissions.includes("ADMIN_FULL_ACCESS")
-                    ? [
-                        {
-                          label: "loadout",
-                          href: "/user/loadout",
-                          icon: (
-                            <LoadoutIcon  />
-                          ),
-                        },
-                      ]
-                    : []),
+                  
                 ],
               },
             ]
@@ -544,22 +548,12 @@ function Navbar({ allowedRoles, children }) {
                         },
                       ]
                     : []),
-                  ...(permissions.includes("ODR_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
+                  
+                  ...(permissions.includes("VIEW_VENDOR") || permissions.includes("ADMIN_FULL_ACCESS")
                     ? [
                         {
-                          label: "Vendor",
-                          href: "/user/order-details",
-                          icon: (
-                            <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-                          ),
-                        },
-                      ]
-                    : []),
-                  ...(permissions.includes("ODR_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
-                    ? [
-                        {
-                          label: "Vendor Riders",
-                          href: "/user/order-details",
+                          label: "Vendors",
+                          href: "/user/vendor/details",
                           icon: (
                             <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
                           ),
@@ -568,6 +562,47 @@ function Navbar({ allowedRoles, children }) {
                     : []),
 
                   
+                  
+                ],
+              },
+            ]
+          : []),
+
+
+
+        ...(
+          permissions.includes("REMITTANCE_VIEW") || 
+          permissions.includes("REMITTANCE_MERCHANT_VIEW") || 
+          permissions.includes("ADMIN_FULL_ACCESS")
+          ? [
+              {
+                label: "Finance",
+                href: "#",
+                icon: <FinanceIcon />,
+                subItems: [
+                  // Orders Permission
+                  ...(permissions.includes("REMITTANCE_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "COD Remittance",
+                          href: "/user/cod-remittances",
+                          icon: (
+                            <LuReceiptIndianRupee className="h-4 w-4" />
+                          ),
+                        },
+                      ]
+                    : []),
+                  ...(permissions.includes("REMITTANCE_MERCHANT_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "Merchant Remittance",
+                          href: "/user/merchant-remittances",
+                          icon: (
+                            <FaUserTie className="h-4 w-4" />
+                          ),
+                        },
+                      ]
+                    : []),
                   
                 ],
               },
@@ -919,6 +954,11 @@ function Navbar({ allowedRoles, children }) {
                 icon: <VASIcon />,
                 subItems: [
                   {
+                    label: "Channels",
+                    href: "/merchant/channels",
+                    icon: <Network size={20} color="#374151" />,
+                  },
+                  {
                     label: "ETA Widget",
                     href: "/merchant/integration",
                     icon: <ETAWidget />,
@@ -1145,6 +1185,8 @@ function Navbar({ allowedRoles, children }) {
       );
 
       setProfile(res.data.data);
+
+      
     } catch (error) {}
   };
 
@@ -1153,6 +1195,7 @@ function Navbar({ allowedRoles, children }) {
       const res = await AxiosInstance.get("/api/tech-merchant/getMerchantProfile");
 
       setProfile(res.data.data);
+      
     } catch (error) {
       console.error("profile", error);
     }
@@ -1171,6 +1214,7 @@ function Navbar({ allowedRoles, children }) {
       );
 
       setProfile(res.data.data);
+     
     } catch (error) {
       console.error("profile", error);
     }

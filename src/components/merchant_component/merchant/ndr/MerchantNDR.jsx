@@ -2281,7 +2281,9 @@ function MerchantNDR() {
                                       <AlertDialogTrigger
                                         render={<Button variant="outline" />}
                                       >
-                                        <Button className="bg-[#0446DB]">
+                                        <Button
+                                         onClick={() => setEditingStatusId(d.ndr_id)}
+                                        className="bg-[#0446DB]">
                                           Take Action
                                         </Button>
                                       </AlertDialogTrigger>
@@ -2346,8 +2348,7 @@ function MerchantNDR() {
                                               customer_phone: phone,
                                             };
 
-                                            console.log("Submit Data:", data);
-
+                                            
                                             await changeStatus(
                                               data,
                                               editingStatusId,
@@ -2810,17 +2811,17 @@ function MerchantNDR() {
             </div>
           </main>
 
-          {editingStatusId && (
+          {/* {editingStatusId && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(46,46,46,0.5)] px-3 sm:px-0">
               <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg max-h-[90vh] overflow-hidden">
-                {/* Modal Header */}
+               
                 <div className="bg-[#0446DB] px-4 sm:px-6 py-3 sm:py-4">
                   <h2 className="text-lg sm:text-xl font-semibold text-white">
                     Take Action
                   </h2>
                 </div>
 
-                {/* Modal Body */}
+                
                 <div className="px-4 sm:px-6 py-4 overflow-y-auto max-h-[60vh]">
                   <form
                     onSubmit={async (e) => {
@@ -2840,7 +2841,6 @@ function MerchantNDR() {
                       const name = e?.target?.elements?.name?.value || "";
                       const address1 =
                         e?.target?.elements?.address1?.value || "";
-                      // const address2 = e?.target?.elements?.address2?.value || "";
                       const data = {
                         action: newStatus,
                         remarks: newRemarks,
@@ -2855,7 +2855,7 @@ function MerchantNDR() {
                     }}
                     className="flex flex-col gap-1"
                   >
-                    {/* Status */}
+                    
                     <div>
                       <label className="text-xs font-medium">Select</label>
                       <select
@@ -2881,7 +2881,7 @@ function MerchantNDR() {
                       </select>
                     </div>
 
-                    {/* change phone number */}
+                    
 
                     {newStatus == "rto" && (
                       <>
@@ -2939,7 +2939,7 @@ function MerchantNDR() {
                           <select
                             name="sub_remarks"
                             defaultValue=""
-                            // onChange={(e) => setRTORemarksStatus(e.target.value)}
+                            
                             className="mt-0 text-xs w-full border border-gray-300 rounded-md
                        px-2 py-2 mb-0 focus:ring-2 dark:text-white dark:bg-gray-800 focus:ring-indigo-400 focus:outline-none"
                             required
@@ -3004,15 +3004,7 @@ function MerchantNDR() {
                        px-2 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
                           />
                         </div>
-                        {/* <div>
-                            <label className="text-xs font-medium">Customer Address2</label>
-                            <input
-                              type="address2"
-                              name="address2"
-                              className="mt-0 text-xs w-full border border-gray-300 rounded-md
-                       px-2 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-                            />
-                          </div> */}
+                        
                       </>
                     )}
 
@@ -3035,7 +3027,6 @@ function MerchantNDR() {
                       />
                     </div>
 
-                    {/* Submit */}
                     <div className=" flex gap-1 justify-end">
                       <button
                         type="submit"
@@ -3061,7 +3052,7 @@ function MerchantNDR() {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       )}
     </>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { toast } from "react-toastify";
+
 import ReCAPTCHA from "react-google-recaptcha";
 
 import DaakitGoLogo from "../../assets/DaakitGo-Logo.jpg";
@@ -24,6 +24,7 @@ import {
   FiMapPin,
   FiActivity,
 } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 const slider = [
   {
@@ -130,8 +131,8 @@ function UserLogin() {
         }
       );
 
-      const token = res.data.token;
-
+      
+      const token = res?.data?.token;
       if (token) {
         localStorage.setItem("token", token);
 
@@ -150,8 +151,9 @@ function UserLogin() {
         toast.success("Login successful");
       }
     } catch (err) {
+      console.log("sas",err)
       toast.error(
-        err.response?.data?.message ||
+        err?.response?.data?.message ||
           err.message ||
           "Login Failed",
       );

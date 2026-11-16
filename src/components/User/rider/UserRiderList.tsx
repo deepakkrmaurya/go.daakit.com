@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 
 import AxiosInstance from "@/Helper/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 // Keep /api/admin if these Rider routes are mounted in your admin router.
 // Change this prefix if your backend mounts the same routes elsewhere.
@@ -501,6 +502,33 @@ function VendorRiders() {
     confirmPassword: "",
   });
 
+  const navigate = useNavigate()
+
+  const [permissions, setPermissions] = useState(localStorage.getItem("permission"))
+  const getUserPermissions = async () => {
+    try {
+      const res = await axios.get(`${baseURL}/api/user/getUserPermissions`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const permission = res?.data?.data?.data || [];
+
+      if (
+        !permission.includes("VIEW_RIDER") &&
+        !permission.includes("ADMIN_FULL_ACCESS")
+      ) {
+        navigate("/unauthorized");
+        return;
+      }
+      setPermissions(res?.data?.data?.data)
+
+
+    } catch (error) {
+      toast.error('')
+    }
+  }
+
   const openFilterDrawer = (): void => {
     // Edits inside the drawer are drafts until Apply Filters is clicked.
     setDraftFilters({ vendor, dcId, ownership });
@@ -618,6 +646,7 @@ function VendorRiders() {
   }, []);
 
   useEffect(() => {
+    getUserPermissions()
     fetchRiders();
     return () => {
       requestIdRef.current += 1;
@@ -701,10 +730,7 @@ function VendorRiders() {
 
   const handleSave = async () => {
     if (!formData?.id || !popup) return;
-    if (!formData.state || !formData.city || !formData.facility_city) {
-      toast.error("Please select state, city and facility city");
-      return;
-    }
+    
     // Only send editable, changed fields. Never send the full rider object.
     // The backend PATCH service accepts JSON, not multipart/form-data.
     const payload: RiderPatch = {};
@@ -783,8 +809,8 @@ function VendorRiders() {
   }
 
   return (
-    <div className="relative isolate h-[calc(100dvh-100px)] min-h-0 overflow-y-auto overscroll-contain bg-[#f5f8fb] text-gray-900 dark:bg-neutral-950 dark:text-white">
-      <div className="sticky top-0 z-40 border-b border-gray-200 bg-white px-4 py-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="relative isolate h-[calc(100dvh-100px)] min-h-0 overflow-y-auto overscroll-contain text-gray-900 dark:bg-neutral-950 dark:text-white">
+      <div className="sticky top-0 z-40 border-b border-gray-200  px-4 py-4  dark:border-neutral-800 dark:bg-neutral-900">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white md:text-2xl">
@@ -794,9 +820,7 @@ function VendorRiders() {
               Manage rider status, profile and account information.
             </p>
           </div>
-          <div className="text-sm font-medium text-gray-500 dark:text-neutral-400">
-            {pagination.total.toLocaleString()} riders
-          </div>
+         
         </div>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-[440px]">
@@ -1599,6 +1623,12 @@ function VendorRiders() {
                     </Button>
                   </>
                 ) : (
+
+                  <>
+
+                  {
+                    (permissions?.includes('UPDATE_RIDER') || permissions?.includes('ADMIN_FULL_ACCESS')) && (
+
                   <Button
                     type="button"
                     onClick={() => {
@@ -1613,6 +1643,10 @@ function VendorRiders() {
                     <Pencil className="h-4 w-4" />
                     Edit Rider
                   </Button>
+                    )
+                  }
+                  
+                  </>
                 )}
 
                 <DialogClose asChild>

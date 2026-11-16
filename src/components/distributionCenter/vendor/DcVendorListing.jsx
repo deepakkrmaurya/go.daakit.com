@@ -2192,12 +2192,7 @@ export default function DcVendorListing({
 
     if (!editing || saving) return;
 
-    // const errors = validateEdit(form, editing, changePassword);
-    // if (Object.keys(errors).length) {
-    //   setFormErrors(errors);
-    //   toast.error("Please correct the highlighted fields");
-    //   return;
-    // }
+   
     const payload = {};
 
     for (const key of EDIT_KEYS) {
@@ -2232,7 +2227,7 @@ export default function DcVendorListing({
 
     try {
       const { data } = await AxiosInstance.patch(
-        `${endpoint}/${encodeURIComponent(editing.vendor_id)}`,
+        `${endpoint}/${encodeURIComponent(Number(editing?.id))}`,
 
         payload,
       );

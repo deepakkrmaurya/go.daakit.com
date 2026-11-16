@@ -1845,7 +1845,7 @@ function UserNDR() {
             </div>
           </div>
 
-          <div className="mx-1 z-10 flex min-h-0 flex-1 flex-col overflow-hidden dark:bg-gray-800 rounded-md">
+          <div className="mx-1 z-10 bg-white flex min-h-0 flex-1 flex-col overflow-hidden dark:bg-gray-800 rounded-md">
             <div className="w-full shrink-0  dark:border dark:border-[#0446db]  dark:bg-gray-900 left-0 z-40   ">
               <div className="relative flex justify-left ">
                 <div className=" flex  overflow-x-auto scrollbar-hide scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ">
@@ -1876,7 +1876,7 @@ function UserNDR() {
 
             <div className="min-h-0 flex-1 overflow-auto bg-white dark:bg-gray-900 rounded-xl shadow">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="sticky top-0 z-20 bg-gray-100 dark:bg-gray-900 text-gray-600 font-semibold">
+                <thead className="sticky top-0 z-20 bg- dark:bg-gray-900 text-gray-600 font-semibold">
                   <tr>
                     <th className="px-6 py-3 text-left whitespace-nowrap">NDR ID</th>
 

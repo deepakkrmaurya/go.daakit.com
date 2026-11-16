@@ -1704,57 +1704,57 @@ export default function DcLoadout() {
              
 
              {selected?.loadout_type === "reverse" &&
-  selected?.status === "closed" &&
-  !reverseResult && (
-    <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+              selected?.status === "closed" &&
+              !reverseResult && (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 space-y-3">
 
-      {/* Success Message */}
-      <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
-        <CheckCircle2 size={18} className="text-emerald-600" />
-        Reverse Loadout Closed
-      </div>
+                  {/* Success Message */}
+                  <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
+                    <CheckCircle2 size={18} className="text-emerald-600" />
+                    Reverse Loadout Closed
+                  </div>
 
-      <p className="text-xs text-emerald-700">
-        This reverse loadout has been successfully closed.
-        You can download the available documents below.
-      </p>
+                  <p className="text-xs text-emerald-700">
+                    This reverse loadout has been successfully closed.
+                    You can download the available documents below.
+                  </p>
 
-      {/* Download Buttons */}
-      {(selected?.proof_pdf_path || selected?.awb_csv_path) && (
-        <div className="flex flex-wrap items-center gap-2 border-t border-emerald-200 pt-3">
+                  {/* Download Buttons */}
+                  {(selected?.proof_pdf_path || selected?.awb_csv_path) && (
+                    <div className="flex flex-wrap items-center gap-2 border-t border-emerald-200 pt-3">
 
-          {/* Proof PDF */}
-          {selected?.proof_pdf_path && (
-            <a
-              href={`https://go-admin.daakit.com/${selected.proof_pdf_path}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-              className="inline-flex items-center gap-2 rounded-md border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-50"
-            >
-              <FileText size={15} />
-              Proof PDF
-              <Download size={14} />
-            </a>
-          )}
+                      {/* Proof PDF */}
+                      {selected?.proof_pdf_path && (
+                        <a
+                          href={`https://go-admin.daakit.com/${selected.proof_pdf_path}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="inline-flex items-center gap-2 rounded-md border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-50"
+                        >
+                          <FileText size={15} />
+                          Proof PDF
+                          <Download size={14} />
+                        </a>
+                      )}
 
-          {/* AWB CSV */}
-          {selected?.awb_csv_path && (
-  <a
-    href={`https://go-admin.daakit.com/${selected.awb_csv_path}`}
-    download="awb_list.csv"
-    className="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-700 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-50"
-  >
-    <FileSpreadsheet size={15} />
-    Download AWB CSV 
-    <Download size={14} />
-  </a>
-)}
+                      {/* AWB CSV */}
+                      {selected?.awb_csv_path && (
+              <a
+                href={`https://go-admin.daakit.com/${selected.awb_csv_path}`}
+                download="awb_list.csv"
+                className="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-700 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-50"
+              >
+                <FileSpreadsheet size={15} />
+                Download AWB CSV 
+                <Download size={14} />
+              </a>
+            )}
 
-        </div>
-      )}
-    </div>
-  )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* modal footer — desktop */}
