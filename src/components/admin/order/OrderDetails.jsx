@@ -2089,8 +2089,8 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                             <option value="">
                                               Select Status
                                             </option>
-                                           <option value="loas">
-                                              Mark Loas
+                                           <option value="lost">
+                                              Mark Lost
                                             </option>
                                             
                                             <option value="Cancel Vendor Mapped">

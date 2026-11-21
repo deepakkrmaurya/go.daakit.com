@@ -3423,6 +3423,7 @@ function TechMerchantOrderDetails() {
               </div>
             </div>
             {selectedBulkOrders?.length > 0 && (
+                <div>
                 <AlertDialog>
                   <AlertDialogTrigger
                     
@@ -3430,9 +3431,9 @@ function TechMerchantOrderDetails() {
 
                     <Button
                         variant="outline"
-                        className="h-7 cursor-pointer rounded-sm my-1 border-[#0446DB] px-4 text-sm font-medium bg-[#0446DB] text-[#fff] hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                        className="h-7 text-left cursor-pointer rounded-sm my-1 border-[#0446DB] px-4 text-sm font-medium bg-[#0446DB] text-[#fff] hover:bg-blue-50 hover:text-[#0446DB] dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10"
                       >
-                        Bulk Actions
+                         Actions
                         </Button>
                   </AlertDialogTrigger>
 
@@ -3669,7 +3670,7 @@ function TechMerchantOrderDetails() {
                     </div>
 
                     {/* Footer */}
-                    <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+                    <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 my-0 dark:border-neutral-800 dark:bg-neutral-950/30">
                       <AlertDialogCancel
                       onClick={()=>{
                         clearAllState()
@@ -3680,6 +3681,7 @@ function TechMerchantOrderDetails() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
+                </div>
               )}
           </div>
 
@@ -3739,15 +3741,7 @@ function TechMerchantOrderDetails() {
                     <TableHead className="px-3 lg:px-6 py-3 text-left">
                       {selectedStatus === "All" ? (
                         <>
-                        <input
-                            type="checkbox"
-                            className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                            checked={
-                              selectedBulkOrders?.length ===
-                                orders?.data?.length && orders?.data?.length > 0
-                            }
-                            onChange={toggleSelectAll}
-                          /></>
+                        </>
                       ) : (
                         <>
                           <input
@@ -3809,15 +3803,7 @@ function TechMerchantOrderDetails() {
                           >
                             {/* Selection Checkbox */}
                             <TableCell className="px-3">
-                              <input
-                            type="checkbox"
-                            className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                            checked={
-                              selectedBulkOrders?.length ===
-                                orders?.data?.length && orders?.data?.length > 0
-                            }
-                            onChange={toggleSelectAll}
-                          />
+                             -
                             </TableCell>
 
                             {/* Order Information */}

@@ -2876,7 +2876,7 @@ export default function DcLoadout() {
   /* ======================= COMPLETE REVERSE ======================= */
   const completeReverse = async () => {
     if (!proofPdf) return toast.warn("Please attach a proof PDF.");
-    if (!proofCsv) return toast.warn("Please attach the AWB CSV.");
+    if (!csvFile) return toast.warn("Please attach the AWB CSV.");
     if (
       !window.confirm(
         "Complete reverse loadout? This will finalize the loadout.",
@@ -2888,7 +2888,10 @@ export default function DcLoadout() {
     try {
       const formData = new FormData();
       formData.append("proof_pdf", proofPdf);
-      formData.append("awb_csv", proofCsv);
+      formData.append("awb_csv", csvFile);
+       
+
+      
       const res = await AxiosInstance.post<ApiResponse<ReverseResult>>(`${BASE}/user/${selected.id}/complete-reverse`,
         formData,
       );
@@ -3818,7 +3821,6 @@ export default function DcLoadout() {
                 <X size={20} />
               </button>
             </div>
-
             <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 pb-24 sm:gap-4 sm:p-4 sm:pb-4">
               <div className="flex flex-wrap gap-2 text-xs sm:gap-3 sm:text-sm">
                 <span className="rounded-sm bg-blue-50 px-2.5 py-1.5 text-blue-700">
@@ -3836,7 +3838,6 @@ export default function DcLoadout() {
                   </span>
                 )}
               </div>
-
               {/* 🔒 PERM — scan form only if canManage */}
               {selected.status === "open" && canManage && (
                 <form
@@ -3864,106 +3865,44 @@ export default function DcLoadout() {
                   </button>
                 </form>
               )}
-
-              {/* ====== ORDERS: mobile cards ====== */}
-              <div className="space-y-2 md:hidden">
-                {paginatedOrders.map((o) => (
-                  <div
-                    key={o.id ?? o.awb_number}
-                    className="rounded-lg border border-slate-200 p-3 text-xs dark:border-neutral-800"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{o.awb_number}</span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          o.scan_status === "accepted"
-                            ? "bg-blue-50 text-blue-700"
-                            : "bg-orange-50 text-orange-700"
-                        }`}
-                      >
-                        {o.scan_status}
-                      </span>
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-slate-600 dark:text-slate-300">
-                      <div>
-                        <span className="text-slate-400">Order: </span>
-                        {o.order_id ?? "-"}
-                      </div>
-                      {selected.loadout_type === "forward" ? (
-                        <>
-                          <div>
-                            <span className="text-slate-400">Status: </span>
-                            {o.status ?? "-"}
-                          </div>
-                          <div>
-                            <span className="text-slate-400">Stage: </span>
-                            {o.pickup_stage ?? "-"}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div>
-                            <span className="text-slate-400">Prev: </span>
-                            {o.previous_status ?? "-"}
-                          </div>
-                          <div>
-                            <span className="text-slate-400">Status: </span>
-                            {o.status ?? "-"}
-                          </div>
-                          <div>
-                            <span className="text-slate-400">Submit: </span>
-                            {o.submit_stage ?? "-"}
-                          </div>
-                        </>
-                      )}
-                      
-                    </div>
-                  </div>
-                ))}
-                {(selected.orders ?? []).length === 0 && (
-                  <div className="flex flex-col items-center justify-center gap-2 py-8 text-slate-500">
-                    <Inbox size={24} className="text-slate-300" />
-                    <span className="text-sm">No AWBs scanned yet</span>
-                  </div>
-                )}
-              </div>
-
-              {/* ====== ORDERS: desktop table ====== */}
-              <div className="hidden max-h-[360px] overflow-auto rounded-sm border border-slate-200 md:block dark:border-neutral-800">
-                <table className="w-full min-w-[800px] text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-neutral-800">
-                    <tr>
-                      <th className="sticky top-0 z-10 bg-slate-50 px-3 py-3 dark:bg-neutral-800">AWB Number</th>
-                      <th className="sticky top-0 z-10 bg-slate-50 px-3 py-3 dark:bg-neutral-800">Order ID</th>
-                      <th className="sticky top-0 z-10 bg-slate-50 px-3 py-3 dark:bg-neutral-800">Scan Status</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
-                    {paginatedOrders.map((o) => (
-                      <tr key={o.id ?? o.awb_number}>
-                        <td className="px-3 py-3 font-medium">
-                          {o.awb_number}
-                        </td>
-                        <td className="px-3 py-3">{o.order_id ?? "-"}</td>
-                        <td className="px-3 py-3">{o.scan_status}</td>
-                       
-                      </tr>
-                    ))}
-                    {(selected.orders ?? []).length === 0 && (
+              {/* AWB table: visible on every screen size. Only rows area scrolls. */}
+              <div className="block w-full shrink-0 overflow-hidden rounded-sm border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="max-h-[240px] w-full overflow-auto overscroll-contain sm:max-h-[300px]">
+                  <table className="w-full min-w-[540px] border-collapse text-left text-sm">
+                    <thead className="sticky top-0 z-20 bg-slate-50 text-xs uppercase text-slate-500 dark:bg-neutral-800 dark:text-slate-300">
                       <tr>
-                        <td colSpan={4} className="py-12 text-center">
-                          <div className="flex flex-col items-center justify-center gap-2 text-slate-500">
-                            <Inbox size={24} className="text-slate-300" />
-                            <span className="text-sm">No AWBs scanned yet</span>
-                          </div>
-                        </td>
+                        <th className="sticky top-0 z-20 bg-slate-50 px-3 py-3 dark:bg-neutral-800">AWB Number</th>
+                        <th className="sticky top-0 z-20 bg-slate-50 px-3 py-3 dark:bg-neutral-800">Order ID</th>
+                        <th className="sticky top-0 z-20 bg-slate-50 px-3 py-3 dark:bg-neutral-800">Scan Status</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
+                      {paginatedOrders.map((o) => (
+                        <tr key={o.id ?? o.awb_number} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50">
+                          <td className="px-3 py-3 font-medium text-slate-900 dark:text-slate-100">{o.awb_number}</td>
+                          <td className="px-3 py-3 text-slate-600 dark:text-slate-300">{o.order_id ?? "-"}</td>
+                          <td className="px-3 py-3">
+                            <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                              o.scan_status === "accepted"
+                                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300"
+                                : "bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-300"
+                            }`}>
+                              {o.scan_status ?? "-"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {paginatedOrders.length === 0 && (
+                        <tr>
+                          <td colSpan={3} className="py-10 text-center text-sm text-slate-500">
+                            <span className="inline-flex items-center gap-2"><Inbox size={18} /> No AWBs scanned yet</span>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-
               {totalOrders > 0 && (
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-neutral-800">
                   <span className="text-[11px] text-slate-500">
@@ -3994,7 +3933,6 @@ export default function DcLoadout() {
                   </div>
                 </div>
               )}
-
               {/* 🔒 PERM — reverse completion only if canManage */}
               {canManage &&
                 selected.loadout_type === "reverse" &&
@@ -4014,7 +3952,6 @@ export default function DcLoadout() {
                         </p>
                       </div>
                     </div>
-
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       {/* ---- STEP 1: AWB CSV ---- */}
                       <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
@@ -4033,7 +3970,6 @@ export default function DcLoadout() {
                               </span>
                             )}
                           </div>
-
                           {/* Modern Download Button */}
                           <button
                             type="button"
@@ -4049,13 +3985,11 @@ export default function DcLoadout() {
                             <span className="sm:hidden">Sample</span>
                           </button>
                         </div>
-
                         {/* File picker styled as dropzone */}
                         <label
                           htmlFor="reverse-awb-csv"
                           className="relative flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-slate-300 bg-slate-50 py-4 text-center transition hover:border-[#0446DB] hover:bg-blue-50/40 dark:border-neutral-700 dark:bg-neutral-800/50 dark:hover:border-[#0446DB]"
                         >
-                        
                           {csvFile && (
                             <button
                               type="button"
@@ -4072,17 +4006,13 @@ export default function DcLoadout() {
                               <X size={14} />
                             </button>
                           )}
-
                           <FileText size={18} className="text-slate-400" />
-                          
                           <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
                             {csvFile ? "Change CSV" : "Choose CSV file"}
                           </span>
-                          
                           <span className="text-[10px] text-slate-400">
                             .csv · max 10 MB
                           </span>
-                          
                           <input
                             id="reverse-awb-csv"
                             type="file"
@@ -4094,7 +4024,6 @@ export default function DcLoadout() {
                             className="hidden"
                           />
                         </label>
-
                         {csvFile && (
                           <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2 py-1.5 text-[11px] text-slate-600 dark:bg-neutral-800 dark:text-slate-300">
                             <FileText
@@ -4107,7 +4036,6 @@ export default function DcLoadout() {
                             </span>
                           </div>
                         )}
-
                         <button
                           type="button"
                           onClick={() => void validateReverseCsv()}
@@ -4121,7 +4049,6 @@ export default function DcLoadout() {
                           )}
                           {validatingCsv ? "Validating…" : "Validate CSV"}
                         </button>
-
                         {csvValidation && (
                           <div className="rounded-md border border-blue-100 bg-blue-50 p-2.5 text-xs text-blue-800 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-200">
                             {csvValidation && (
@@ -4171,10 +4098,11 @@ export default function DcLoadout() {
                             )}
                           </div>
                         )}
-                      </div>
 
+                        
+                      </div>
                       {/* STEP 2: Proof PDF + Proof CSV */}
-                      <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                      <div className="h-auto flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                         {/* Heading */}
                         <div className="flex items-center gap-2">
                           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0446DB] text-[10px] font-bold text-white">
@@ -4185,13 +4113,11 @@ export default function DcLoadout() {
                             <span className="text-red-500">*</span>
                           </span>
                         </div>
-
                         {/* ---- Proof PDF ---- */}
                         <div className="flex flex-col gap-2">
                           <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
                             Proof PDF <span className="text-red-500">*</span>
                           </label>
-
                           <label
                             htmlFor="reverse-proof-pdf"
                             className="relative flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-slate-300 bg-slate-50 py-4 text-center transition hover:border-[#0446DB] hover:bg-blue-50/50 dark:border-neutral-700 dark:bg-neutral-800/50"
@@ -4211,7 +4137,6 @@ export default function DcLoadout() {
                                 <X size={14} />
                               </button>
                             )}
-
                             <FileText size={18} className="text-slate-400" />
                             <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
                               {proofPdf ? "Change PDF" : "Choose PDF File"}
@@ -4219,7 +4144,6 @@ export default function DcLoadout() {
                             <span className="text-[10px] text-slate-400">
                               .pdf · max 10 MB
                             </span>
-
                             <input
                               id="reverse-proof-pdf"
                               type="file"
@@ -4237,7 +4161,6 @@ export default function DcLoadout() {
                               }}
                             />
                           </label>
-
                           {proofPdf && (
                             <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2 py-1.5 text-[11px] text-slate-600 dark:bg-neutral-800 dark:text-slate-300">
                               <FileText
@@ -4264,13 +4187,11 @@ export default function DcLoadout() {
                             </div>
                           )}
                         </div>
-
                         {/* ---- Proof CSV (separate state!) ---- */}
-                        <div className="flex flex-col gap-2">
+                        {/* <div className="flex flex-col gap-2">
                           <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
                             AWB CSV File <span className="text-red-500">*</span>
                           </label>
-
                           <label
                             htmlFor="reverse-proof-csv"
                             className="relative flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-slate-300 bg-slate-50 py-4 text-center transition hover:border-[#0446DB] hover:bg-blue-50/50 dark:border-neutral-700 dark:bg-neutral-800/50"
@@ -4291,7 +4212,6 @@ export default function DcLoadout() {
                                 <X size={14} />
                               </button>
                             )}
-
                             <Upload size={18} className="text-slate-400" />
                             <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
                               {proofCsv ? "Change CSV File" : "Choose CSV File"}
@@ -4299,7 +4219,6 @@ export default function DcLoadout() {
                             <span className="text-[10px] text-slate-400">
                               .csv file
                             </span>
-
                             <input
                               id="reverse-proof-csv"
                               type="file"
@@ -4307,13 +4226,12 @@ export default function DcLoadout() {
                               className="hidden"
                               onChange={(e) => {
                                 const file = e.target.files?.[0] || null;
-                                setProofCsv(file); // ✅ separate
+                                setProofCsv(file); // separate
                                 setReverseResult(null);
                                 e.target.value = "";
                               }}
                             />
                           </label>
-
                           {proofCsv && (
                             <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2 py-1.5 text-[11px] text-slate-600 dark:bg-neutral-800 dark:text-slate-300">
                               <FileText
@@ -4329,7 +4247,7 @@ export default function DcLoadout() {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setProofCsv(null); // ✅ separate
+                                  setProofCsv(null); // separate
                                   setReverseResult(null);
                                   toast.info("CSV file removed");
                                 }}
@@ -4340,30 +4258,28 @@ export default function DcLoadout() {
                               </button>
                             </div>
                           )}
-                        </div>
-
+                        </div> */}
                         {/* Complete Reverse */}
                         <button
-                          type="button"
-                          onClick={() => void completeReverse()}
-                          disabled={
+                            type="button"
+                            onClick={() => void completeReverse()}
+                            disabled={
                             completingReverse ||
                             validatingCsv ||
+                            !csvValidation ||
                             !proofPdf ||
-                            !proofCsv
+                            Number(csvValidation?.projected_rto_undelivered_count ?? 0) > 0
                           }
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#0446DB] px-3 text-xs font-medium text-white transition hover:bg-[#0339b5] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-neutral-700"
-                        >
-                          {completingReverse ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <CheckCircle2 size={14} />
-                          )}
-                          {completingReverse
-                            ? "Submitting..."
-                            : "Complete Reverse"}
-                        </button>
+                            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#0446DB] px-3 text-xs font-medium text-white transition hover:bg-[#0339b5] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-neutral-700"
+                          >
+                            {completingReverse ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <CheckCircle2 size={14} />
+                            )}
 
+                            {completingReverse ? "Submitting..." : "Complete Reverse"}
+                          </button>
                         {/* Final Result */}
                         {reverseResult && (
                           <div className="rounded-md border border-emerald-200 bg-emerald-50 p-2.5 text-xs text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
@@ -4371,7 +4287,6 @@ export default function DcLoadout() {
                               <CheckCircle2 size={12} />
                               Completed
                             </div>
-
                             <div className="space-y-1">
                               <div className="flex justify-between">
                                 <span>Total</span>
@@ -4410,37 +4325,22 @@ export default function DcLoadout() {
                     </div>
                   </div>
                 )}
-
-              {/* {selected.loadout_type === "reverse" &&
-                selected.status === "closed" &&
-                !reverseResult && (
-                  <div className="rounded-sm border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
-                    <div className="flex items-center gap-2 font-semibold">
-                      <CheckCircle2 size={14} /> Reverse loadout closed
-                    </div>
-                  </div>
-                )} */}
-
-                {selected?.loadout_type === "reverse" &&
+              {selected?.loadout_type === "reverse" &&
               selected?.status === "closed" &&
               !reverseResult && (
                 <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 space-y-3">
-
                   {/* Success Message */}
                   <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
                     <CheckCircle2 size={18} className="text-emerald-600" />
                     Reverse Loadout Closed
                   </div>
-
                   <p className="text-xs text-emerald-700">
                     This reverse loadout has been successfully closed.
                     You can download the available documents below.
                   </p>
-
                   {/* Download Buttons */}
                   {(selected?.proof_pdf_path || selected?.awb_csv_path) && (
                     <div className="flex flex-wrap items-center gap-2 border-t border-emerald-200 pt-3">
-
                       {/* Proof PDF */}
                       {selected?.proof_pdf_path && (
                         <a
@@ -4455,7 +4355,6 @@ export default function DcLoadout() {
                           <Download size={14} />
                         </a>
                       )}
-
                       {/* AWB CSV */}
                       {selected?.awb_csv_path && (
               <a
@@ -4468,13 +4367,11 @@ export default function DcLoadout() {
                 <Download size={14} />
               </a>
             )}
-
                     </div>
                   )}
                 </div>
               )}
             </div>
-
             {/* modal footer — desktop */}
             <div className="sticky bottom-0 hidden shrink-0 flex-wrap justify-end gap-2 border-t border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900 sm:flex sm:p-4">
               <button
@@ -4518,7 +4415,6 @@ export default function DcLoadout() {
                 )}
             </div>
           </div>
-
           {/* MOBILE sticky action bar */}
           <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center sm:hidden">
             <div className="pointer-events-auto flex w-full max-w-5xl gap-2 border-t border-slate-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
@@ -4565,6 +4461,8 @@ export default function DcLoadout() {
           </div>
         </div>
       )}
+
+
     </div>
   );
 }

@@ -2189,6 +2189,82 @@ useEffect(() => {
                               </div>
                               </div>
                               {/* Generete Labels */}
+
+
+
+                              {(permissions.includes("UPDATE_STATUS") || permissions.includes("CANCEL_MAPPED") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                      <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                        <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            Change Order Action
+                          </h3>
+
+                          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                            Mark Selected – Bulk Action
+                          </p>
+                        </div>
+ 
+                        <div className="space-y-4 p-4">
+                          <div>
+                            <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                              Select Action
+                            </label>
+
+                            <select
+                              value={ndrstatus}
+                              
+                              onChange={handleStatusChange}
+                              className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                            >
+                              <option value="">Select Action</option>
+
+                              {(permissions.includes("UPDATE_STATUS") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                                 <>
+                                 <option value="lost">
+                                  Mark Lost
+                                </option>
+                                
+                                 </>
+                              )}
+                            </select>
+
+                            
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              disabled={!ndrstatus}
+                              onClick={async () => {
+                                if (!ndrstatus) {
+                                  toast.warn("Select new status");
+                                  return;
+                                } else {
+
+                                  
+                                  await Promise.all(
+                                    selectedBulkOrders.map((order) =>
+                                      changeStatus(
+                                        {
+                                         id: order.id,
+                                      newStatus:  ndrstatus,
+                                      remark: ''
+                                    }
+                                      )
+                                    )
+                                  );
+                                }
+
+                                setSelectedBulkOrders([]);
+                                setBulkStatusState("");
+                              }}
+                              className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500"
+                            >
+                              Change Action
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                              )}
                       
 
                       
@@ -2317,7 +2393,81 @@ useEffect(() => {
                               </div>
                               {/* Generete Labels */}
                       
+                           
 
+                            {(permissions.includes("UPDATE_STATUS") || permissions.includes("CANCEL_MAPPED") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                      <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                        <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            Change Order Action
+                          </h3>
+
+                          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                            Mark Selected – Bulk Action
+                          </p>
+                        </div>
+ 
+                        <div className="space-y-4 p-4">
+                          <div>
+                            <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                              Select Action
+                            </label>
+
+                            <select
+                              value={ndrstatus}
+                              
+                              onChange={handleStatusChange}
+                              className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                            >
+                              <option value="">Select Action</option>
+
+                              {(permissions.includes("UPDATE_STATUS") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                                 <>
+                                 <option value="lost">
+                                  Mark Lost
+                                </option>
+                                
+                                 </>
+                              )}
+                            </select>
+
+                            
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              disabled={!ndrstatus}
+                              onClick={async () => {
+                                if (!ndrstatus) {
+                                  toast.warn("Select new status");
+                                  return;
+                                } else {
+
+                                  
+                                  await Promise.all(
+                                    selectedBulkOrders.map((order) =>
+                                      changeStatus(
+                                        {
+                                         id: order.id,
+                                      newStatus:  ndrstatus,
+                                      remark: ''
+                                    }
+                                      )
+                                    )
+                                  );
+                                }
+
+                                setSelectedBulkOrders([]);
+                                setBulkStatusState("");
+                              }}
+                              className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500"
+                            >
+                              Change Action
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                              )}
                       
 
                       {/* Clear Selection */}
@@ -2443,7 +2593,81 @@ useEffect(() => {
                               </div>
                               {/* Generete Labels */}
                       
+                     
 
+                      {(permissions.includes("UPDATE_STATUS") || permissions.includes("CANCEL_MAPPED") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                      <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                        <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            Change Order Action
+                          </h3>
+
+                          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                            Mark Selected – Bulk Action
+                          </p>
+                        </div>
+ 
+                        <div className="space-y-4 p-4">
+                          <div>
+                            <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                              Select Action
+                            </label>
+
+                            <select
+                              value={ndrstatus}
+                              
+                              onChange={handleStatusChange}
+                              className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                            >
+                              <option value="">Select Action</option>
+
+                              {(permissions.includes("UPDATE_STATUS") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                                 <>
+                                 <option value="lost">
+                                  Mark Lost
+                                </option>
+                                
+                                 </>
+                              )}
+                            </select>
+
+                            
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              disabled={!ndrstatus}
+                              onClick={async () => {
+                                if (!ndrstatus) {
+                                  toast.warn("Select new status");
+                                  return;
+                                } else {
+
+                                  
+                                  await Promise.all(
+                                    selectedBulkOrders.map((order) =>
+                                      changeStatus(
+                                        {
+                                         id: order.id,
+                                      newStatus:  ndrstatus,
+                                      remark: ''
+                                    }
+                                      )
+                                    )
+                                  );
+                                }
+
+                                setSelectedBulkOrders([]);
+                                setBulkStatusState("");
+                              }}
+                              className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500"
+                            >
+                              Change Action
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                              )}
                       
 
                       {/* Clear Selection */}
@@ -2479,6 +2703,8 @@ useEffect(() => {
                   </AlertDialogContent>
                 </AlertDialog>
               )}
+
+
              {selectedBulkOrders.length > 0 &&  (selectedStatus === "undelivered" ) && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -2568,7 +2794,82 @@ useEffect(() => {
   </div>
                               </div>
                               {/* Generete Labels */}
-                      
+                        
+
+
+                         {(permissions.includes("UPDATE_STATUS") || permissions.includes("CANCEL_MAPPED") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                      <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                        <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            Change Order Action
+                          </h3>
+
+                          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                            Mark Selected – Bulk Action
+                          </p>
+                        </div>
+ 
+                        <div className="space-y-4 p-4">
+                          <div>
+                            <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                              Select Action
+                            </label>
+
+                            <select
+                              value={ndrstatus}
+                              
+                              onChange={handleStatusChange}
+                              className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                            >
+                              <option value="">Select Action</option>
+
+                              {(permissions.includes("UPDATE_STATUS") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                                 <>
+                                 <option value="lost">
+                                  Mark Lost
+                                </option>
+                                
+                                 </>
+                              )}
+                            </select>
+
+                            
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              disabled={!ndrstatus}
+                              onClick={async () => {
+                                if (!ndrstatus) {
+                                  toast.warn("Select new status");
+                                  return;
+                                } else {
+
+                                  
+                                  await Promise.all(
+                                    selectedBulkOrders.map((order) =>
+                                      changeStatus(
+                                        {
+                                         id: order.id,
+                                      newStatus:  ndrstatus,
+                                      remark: ''
+                                    }
+                                      )
+                                    )
+                                  );
+                                }
+
+                                setSelectedBulkOrders([]);
+                                setBulkStatusState("");
+                              }}
+                              className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500"
+                            >
+                              Change Action
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                              )}
 
                       
 
@@ -2696,7 +2997,79 @@ useEffect(() => {
                               {/* Generete Labels */}
                       
 
-                      
+                       {(permissions.includes("UPDATE_STATUS") || permissions.includes("CANCEL_MAPPED") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                      <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+                        <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            Change Order Action
+                          </h3>
+
+                          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                            Mark Selected – Bulk Action
+                          </p>
+                        </div>
+ 
+                        <div className="space-y-4 p-4">
+                          <div>
+                            <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                              Select Action
+                            </label>
+
+                            <select
+                              value={ndrstatus}
+                              
+                              onChange={handleStatusChange}
+                              className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+                            >
+                              <option value="">Select Action</option>
+
+                              {(permissions.includes("UPDATE_STATUS") || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                                 <>
+                                 <option value="lost">
+                                  Mark Lost
+                                </option>
+                                
+                                 </>
+                              )}
+                            </select>
+
+                            
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              disabled={!ndrstatus}
+                              onClick={async () => {
+                                if (!ndrstatus) {
+                                  toast.warn("Select new status");
+                                  return;
+                                } else {
+
+                                  
+                                  await Promise.all(
+                                    selectedBulkOrders.map((order) =>
+                                      changeStatus(
+                                        {
+                                         id: order.id,
+                                      newStatus:  ndrstatus,
+                                      remark: ''
+                                    }
+                                      )
+                                    )
+                                  );
+                                }
+
+                                setSelectedBulkOrders([]);
+                                setBulkStatusState("");
+                              }}
+                              className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500"
+                            >
+                              Change Action
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                              )}
 
                       {/* Clear Selection */}
                       <div className="flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
@@ -2831,7 +3204,7 @@ useEffect(() => {
                           </h3>
 
                           <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                            Mark the selected RTO Out For Delivery orders as delivered.
+                            Mark Selected – Bulk Action
                           </p>
                         </div>
  
@@ -2851,15 +3224,18 @@ useEffect(() => {
 
                               {(permissions.includes("UPDATE_STATUS") || permissions.includes('ADMIN_FULL_ACCESS')) && (
                                  <>
-                                 {
+                                 <option value="lost">
+                                  Mark Lost
+                                </option>
+                                 {/* {
                                   (selectedStatus==='rto in transit' || selectedStatus =='rto undelivered') && (
                                  
                                 <option value="rto out for delivery">
                                   RTO Out For Delivery
                                 </option>
                                   )
-                                 }
-                                 {
+                                 } */}
+                                 {/* {
                                   selectedStatus==='rto out for delivery' && (
 
                                 <>
@@ -2869,7 +3245,7 @@ useEffect(() => {
                                 </option>
                                 </>
                                   )
-                                 }
+                                 } */}
                                  </>
                               )}
                             </select>
@@ -2993,7 +3369,7 @@ useEffect(() => {
                                               </Button>
                                             </AlertDialogFooter>
                                           </AlertDialogContent>
-                                        </AlertDialog>
+                           </AlertDialog>
                           </div>
 
                           <div className="flex justify-end">
@@ -3087,7 +3463,16 @@ useEffect(() => {
                         
                            
                                                       
-                                       {["rto out for delivery", "rto undelivered","rto in transit"].includes(
+                                       {[
+                                        "booked",
+                                        "rto out for delivery",
+                                        "rto undelivered",
+                                        "picked",
+                                        "in transit",
+                                        "out for delivery",
+                                        "undelivered",
+                                        "undelivered assigned",
+                                        "rto in transit"].includes(
                                          selectedStatus
                                     ) ? (
                                       <th className="px-6 py-4">
@@ -4357,8 +4742,8 @@ useEffect(() => {
                                                     {order.status ===
                                                       "rto in transit" && (
                                                         <>
-                                                          <option value="rto out for delivery">
-                                                            RTO  Out For Delivery
+                                                          <option value="lost">
+                                                            Mark Lost
                                                           </option>
                                                         </>
                                                       )}
