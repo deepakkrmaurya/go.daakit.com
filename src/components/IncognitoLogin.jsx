@@ -14,6 +14,8 @@ function IncognitoLogin() {
 
   useEffect(() => {
     const handleIncognitoLogin = async () => {
+
+      
       if (role === "vendor") {
         try {
           const res = await axios.post(
@@ -110,7 +112,10 @@ function IncognitoLogin() {
           },
         );
 
-        localStorage.setItem("token", data?.token);
+
+        
+
+        localStorage.setItem("token", data?.data?.token);
         localStorage.setItem("user_type", "vendor");
         navigate("/vendor/analytics");
       }

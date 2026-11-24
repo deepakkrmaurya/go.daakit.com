@@ -21,7 +21,7 @@ function InspectController() {
         const applyRules = () => {
             const path = window.location.pathname;
 
-            if (path === "/admin/vendor-stats" || path === '/admin/merchant-details') {
+            if (path === "/admin/vendor-stats" || path === '/admin/merchant-details' || path == '/user/vendor/details' || path=='/user/dc/list') {
                 // ✅ Is page par ENABLE
                 document.removeEventListener("contextmenu", handleContextMenu);
                 document.removeEventListener("keydown", handleKeyDown);

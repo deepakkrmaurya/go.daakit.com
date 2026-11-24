@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Select from "react-select";
@@ -179,8 +177,6 @@ function OrderDetails() {
     setNdrStatus(value);
   };
 
-
-
   const [editingDeliveryId, setEditingDeliveryId] = useState(null);
   const [editingPickupId, setEditingPickupId] = useState(null);
   const [deliveryFormData, setDeliveryFormData] = useState({
@@ -311,13 +307,6 @@ function OrderDetails() {
       .join(" ");
   }
 
-
-
-
-
-
-
-
 const [bulkMappingOpen, setBulkMappingOpen] = useState(false);
 const [bulkMappingLoading, setBulkMappingLoading] = useState(false);
 
@@ -341,9 +330,6 @@ const handleOpenBulkVendorMapping = async () => {
 
   try {
     const orderIds = undeliveredOrders.map((order) => order.id);
-
-  
-    
 
     setBulkMappingOpen(true);
   } catch (error) {
@@ -381,9 +367,6 @@ const handleBulkChangeVendorMapping = async (e) => {
     setBulkMappingLoading(false);
   }
 };
-
-
-
 
 const handleBulkRevokeVendorMapping = async () => {
   if (!allSelectedUndelivered) {
@@ -538,7 +521,7 @@ const handleBulkRevokeVendorMapping = async () => {
     "in transit",
     "out for delivery",
     "delivered",
-    
+
   ];
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [dcList, setDcList] = useState([]);
@@ -546,7 +529,7 @@ const handleBulkRevokeVendorMapping = async () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-    
+
       const res = await axios.get(`${baseURL}/api/admin/getallorders`, {
         params: {
           page,
@@ -586,13 +569,13 @@ const handleBulkRevokeVendorMapping = async () => {
   const fetchDcList = async () => {
     try {
       const getDcList = await AxiosInstance.get(`/api/dc/list`);
-      
+
       setDcList(getDcList?.data?.data || []);
     } catch (error) {
       setDcList([]);
     }
   };
-  
+
   const handleUpdateDeliveryDetails = async (data) => {
     try {
       const res = await axios.post(
@@ -681,8 +664,6 @@ const handleBulkRevokeVendorMapping = async () => {
 
     setFilterUpdate((prev) => !prev);
   };
-
- 
 
   const fetchRider = async (vendor_ids) => {
     if (!vendor_ids || vendor_ids.length === 0) {
@@ -1135,8 +1116,6 @@ const handleBulkRevokeVendorMapping = async () => {
           (prevWeight) => Number(prevWeight) + Number(order.total_weight || 0),
         );
 
-        
-
         return updated;
       });
 
@@ -1157,13 +1136,9 @@ const handleBulkRevokeVendorMapping = async () => {
         setSelectedMapType(getOrderMapType(updated[0]));
       }
 
-      
-
       return updated;
     });
   };
-
-
 
   useEffect(() => {
     resetAdvanceFilters();
@@ -1208,9 +1183,6 @@ const handleBulkRevokeVendorMapping = async () => {
 
     return () => clearTimeout(timer);
   }, []);
-
-  
-
 
   return (
     <>
@@ -1268,7 +1240,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                    >
                     <Link
                         to="/admin/bookOrders"
-                        
+
                       >
                         Assignment Console
                     </Link>
@@ -1326,8 +1298,8 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                         e.target.value,
                                       )
                                     }
-                                    className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
+                                    className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800
+      dark:text-white px-3 py-2 rounded-sm text-sm
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   />
                                 </div>
@@ -1349,8 +1321,8 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                         e.target.value,
                                       )
                                     }
-                                    className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
+                                    className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800
+      dark:text-white px-3 py-2 rounded-sm text-sm
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   />
                                 </div>
@@ -1369,12 +1341,12 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                         order_specific: e.target.value,
                                       }));
                                     }}
-                                    className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
+                                    className="w-full border dark:border-gray-700 dark:bg-gray-800
+      dark:text-white px-3 py-2 rounded-sm text-sm
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   >
                                     <option value="">All orders</option>
-                                    
+
                                     <option value="SDD">
                                       Same Day Delivery
                                     </option>
@@ -1397,8 +1369,8 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                       }))
                                     }
                                     placeholder="AWB Number(s)"
-                                    className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
+                                    className="w-full border dark:border-gray-700 dark:bg-gray-800
+      dark:text-white px-3 py-2 rounded-sm text-sm
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   />
                                 </div>
@@ -1406,14 +1378,14 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
 
                               <div className=" mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                 <div>
-                                  
+
                                   <label className="block text-xs dark:text-white text-gray-600 mb-1">
                                     Merchant
                                   </label>
-                                  <select  
+                                  <select
                                   onClick={getAllMerchant}
-                                  className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
+                                  className="w-full border dark:border-gray-700 dark:bg-gray-800
+      dark:text-white px-3 py-2 rounded-sm text-sm
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   value={advanceFilters.merchant_id}
                                     onChange={(e) =>
@@ -1422,7 +1394,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                         merchant_id: e.target.value,
                                       }))
                                     }
-                                   
+
                                   >
                                     <option value="">Select Merchant</option>
                                     {
@@ -1434,8 +1406,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     }
                                   </select>
 
-                                  
-                                  
                                 </div>
 
                                 <div>
@@ -1453,8 +1423,8 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                       }))
                                     }
                                     placeholder="Enter City"
-                                    className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
+                                    className="w-full border dark:border-gray-700 dark:bg-gray-800
+      dark:text-white px-3 py-2 rounded-sm text-sm
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   />
                                 </div>
@@ -1463,10 +1433,10 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                               <div className=" mt-2 grid  grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                 <div>
                                   <label className="block text-xs dark:text-white text-gray-600 mb-1">
-                                    Vendor 
+                                    Vendor
                                   </label>
 
-                                  <select 
+                                  <select
                                   onClick={getAllVendors}
                                   value={advanceFilters.vendor_id}
                                     onChange={(e) =>
@@ -1475,20 +1445,20 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                         vendor_id: e.target.value,
                                       }))
                                     }
-                                   className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
+                                   className="w-full border dark:border-gray-700 dark:bg-gray-800
+      dark:text-white px-3 py-2 rounded-sm text-sm
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                 
+
                                   >
                                     <option value="">Select Vendor</option>
                                     {vendorList?.map((v) => {
-                                      
+
                                       return (
                                         <option value={v?.id}>{v?.id}:{v?.vendor_name}</option>
                                       );
                                     })}
                                   </select>
-                                  
+
                                 </div>
 
                                 <div>
@@ -1505,8 +1475,8 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                       }))
                                     }
                                     placeholder="Enter Pincode"
-                                    className="w-full border dark:border-gray-700 dark:bg-gray-800 
-                          dark:text-white px-3 py-2 rounded-sm text-sm 
+                                    className="w-full border dark:border-gray-700 dark:bg-gray-800
+                          dark:text-white px-3 py-2 rounded-sm text-sm
                              focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   />
                                 </div>
@@ -1526,8 +1496,8 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     }))
                                   }
                                   placeholder="Integer Only"
-                                  className="w-full border dark:border-gray-700 dark:bg-gray-800 
-      dark:text-white px-3 py-2 rounded-sm text-sm 
+                                  className="w-full border dark:border-gray-700 dark:bg-gray-800
+      dark:text-white px-3 py-2 rounded-sm text-sm
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                               </div>
@@ -1595,7 +1565,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                           {selectedStatus === st && ` (${totalOrders})`}
                         </Button>
                       ))}
-                      
+
                           {[
                             "undelivered",
                             "undelivered assigned",
@@ -1617,9 +1587,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                               {` (${totalOrders})`}
                             </Button>
                           )}
-
-
-
 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -1855,7 +1822,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                       )}
 
                                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                      
+
                                       <div className="flex flex-col gap-1">
                                         <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
                                           Cancel Selected Orders
@@ -1882,12 +1849,9 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                 </div>
                               </div>
 
-                              
-                              
-
                               {/* ================= GENERATE BULK PICKUP REQUEST ================= */}
                               <div className="overflow-hidden rounded-sm border border-emerald-200 dark:border-emerald-500/20">
-                               
+
                                 <div className="border-b border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
                                   <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
                                     Schedule Self Pickup
@@ -1899,9 +1863,8 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                   </p>
                                 </div>
 
-                               
                                 <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-                                
+
                                   <div>
                                     <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
                                       Schedule Self Pickup for Selected Orders
@@ -1916,7 +1879,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     </p>
                                   </div>
 
-                                
                                   <button
                                     type="submit"
                                     disabled={!selectedBulkOrders?.length}
@@ -2092,7 +2054,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                            <option value="lost">
                                               Mark Lost
                                             </option>
-                                            
+
                                             <option value="Cancel Vendor Mapped">
                                               Cancel Vendor Mapping
                                             </option>
@@ -2118,7 +2080,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     </div>
                                   </div>
                                 )}
-
 
                                 {selectedStatus === "picked" && (
                                   <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
@@ -2178,10 +2139,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                   Select Status
                                                 </option>
 
-                                               
-
-                                                
-
                                                 <option value="lost">
                                                  Mark Lost
                                                 </option>
@@ -2206,7 +2163,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                         (o) => o.id,
                                                       );
 
-                                                   
                                                     await changeOrderStatus({
                                                       order_ids: order_ids,
                                                       newStatus:
@@ -2234,14 +2190,10 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     </div>
                                   </div>
                                 )}
-                                  
-                              
-
 
                                  {/* =================================================
                                  CLEAR SELECTED ORDERS
                                  ================================================= */}
-
 
                                 <div className="flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
                                   <div className="min-w-0">
@@ -2279,7 +2231,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                             <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
                               <AlertDialogCancel
                                 onClick={() => {
-                                  
+
                                   clearAllState();
                                 }}
                                 className="cursor-pointer rounded-sm"
@@ -2399,10 +2351,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                   Select Status
                                                 </option>
 
-                                               
-
-                                                
-
                                                 <option value="lost">
                                                  Mark Lost
                                                 </option>
@@ -2427,7 +2375,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                         (o) => o.id,
                                                       );
 
-                                                   
                                                     await changeOrderStatus({
                                                       order_ids: order_ids,
                                                       newStatus:
@@ -2612,7 +2559,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                     )
                                                   }
                                                 >
-                                                   
 
                                                   <option value="">
                                                     -- Select Status --
@@ -2622,8 +2568,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                   </option>
                                                 </select>
                                               </div>
-
-                                              
 
                                               {/* =====================================
                               DELIVERED
@@ -2650,8 +2594,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                         assignmentState,
                                                       rider_id: "",
                                                     });
-
-                                                    
 
                                                     clearAllState();
                                                   }}
@@ -2836,7 +2778,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                             return;
                                           }
 
-                                          
                                           await changeOrderStatus({
                                             order_ids: ids,
                                             newStatus: ndrstatus,
@@ -2855,8 +2796,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                           <option value="">
                                            -- Select Status --
                                           </option>
-
-                                          
 
                                           <option value="lost">Mark Lost</option>
                                         </select>
@@ -3277,7 +3216,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                 (order) => order.id,
                                               );
 
-                                            
                                             CancelDcMapping({ orderIds });
                                             return;
                                           } else {
@@ -3350,7 +3288,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                   </p>
                                 </div>
 
-                               
                                 <div className="p-4">
                                   {!fetchBulkAssignmentVendor ? (
                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -3389,9 +3326,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                             ),
                                           ];
 
-                                          
-                                         
-                                          
                                         }}
                                         className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
                                       >
@@ -3523,8 +3457,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                 setFetchBulkAssignmentVendor(
                                                   true,
                                                 );
-                                                
-                                                
+
                                               }}
                                               className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
                                             >
@@ -3540,7 +3473,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
 
                                 )
                               }
-
 
                               <div className="mt-4 flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="min-w-0">
@@ -3658,7 +3590,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                       <th className="sticky top-0 z-30 bg-gray-100 dark:bg-neutral-800 dark:text-white whitespace-nowrap text-left  font-semibold py-3">
                         STATUS
                       </th>
-                      
+
                     </tr>
                   </thead>
                   <tbody>
@@ -3805,8 +3737,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                               );
 
                                               // Booked ka existing logic
-                                              
-                                              
 
                                               return updated;
                                             });
@@ -4061,7 +3991,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                 <Link
                                 target="_blank"
                                   to={`/admin/order-history?awb_number=${encodeURIComponent(order.awb_number)}`}
-                                  
+
                                   rel="noopener noreferrer"
                                   className="underline text-[#0446DB] hover:text-blue-500"
                                 >
@@ -4669,7 +4599,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                   </span>{" "}
                                   {order?.merchant_id ?? "N/A"}
                                 </p>
-                                
 
                                 {order?.brand_name && (
                                   <p className="text-gray-700 dark:text-gray-300">
@@ -4679,7 +4608,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     {order?.brand_name}
                                   </p>
                                 )}
-                              
 
                                 {order?.merchant_company_name && (
                                   <p className="text-gray-700 dark:text-gray-300">
@@ -4689,7 +4617,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     {order.merchant_company_name}
                                   </p>
                                 )}
-                                
+
                               </div>
                             </td>
 
@@ -4733,7 +4661,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     </p>
                                   )}
 
-                                 
                                 </td>
                               </>
                             )}
@@ -4756,10 +4683,9 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                               </HoverCard>
                               <p className="text-xs text-gray-500 dark:text-white">
                                 {order.delivery_city}, {order.delivery_state} -{" "}  {order.delivery_pincode}, {" "}
-                               
 
                                 {order.delivery_country}
-                              
+
                               </p>
 
                             </td>
@@ -4808,7 +4734,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                             : "border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
                                       }`}
                                     >
-                                      
 
                                       <span className="font-extrabold">
                                         {Number(order.total_amount || 0).toLocaleString("en-IN", {
@@ -4828,7 +4753,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                     </span>
                                   </p>
                                 )}
-                                
+
                               <p>
                                 <span className="font-medium dark:text-white text-gray-800">
                                   Dimensions:
@@ -4839,8 +4764,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                 </span>
                               </p>
                             </td>
-
-                            
 
                             {/* Status */}
                             {selectedStatus === "All" ? (
@@ -4913,10 +4836,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                             const newStatus =
                                               e.target.elements.status.value;
 
-                                            
-
-                                            
-
                                             await changeOrderStatus({
                                               order_ids: [order.id],
                                               newStatus,
@@ -4945,7 +4864,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                                   </option>
                                                 </>
                                               )}
-                                              
+
                                               {order.status ===
                                                 "undelivered" && (
                                                 <>
@@ -4971,7 +4890,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                               {order.status ===
                                                 "in transit" && (
                                                 <>
-                                                  
+
                                                   <option value="lost">
                                                     Mark Lost
                                                   </option>
@@ -4980,7 +4899,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                               {order.status ===
                                                 "out for delivery" && (
                                                 <>
-                                                  
+
                                                   <option value="lost">
                                                     Lost
                                                   </option>
@@ -4990,7 +4909,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                               {order.status ==
                                                 "rto out for delivery" && (
                                                 <>
-                                                 
+
                                                   <option value="ndr">
                                                     NDR
                                                   </option>
@@ -4999,8 +4918,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                               {order.status ===
                                                 "rto in transit" && (
                                                 <>
-                                                 
-                                                  
+
                                                   <option value="lost">
                                                     Lost
                                                   </option>
@@ -5009,7 +4927,6 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                               {order.status ===
                                                 "rto undelivered" && (
                                                 <>
-                                                 
 
                                                   <option value="lost">
                                                     Lost
@@ -5019,15 +4936,13 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                               {order.status ===
                                                 "undelivered assigned" && (
                                                 <>
-                                                 
+
                                                   <option value="lost">
                                                     Mark Lost
                                                   </option>
                                                 </>
                                               )}
                                             </select>
-                                            
-                                            
 
                                             {assignmentState &&
                                               assignmentState !== "ndr" &&
@@ -5162,7 +5077,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                 </td>
                               </>
                             )}
-                           
+
                           </tr>
                         );
                       })
@@ -5267,6 +5182,73 @@ export default OrderDetails;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // import { useEffect, useState } from "react";
 // import axios from "axios";
 // import Select from "react-select";
@@ -5289,11 +5271,7 @@ export default OrderDetails;
 //   DropdownMenuSeparator,
 //   DropdownMenuTrigger,
 // } from "@/components/ui/dropdown-menu";
-// import {
-//   HoverCard,
-//   HoverCardContent,
-//   HoverCardTrigger,
-// } from "@/components/ui/hover-card";
+// import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 // import { Button } from "@/components/ui/button";
 // import { Label } from "@/components/ui/label";
 // import {
@@ -5337,13 +5315,7 @@ export default OrderDetails;
 //   DialogTrigger,
 // } from "@/components/ui/dialog";
 // import { TbFileInfo } from "react-icons/tb";
-// import {
-//   FaArrowRight,
-//   FaFileExport,
-//   FaFilter,
-//   FaSearch,
-//   FaTasks,
-// } from "react-icons/fa";
+// import { FaArrowRight, FaFileExport, FaFilter, FaSearch, FaTasks } from "react-icons/fa";
 // import { FaRegCopy } from "react-icons/fa";
 // import { CiCircleCheck } from "react-icons/ci";
 // import { toast } from "react-toastify";
@@ -5369,33 +5341,23 @@ export default OrderDetails;
 //   const [vendor, setVendor] = useState([]);
 //   const [assignmentState, setAssignmentState] = useState("");
 //   const [riderID, setRiderID] = useState("");
-//   const [isOpenIndividualAssignmnet, setIsOpenIndividualAssignmnet] =
-//     useState("");
-//   const [
-//     isOpenIndividualVendorAssignmnet,
-//     setIsOpenIndividualVendorAssignmnet,
-//   ] = useState("");
-//   const [isOpenIndividualAssignmnetMap, setIsOpenIndividualAssignmnetMap] =
-//     useState("");
-//   const [isOpenIndividualVendorMap, setIsOpenIndividualVendorMap] =
-//     useState("");
+//   const [isOpenIndividualAssignmnet, setIsOpenIndividualAssignmnet] = useState("");
+//   const [isOpenIndividualVendorAssignmnet, setIsOpenIndividualVendorAssignmnet] = useState("");
+//   const [isOpenIndividualAssignmnetMap, setIsOpenIndividualAssignmnetMap] = useState("");
+//   const [isOpenIndividualVendorMap, setIsOpenIndividualVendorMap] = useState("");
 
 //   const [bulkStatusState, setBulkStatusState] = useState("");
 //   const [selectedBulkOrders, setSelectedBulkOrders] = useState([]);
 
-//   const [fetchBulkAssignmentRider, setFetchBulkAssignmentRider] =
-//     useState(false);
-//   const [fetchBulkAssignmentVendor, setFetchBulkAssignmentVendor] =
-//     useState(false);
+//   const [fetchBulkAssignmentRider, setFetchBulkAssignmentRider] = useState(false);
+//   const [fetchBulkAssignmentVendor, setFetchBulkAssignmentVendor] = useState(false);
 //   const [canceledBulkOrder, setcanceledBulkOrder] = useState(false);
 //   const [dcBulkOrder, setDcBulkOrder] = useState(false);
 //   const [bulkOrderWeight, setBulkOrderWeight] = useState(0);
 //   const [editingStatusId, setEditingStatusId] = useState(null);
 //   const [isFilterOpen, setIsFilterOpen] = useState(false);
-//   const [isMobileFilterDrawerOpen, setIsMobileFilterDrawerOpen] =
-//     useState(false);
-//   const [isDesktopFilterDrawerOpen, setIsDesktopFilterDrawerOpen] =
-//     useState(false);
+//   const [isMobileFilterDrawerOpen, setIsMobileFilterDrawerOpen] = useState(false);
+//   const [isDesktopFilterDrawerOpen, setIsDesktopFilterDrawerOpen] = useState(false);
 //   const [openOfd, setopenOfd] = useState([]);
 //   const [openDelivered, setopenDeliverde] = useState([]);
 //   const [remarks, setRemarks] = useState("");
@@ -5446,8 +5408,6 @@ export default OrderDetails;
 //     setNdrStatus(value);
 //   };
 
-
-
 //   const [editingDeliveryId, setEditingDeliveryId] = useState(null);
 //   const [editingPickupId, setEditingPickupId] = useState(null);
 //   const [deliveryFormData, setDeliveryFormData] = useState({
@@ -5475,7 +5435,7 @@ export default OrderDetails;
 //   const clearAll = () => {
 //     setNewStatus("");
 //     setRemark("");
-//      setCheckVendorMapping()
+//     setCheckVendorMapping();
 //     setBulkOrderWeight(0);
 //     setFetchBulkAssignmentVendor(false);
 //     setSelectedMapType(null);
@@ -5517,57 +5477,57 @@ export default OrderDetails;
 //       pickup_pincode: "",
 //     });
 //   };
-//  const clearAllState = () => {
-//   setBulkMappingOpen(false);
-//   setAssignmentState("");
-//   setCheckVendorMapping(null);
-//   setVendor([]);
-//   setNewStatus("");
-//   setRemark("");
-//   setSelectedBulkOrders([]);
-//   setBulkOrderWeight(0);
-//   setFetchBulkAssignmentVendor(false);
-//   setSelectedMapType(null);
-//   setEditingStatusId(null);
-//   setLoading(false);
-//   setRiders([]);
-//   setopenOfd([]);
-//   setopenDeliverde([]);
-//   setRescheduleDate("");
-//   setRemarks("");
-//   setSub_remarks("");
-//   setdetailed_remarks("");
-//   setFetchBulkAssignmentRider(false);
-//   setcanceledBulkOrder(false);
-//   setIsOpenIndividualAssignmnet("");
-//   setIsOpenIndividualVendorAssignmnet("");
-//   setIsOpenIndividualAssignmnetMap("");
-//   setIsOpenIndividualVendorMap("");
-//   setBulkStatusState("");
-//   setEditingDeliveryId(null);
-//   setEditingPickupId(null);
+//   const clearAllState = () => {
+//     setBulkMappingOpen(false);
+//     setAssignmentState("");
+//     setCheckVendorMapping(null);
+//     setVendor([]);
+//     setNewStatus("");
+//     setRemark("");
+//     setSelectedBulkOrders([]);
+//     setBulkOrderWeight(0);
+//     setFetchBulkAssignmentVendor(false);
+//     setSelectedMapType(null);
+//     setEditingStatusId(null);
+//     setLoading(false);
+//     setRiders([]);
+//     setopenOfd([]);
+//     setopenDeliverde([]);
+//     setRescheduleDate("");
+//     setRemarks("");
+//     setSub_remarks("");
+//     setdetailed_remarks("");
+//     setFetchBulkAssignmentRider(false);
+//     setcanceledBulkOrder(false);
+//     setIsOpenIndividualAssignmnet("");
+//     setIsOpenIndividualVendorAssignmnet("");
+//     setIsOpenIndividualAssignmnetMap("");
+//     setIsOpenIndividualVendorMap("");
+//     setBulkStatusState("");
+//     setEditingDeliveryId(null);
+//     setEditingPickupId(null);
 
-//   // Reset delivery form
-//   setDeliveryFormData({
-//     delivery_contact_name: "",
-//     delivery_address_line: "",
-//     delivery_city: "",
-//     delivery_state: "",
-//     delivery_pincode: "",
-//   });
+//     // Reset delivery form
+//     setDeliveryFormData({
+//       delivery_contact_name: "",
+//       delivery_address_line: "",
+//       delivery_city: "",
+//       delivery_state: "",
+//       delivery_pincode: "",
+//     });
 
-//   // Reset pickup form
-//   setPickupFormData({
-//     pickup_contact_name: "",
-//     pickup_phone: "",
-//     pickup_address_line: "",
-//     pickup_city: "",
-//     pickup_state: "",
-//     pickup_pincode: "",
-//   });
+//     // Reset pickup form
+//     setPickupFormData({
+//       pickup_contact_name: "",
+//       pickup_phone: "",
+//       pickup_address_line: "",
+//       pickup_city: "",
+//       pickup_state: "",
+//       pickup_pincode: "",
+//     });
 
-//   setDcBulkOrder(false);
-// };
+//     setDcBulkOrder(false);
+//   };
 //   function toCapitalizeEachWord(str) {
 //     return str
 //       .split(" ")
@@ -5578,97 +5538,87 @@ export default OrderDetails;
 //       .join(" ");
 //   }
 
+//   const [bulkMappingOpen, setBulkMappingOpen] = useState(false);
+//   const [bulkMappingLoading, setBulkMappingLoading] = useState(false);
 
+//   const undeliveredOrders = selectedBulkOrders.filter((order) => order.status === "undelivered");
 
+//   const allSelectedUndelivered =
+//     selectedBulkOrders.length > 0 && undeliveredOrders.length === selectedBulkOrders.length;
 
-
-
-
-
-// const [bulkMappingOpen, setBulkMappingOpen] = useState(false);
-// const [bulkMappingLoading, setBulkMappingLoading] = useState(false);
-
-// const undeliveredOrders = selectedBulkOrders.filter(
-//   (order) => order.status === "undelivered"
-// );
-
-// const allSelectedUndelivered =
-//   selectedBulkOrders.length > 0 &&
-//   undeliveredOrders.length === selectedBulkOrders.length;
-
-// const handleOpenBulkVendorMapping = async () => {
-//   if (!allSelectedUndelivered) {
-//     toast.warn("Please select only undelivered orders");
-//     return;
-//   }
-
-//   setBulkMappingLoading(true);
-//   setAssignmentState("");
-//   setCheckVendorMapping(null);
-
-//   try {
-//     const orderIds = undeliveredOrders.map((order) => order.id);
-
-//     // Existing function ko selected order IDs ke saath call karo
-//     await fetchVendor(orderIds);
-
-//     setBulkMappingOpen(true);
-//   } catch (error) {
-//     toast.error("Failed to load eligible vendors");
-//   } finally {
-//     setBulkMappingLoading(false);
-//   }
-// };
-
-// const handleBulkChangeVendorMapping = async (e) => {
-//   e.preventDefault();
-
-//   if (!allSelectedUndelivered) {
-//     toast.warn("Please select only undelivered orders");
-//     return;
-//   }
-
-//   if (!assignmentState) {
-//     toast.warn("Please select a vendor");
-//     return;
-//   }
-
-//   setBulkMappingLoading(true);
-
-//   try {
-//     for (const order of undeliveredOrders) {
-//       await changeVendorMapping(order.id, assignmentState);
+//   const handleOpenBulkVendorMapping = async () => {
+//     if (!allSelectedUndelivered) {
+//       toast.warn("Please select only undelivered orders");
+//       return;
 //     }
 
-//     setBulkMappingOpen(false);
+//     setBulkMappingLoading(true);
 //     setAssignmentState("");
-//     setSelectedBulkOrders([]);
-//     fetchOrders();
-//   } finally {
-//     setBulkMappingLoading(false);
-//   }
-// };
+//     setCheckVendorMapping(null);
 
-// const handleBulkRevokeVendorMapping = async () => {
-//   if (!allSelectedUndelivered) {
-//     toast.warn("Please select only undelivered orders");
-//     return;
-//   }
+//     try {
+//       const orderIds = undeliveredOrders.map((order) => order.id);
 
-//   setBulkMappingLoading(true);
+//       // Existing function ko selected order IDs ke saath call karo
+//       await fetchVendor(orderIds);
 
-//   try {
-//     for (const order of undeliveredOrders) {
-//       await revokeVendorMapping(order.id);
+//       setBulkMappingOpen(true);
+//     } catch (error) {
+//       toast.error("Failed to load eligible vendors");
+//     } finally {
+//       setBulkMappingLoading(false);
+//     }
+//   };
+
+//   const handleBulkChangeVendorMapping = async (e) => {
+//     e.preventDefault();
+
+//     if (!allSelectedUndelivered) {
+//       toast.warn("Please select only undelivered orders");
+//       return;
 //     }
 
-//     setBulkMappingOpen(false);
-//     setSelectedBulkOrders([]);
-//     fetchOrders();
-//   } finally {
-//     setBulkMappingLoading(false);
-//   }
-// };
+//     if (!assignmentState) {
+//       toast.warn("Please select a vendor");
+//       return;
+//     }
+
+//     setBulkMappingLoading(true);
+
+//     try {
+//       for (const order of undeliveredOrders) {
+//         await changeVendorMapping(order.id, assignmentState);
+//       }
+
+//       setBulkMappingOpen(false);
+//       setAssignmentState("");
+//       setSelectedBulkOrders([]);
+//       fetchOrders();
+//     } finally {
+//       setBulkMappingLoading(false);
+//     }
+//   };
+
+//   const handleBulkRevokeVendorMapping = async () => {
+//     if (!allSelectedUndelivered) {
+//       toast.warn("Please select only undelivered orders");
+//       return;
+//     }
+
+//     setBulkMappingLoading(true);
+
+//     try {
+//       for (const order of undeliveredOrders) {
+//         await revokeVendorMapping(order.id);
+//       }
+
+//       setBulkMappingOpen(false);
+//       setSelectedBulkOrders([]);
+//       fetchOrders();
+//     } finally {
+//       setBulkMappingLoading(false);
+//     }
+//   };
 
 //   const getAllVendors = async () => {
 //     try {
@@ -5682,15 +5632,13 @@ export default OrderDetails;
 //     } catch (err) {
 //       setVendorList([]);
 //       toast.error(
-//         err.response?.data?.message ||
-//           err.message ||
-//           "An error occurred while fetching vendors.",
+//         err.response?.data?.message || err.message || "An error occurred while fetching vendors.",
 //       );
 //     }
 //   };
 //   const getAllMerchant = async () => {
 //     try {
-//       const {data} = await AxiosInstance.get("/api/admin/getAllMerchants", {
+//       const { data } = await AxiosInstance.get("/api/admin/getAllMerchants", {
 //         params: {
 //           limit: 1000,
 //         },
@@ -5700,9 +5648,7 @@ export default OrderDetails;
 //     } catch (err) {
 //       setMerchantList([]);
 //       toast.error(
-//         err.response?.data?.message ||
-//           err.message ||
-//           "An error occurred while fetching vendors.",
+//         err.response?.data?.message || err.message || "An error occurred while fetching vendors.",
 //       );
 //     }
 //   };
@@ -5722,21 +5668,11 @@ export default OrderDetails;
 //         [field]: value,
 //       };
 
-//       if (
-//         field === "startDate" &&
-//         next.endDate &&
-//         value &&
-//         next.endDate < value
-//       ) {
+//       if (field === "startDate" && next.endDate && value && next.endDate < value) {
 //         next.endDate = value;
 //       }
 
-//       if (
-//         field === "endDate" &&
-//         next.startDate &&
-//         value &&
-//         next.startDate > value
-//       ) {
+//       if (field === "endDate" && next.startDate && value && next.startDate > value) {
 //         next.startDate = value;
 //       }
 
@@ -5845,9 +5781,7 @@ export default OrderDetails;
 //       setTotalPages(Math.max(1, res.data.pagination?.totalPages));
 //     } catch (err) {
 //       toast.error(
-//         err.response?.data?.message ||
-//           err.message ||
-//           "An error occurred while fetching orders.",
+//         err.response?.data?.message || err.message || "An error occurred while fetching orders.",
 //       );
 //     } finally {
 //       setLoading(false);
@@ -5866,34 +5800,25 @@ export default OrderDetails;
 
 //   const handleUpdateDeliveryDetails = async (data) => {
 //     try {
-//       const res = await axios.post(
-//         `${baseURL}/api/admin/updateOrderDetails`,
-//         data,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem("token")}`,
-//           },
+//       const res = await axios.post(`${baseURL}/api/admin/updateOrderDetails`, data, {
+//         headers: {
+//           Authorization: `Bearer ${localStorage.getItem("token")}`,
 //         },
-//       );
+//       });
 //       toast.success("Delivery details updated successfully");
 //       fetchOrders();
 //       setEditingDeliveryId(null);
 //       setEditingPickupId(null);
 //     } catch (err) {
-//       toast.error(
-//         err.response?.data?.message || "Failed to update delivery details",
-//       );
+//       toast.error(err.response?.data?.message || "Failed to update delivery details");
 //     }
 //   };
 
 //   const generateBulkPickupRequest = async (order_ids) => {
 //     try {
-//       const res = await AxiosInstance.post(
-//         `/api/admin/generateBulkPickupRequest`,
-//         {
-//           order_ids: order_ids,
-//         },
-//       );
+//       const res = await AxiosInstance.post(`/api/admin/generateBulkPickupRequest`, {
+//         order_ids: order_ids,
+//       });
 //       fetchOrders();
 //       toast.success(res?.data?.message);
 //       clearAllState();
@@ -5977,9 +5902,7 @@ export default OrderDetails;
 //       //   setcanceledBulkOrder(false)
 //       // }
 //     } catch (err) {
-//       toast.error(
-//         err.response?.data?.message || err.message || "Failed to load riders",
-//       );
+//       toast.error(err.response?.data?.message || err.message || "Failed to load riders");
 //     } finally {
 //       setLoading(false);
 //     }
@@ -6020,9 +5943,7 @@ export default OrderDetails;
 //       //   setcanceledBulkOrder(false)
 //       // }
 //     } catch (err) {
-//       toast.error(
-//         err.response?.data?.message || err.message || "Failed to load riders",
-//       );
+//       toast.error(err.response?.data?.message || err.message || "Failed to load riders");
 //     } finally {
 //       setLoading(false);
 //     }
@@ -6050,9 +5971,7 @@ export default OrderDetails;
 //       setIsOpenIndividualVendorMap("");
 //       checkVendorMappingStatus(order_ids);
 //     } catch (err) {
-//       toast.error(
-//         err.response?.data?.message || err.message || "Failed to load riders",
-//       );
+//       toast.error(err.response?.data?.message || err.message || "Failed to load riders");
 //     } finally {
 //       setLoading(false);
 //     }
@@ -6174,20 +6093,15 @@ export default OrderDetails;
 //   const cancelRiderAssignment = async (id) => {
 //     setLoading(true);
 //     try {
-//       const res = await axios.post(
-//         `${baseURL}/api/admin/cancelRiderAssignment/${id}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${localStorage.getItem("token")}`,
-//           },
+//       const res = await axios.post(`${baseURL}/api/admin/cancelRiderAssignment/${id}`, {
+//         headers: {
+//           Authorization: `Bearer ${localStorage.getItem("token")}`,
 //         },
-//       );
+//       });
 //       fetchOrders();
 //     } catch (err) {
 //       toast.error(
-//         err.response?.data?.message ||
-//           err.message ||
-//           "Error while canceling rider assignment: ",
+//         err.response?.data?.message || err.message || "Error while canceling rider assignment: ",
 //       );
 //     } finally {
 //       setLoading(false);
@@ -6211,9 +6125,7 @@ export default OrderDetails;
 //       return;
 //     } catch (err) {
 //       toast.error(
-//         err.response?.data?.message ||
-//           err.message ||
-//           "Error while canceling rider assignment: ",
+//         err.response?.data?.message || err.message || "Error while canceling rider assignment: ",
 //       );
 //     } finally {
 //       setLoading(false);
@@ -6225,14 +6137,10 @@ export default OrderDetails;
 //       setLoading(true);
 
 //       const responses = await Promise.all(
-//         orderIds.map((id) =>
-//           AxiosInstance.post(`/api/dc/admin/cancelOrderMapping/${id}`, {}),
-//         ),
+//         orderIds.map((id) => AxiosInstance.post(`/api/dc/admin/cancelOrderMapping/${id}`, {})),
 //       );
 
-//       toast.success(
-//         responses[0]?.data?.message || "DC mapping cancelled successfully",
-//       );
+//       toast.success(responses[0]?.data?.message || "DC mapping cancelled successfully");
 
 //       setSelectedBulkOrders([]);
 //       setBulkOrderWeight(0);
@@ -6241,9 +6149,7 @@ export default OrderDetails;
 //       clearAllState();
 //     } catch (err) {
 //       toast.error(
-//         err?.response?.data?.message ||
-//           err?.message ||
-//           "Error while canceling DC mapping",
+//         err?.response?.data?.message || err?.message || "Error while canceling DC mapping",
 //       );
 //     } finally {
 //       setLoading(false);
@@ -6270,9 +6176,7 @@ export default OrderDetails;
 //       toast.success(res?.data?.message);
 //       clearAllState();
 //     } catch (err) {
-//       toast.error(
-//         err.response?.data?.message || err.message || "Failed to update status",
-//       );
+//       toast.error(err.response?.data?.message || err.message || "Failed to update status");
 //     } finally {
 //       setLoading(false);
 //     }
@@ -6315,15 +6219,11 @@ export default OrderDetails;
 //       clearAllState();
 //       fetchOrders();
 
-//       toast.success(
-//         responses[0]?.data?.message || "Orders updated successfully",
-//       );
+//       toast.success(responses[0]?.data?.message || "Orders updated successfully");
 
 //       return responses.map((res) => res.data);
 //     } catch (err) {
-//       toast.error(
-//         err.response?.data?.message || err.message || "Failed to update status",
-//       );
+//       toast.error(err.response?.data?.message || err.message || "Failed to update status");
 //     } finally {
 //       setLoading(false);
 //     }
@@ -6354,9 +6254,7 @@ export default OrderDetails;
 //     } catch (error) {
 //       console.error("Cancel rider assignment error:", error);
 
-//       toast.error(
-//         error.response?.data?.message || "Failed to cancel rider assignment",
-//       );
+//       toast.error(error.response?.data?.message || "Failed to cancel rider assignment");
 
 //       return {
 //         success: false,
@@ -6382,9 +6280,7 @@ export default OrderDetails;
 //       toast.success(res?.data?.message);
 //       clearAllState();
 //     } catch (err) {
-//       toast.error(
-//         err.response?.data?.message || err.message || "Failed to update status",
-//       );
+//       toast.error(err.response?.data?.message || err.message || "Failed to update status");
 //     } finally {
 //       setLoading(false);
 //     }
@@ -6393,17 +6289,14 @@ export default OrderDetails;
 //   const toggleSelectAll = () => {
 //     if (
 //       selectedBulkOrders.length ===
-//       orders.filter(
-//         (o) => o.tpc_awb_number === null && o.rider_preference === "daakit",
-//       ).length
+//       orders.filter((o) => o.tpc_awb_number === null && o.rider_preference === "daakit").length
 //     ) {
 //       setSelectedBulkOrders([]);
 //       setBulkOrderWeight(0);
 //       clearAllState();
 //     } else {
 //       const ord = orders.filter(
-//         (order) =>
-//           order.tpc_awb_number == null && order.rider_preference === "daakit",
+//         (order) => order.tpc_awb_number == null && order.rider_preference === "daakit",
 //       );
 
 //       setSelectedBulkOrders(ord);
@@ -6447,9 +6340,7 @@ export default OrderDetails;
 //       link.click();
 //       link.remove();
 //     } catch (err) {
-//       toast.error(
-//         err.response?.data?.message || err.message || "Failed to export orders",
-//       );
+//       toast.error(err.response?.data?.message || err.message || "Failed to export orders");
 //     } finally {
 //       setLoading(false);
 //     }
@@ -6459,9 +6350,7 @@ export default OrderDetails;
 //   // null | "mapped" | "unmapped"
 
 //   const getOrderMapType = (order) => {
-//     return order?.mapped_with === null || order?.mapped_with === undefined
-//       ? "unmapped"
-//       : "mapped";
+//     return order?.mapped_with === null || order?.mapped_with === undefined ? "unmapped" : "mapped";
 //   };
 
 //   const handleBulkOrderSelect = (order, isChecked) => {
@@ -6492,9 +6381,7 @@ export default OrderDetails;
 //         const order_ids = updated.map((o) => o.id);
 
 //         setSelectedMapType(currentType);
-//         setBulkOrderWeight(
-//           (prevWeight) => Number(prevWeight) + Number(order.total_weight || 0),
-//         );
+//         setBulkOrderWeight((prevWeight) => Number(prevWeight) + Number(order.total_weight || 0));
 
 //         fetchVendor(order_ids);
 
@@ -6508,9 +6395,7 @@ export default OrderDetails;
 //       const updated = prev.filter((item) => item.id !== order.id);
 //       const order_ids = updated.map((o) => o.id);
 
-//       setBulkOrderWeight(
-//         (prevWeight) => Number(prevWeight) - Number(order.total_weight || 0),
-//       );
+//       setBulkOrderWeight((prevWeight) => Number(prevWeight) - Number(order.total_weight || 0));
 
 //       if (updated.length === 0) {
 //         setSelectedMapType(null);
@@ -6524,12 +6409,10 @@ export default OrderDetails;
 //     });
 //   };
 
-
-
 //   useEffect(() => {
 //     resetAdvanceFilters();
 //     getAllVendors();
-//     getAllMerchant()
+//     getAllMerchant();
 //   }, []);
 
 //   useEffect(() => {
@@ -6558,9 +6441,7 @@ export default OrderDetails;
 //       (order.pickup_stage === null || order.pickup_stage === "at_vendor"),
 //   );
 
-//   const canAssignUndelivered = selectedBulkOrders.every(
-//     (order) => order.status === "undelivered",
-//   );
+//   const canAssignUndelivered = selectedBulkOrders.every((order) => order.status === "undelivered");
 
 //   const [loadingPage, setLoadingPage] = useState(true);
 
@@ -6571,8 +6452,6 @@ export default OrderDetails;
 
 //     return () => clearTimeout(timer);
 //   }, []);
-
-  
 
 //   return (
 //     <>
@@ -6591,11 +6470,9 @@ export default OrderDetails;
 //             <div className="sticky top-0 left-0 z-40 shrink-0 bg-[#f5f8fb] dark:bg-neutral-900">
 //               <div className="  mx-auto   ">
 //                 {/* Desktop Layout */}
-// <div className="flex w-full min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+//                 <div className="flex w-full min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 //                   <div className="flex-shrink-0">
-//                     <h1 className="text-2xl font-bold dark:text-white">
-//                       Order Details
-//                     </h1>
+//                     <h1 className="text-2xl font-bold dark:text-white">Order Details</h1>
 //                   </div>
 
 //                   <div className="w-full min-w-0 xl:mx-4 xl:max-w-xl xl:flex-1">
@@ -6611,7 +6488,8 @@ export default OrderDetails;
 //                         placeholder="Search by AWB Number..."
 //                         value={searchTerm}
 //                         onChange={(e) => setSearchTerm(e.target.value)}
-// className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0446DB] focus:border-transparent"                      />
+//                         className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0446DB] focus:border-transparent"
+//                       />
 //                       <button
 //                         type="submit"
 //                         className="bg-white px-5 py-2.5 rounded-r-lg border border-l-0 border-gray-300 text-gray-600 hover:bg-indigo-100 hover:text-[#0446DB] transition"
@@ -6621,20 +6499,15 @@ export default OrderDetails;
 //                     </form>
 //                   </div>
 
-//                  <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3 xl:w-auto xl:flex-nowrap">
-//                    <CustomButton
-//                      variant="outline"
-//                      size="md"
-//                      icon={FaTasks}
-//                     className="w-full sm:w-auto rounded-sm"
-//                    >
-//                     <Link
-//                         to="/admin/bookOrders"
-                        
-//                       >
-//                         Assignment Console
-//                     </Link>
-//                       </CustomButton>
+//                   <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3 xl:w-auto xl:flex-nowrap">
+//                     <CustomButton
+//                       variant="outline"
+//                       size="md"
+//                       icon={FaTasks}
+//                       className="w-full sm:w-auto rounded-sm"
+//                     >
+//                       <Link to="/admin/bookOrders">Assignment Console</Link>
+//                     </CustomButton>
 
 //                     <CustomButton
 //                       variant="outline"
@@ -6666,10 +6539,7 @@ export default OrderDetails;
 //                           <DrawerTitle>Filter</DrawerTitle>
 //                         </DrawerHeader>
 //                         <div className="no-scrollbar overflow-y-auto px-4">
-//                           <form
-//                             onSubmit={(e) => e.preventDefault()}
-//                             className=" w-full"
-//                           >
+//                           <form onSubmit={(e) => e.preventDefault()} className=" w-full">
 //                             <div className="gap-y-2 mb-2">
 //                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
 //                                 <div>
@@ -6683,10 +6553,7 @@ export default OrderDetails;
 //                                     onClick={openDatePicker}
 //                                     onFocus={openDatePicker}
 //                                     onChange={(e) =>
-//                                       updateAdvanceFilter(
-//                                         "startDate",
-//                                         e.target.value,
-//                                       )
+//                                       updateAdvanceFilter("startDate", e.target.value)
 //                                     }
 //                                     className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
 //       dark:text-white px-3 py-2 rounded-sm text-sm 
@@ -6705,12 +6572,7 @@ export default OrderDetails;
 //                                     min={advanceFilters.startDate || undefined}
 //                                     onClick={openDatePicker}
 //                                     onFocus={openDatePicker}
-//                                     onChange={(e) =>
-//                                       updateAdvanceFilter(
-//                                         "endDate",
-//                                         e.target.value,
-//                                       )
-//                                     }
+//                                     onChange={(e) => updateAdvanceFilter("endDate", e.target.value)}
 //                                     className="w-full cursor-pointer border dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 
 //       dark:text-white px-3 py-2 rounded-sm text-sm 
 //       focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -6737,12 +6599,8 @@ export default OrderDetails;
 //                                   >
 //                                     <option value="">All orders</option>
 //                                     <option value="Turant">Turant</option>
-//                                     <option value="SDD">
-//                                       Same Day Delivery
-//                                     </option>
-//                                     <option value="NDD">
-//                                       Next Day Delivery
-//                                     </option>
+//                                     <option value="SDD">Same Day Delivery</option>
+//                                     <option value="NDD">Next Day Delivery</option>
 //                                   </select>
 //                                 </div>
 //                                 <div>
@@ -6772,31 +6630,27 @@ export default OrderDetails;
 //                                   <label className="block text-xs dark:text-white text-gray-600 mb-1">
 //                                     Merchant ID
 //                                   </label>
-//                                   <select  
-//                                   className="w-full border dark:border-gray-700 dark:bg-gray-800 
+//                                   <select
+//                                     className="w-full border dark:border-gray-700 dark:bg-gray-800 
 //       dark:text-white px-3 py-2 rounded-sm text-sm 
 //       focus:outline-none focus:ring-2 focus:ring-indigo-500"
-//                                   value={advanceFilters.merchant_id}
+//                                     value={advanceFilters.merchant_id}
 //                                     onChange={(e) =>
 //                                       setAdvanceFilters((prev) => ({
 //                                         ...prev,
 //                                         merchant_id: e.target.value,
 //                                       }))
 //                                     }
-                                   
 //                                   >
 //                                     <option value="">Select Merchant</option>
-//                                     {
-//                                       merchantList?.map((m)=>{
-//                                         return (
-//                                          <option value={m.id}>{m?.id}:{m?.name}</option>
-//                                         )
-//                                       })
-//                                     }
+//                                     {merchantList?.map((m) => {
+//                                       return (
+//                                         <option value={m.id}>
+//                                           {m?.id}:{m?.name}
+//                                         </option>
+//                                       );
+//                                     })}
 //                                   </select>
-
-                                  
-                                  
 //                                 </div>
 
 //                                 <div>
@@ -6827,28 +6681,27 @@ export default OrderDetails;
 //                                     Vendor ID
 //                                   </label>
 
-//                                   <select 
-//                                   value={advanceFilters.vendor_id}
+//                                   <select
+//                                     value={advanceFilters.vendor_id}
 //                                     onChange={(e) =>
 //                                       setAdvanceFilters((prev) => ({
 //                                         ...prev,
 //                                         vendor_id: e.target.value,
 //                                       }))
 //                                     }
-//                                    className="w-full border dark:border-gray-700 dark:bg-gray-800 
+//                                     className="w-full border dark:border-gray-700 dark:bg-gray-800 
 //       dark:text-white px-3 py-2 rounded-sm text-sm 
 //       focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                 
 //                                   >
 //                                     <option value="">Select Vendor</option>
 //                                     {vendorList?.map((v) => {
-                                      
 //                                       return (
-//                                         <option value={v?.id}>{v?.id}:{v?.vendor_name}</option>
+//                                         <option value={v?.id}>
+//                                           {v?.id}:{v?.vendor_name}
+//                                         </option>
 //                                       );
 //                                     })}
 //                                   </select>
-                                  
 //                                 </div>
 
 //                                 <div>
@@ -6955,31 +6808,26 @@ export default OrderDetails;
 //                           {selectedStatus === st && ` (${totalOrders})`}
 //                         </Button>
 //                       ))}
-                      
-//                           {[
-//                             "undelivered",
-//                             "undelivered assigned",
-//                             "cancelled",
-//                             "rto in transit",
-//                             "rto out for delivery",
-//                             "rto undelivered",
-//                             "rto delivered",
-//                           ].includes(selectedStatus) && (
-//                             <Button
-//                               className="my-2 rounded-sm border border-[#0446DB] bg-[#0446DB] px-2 py-2.5 text-sm font-medium tracking-wide text-white transition-all duration-300"
-//                             >
-//                               {selectedStatus === "rto in transit"
-//                                 ? "RTO In Transit"
-//                                 : selectedStatus === "rto delivered"
-//                                   ? "RTO Delivered"
-//                                   : toCapitalizeEachWord(selectedStatus)}
 
-//                               {` (${totalOrders})`}
-//                             </Button>
-//                           )}
+//                       {[
+//                         "undelivered",
+//                         "undelivered assigned",
+//                         "cancelled",
+//                         "rto in transit",
+//                         "rto out for delivery",
+//                         "rto undelivered",
+//                         "rto delivered",
+//                       ].includes(selectedStatus) && (
+//                         <Button className="my-2 rounded-sm border border-[#0446DB] bg-[#0446DB] px-2 py-2.5 text-sm font-medium tracking-wide text-white transition-all duration-300">
+//                           {selectedStatus === "rto in transit"
+//                             ? "RTO In Transit"
+//                             : selectedStatus === "rto delivered"
+//                               ? "RTO Delivered"
+//                               : toCapitalizeEachWord(selectedStatus)}
 
-
-
+//                           {` (${totalOrders})`}
+//                         </Button>
+//                       )}
 
 //                       <DropdownMenu>
 //                         <DropdownMenuTrigger asChild>
@@ -7010,11 +6858,7 @@ export default OrderDetails;
 //                                     setPage(1);
 //                                     clearAllState();
 //                                   }}
-//                                   variant={
-//                                     s === "cancelled"
-//                                       ? "destructive"
-//                                       : "default"
-//                                   }
+//                                   variant={s === "cancelled" ? "destructive" : "default"}
 //                                   className={`${selectedStatus == s ? "bg-[#0446DB] hover:bg-[#0446DB]  text-white" : " hover:bg-[#0446DB] hover:text-white "}`}
 //                                 >
 //                                   {s.toLowerCase() === "rto"
@@ -7031,637 +6875,574 @@ export default OrderDetails;
 //                   </div>
 //                 </div>
 //                 <div className="flex gap-2 min-w-max ">
-//                   {selectedBulkOrders.length > 0 &&
-//                     selectedStatus === "booked" && (
-//                       <>
-//                         <AlertDialog>
-//                           <AlertDialogTrigger>
-//                             <CustomButton
-//                               variant="primary"
-//                               size="sm"
-//                               className="rounded-sm  mb-2 "
-//                             >
-//                               Action
-//                             </CustomButton>
-//                           </AlertDialogTrigger>
+//                   {selectedBulkOrders.length > 0 && selectedStatus === "booked" && (
+//                     <>
+//                       <AlertDialog>
+//                         <AlertDialogTrigger>
+//                           <CustomButton variant="primary" size="sm" className="rounded-sm  mb-2 ">
+//                             Action
+//                           </CustomButton>
+//                         </AlertDialogTrigger>
 
-//                           {/* =========================
+//                         {/* =========================
 //                                                 DIALOG
 //                                             ========================= */}
-//                           <AlertDialogContent className="!max-w-2xl overflow-hidden rounded-lg border border-gray-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
-//                             {/* =========================
+//                         <AlertDialogContent className="!max-w-2xl overflow-hidden rounded-lg border border-gray-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+//                           {/* =========================
 //                                                   HEADER
 //                                               ========================= */}
-//                             <AlertDialogHeader className="border-b border-gray-200 px-6 py-5 dark:border-neutral-800">
-//                               <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-//                                 Bulk Order Actions
-//                               </AlertDialogTitle>
+//                           <AlertDialogHeader className="border-b border-gray-200 px-6 py-5 dark:border-neutral-800">
+//                             <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+//                               Bulk Order Actions
+//                             </AlertDialogTitle>
 
-//                               <AlertDialogDescription className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
-//                                 Manage status and vendor assignment for{" "}
-//                                 <span className="font-semibold text-[#0446DB]">
-//                                   {selectedBulkOrders?.length || 0}
-//                                 </span>{" "}
-//                                 selected orders.
-//                               </AlertDialogDescription>
-//                             </AlertDialogHeader>
+//                             <AlertDialogDescription className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
+//                               Manage status and vendor assignment for{" "}
+//                               <span className="font-semibold text-[#0446DB]">
+//                                 {selectedBulkOrders?.length || 0}
+//                               </span>{" "}
+//                               selected orders.
+//                             </AlertDialogDescription>
+//                           </AlertDialogHeader>
 
-//                             {/* =========================
+//                           {/* =========================
 //                                                   BODY
 //                                               ========================= */}
-//                             <div className="max-h-[65vh] space-y-5 overflow-y-auto px-6 py-5">
-//                               {/* ============================================
+//                           <div className="max-h-[65vh] space-y-5 overflow-y-auto px-6 py-5">
+//                             {/* ============================================
 //                                                     CHANGE ORDER STATUS
 //                                                 ============================================ */}
-//                               <div className="rounded-md border border-gray-200 dark:border-neutral-800">
-//                                 {/* SECTION HEADER */}
-//                                 <div className="border-b border-gray-100 bg-gray-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/50">
-//                                   <h3 className="text-sm font-semibold text-gray-800 dark:text-neutral-200">
-//                                     Change Order Status
-//                                   </h3>
+//                             <div className="rounded-md border border-gray-200 dark:border-neutral-800">
+//                               {/* SECTION HEADER */}
+//                               <div className="border-b border-gray-100 bg-gray-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/50">
+//                                 <h3 className="text-sm font-semibold text-gray-800 dark:text-neutral-200">
+//                                   Change Order Status
+//                                 </h3>
 
-//                                   <p className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
-//                                     Update the status of all selected orders.
-//                                   </p>
-//                                 </div>
+//                                 <p className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
+//                                   Update the status of all selected orders.
+//                                 </p>
+//                               </div>
 
-//                                 <div className="p-4">
-//                                   {!canceledBulkOrder ? (
-//                                     <button
-//                                       type="button"
-//                                       onClick={() => {
-//                                         setcanceledBulkOrder(true);
+//                               <div className="p-4">
+//                                 {!canceledBulkOrder ? (
+//                                   <button
+//                                     type="button"
+//                                     onClick={() => {
+//                                       setcanceledBulkOrder(true);
+//                                     }}
+//                                     className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md bg-[#0446DB] px-4 text-sm font-medium text-white transition-colors hover:bg-[#0339b5]"
+//                                   >
+//                                     Change Action
+//                                   </button>
+//                                 ) : (
+//                                   <form
+//                                     className="flex w-full flex-col gap-3 lg:flex-row lg:items-start"
+//                                     onSubmit={async (e) => {
+//                                       e.preventDefault();
+
+//                                       const status = e.currentTarget.elements.status.value;
+//                                       const selectedRemark =
+//                                         e.currentTarget.elements.remark?.value || "";
+
+//                                       if (!status) {
+//                                         toast.error("Please select status");
+//                                         return;
+//                                       }
+
+//                                       if (status === "cancelled" && !selectedRemark) {
+//                                         toast.error("Please select remark");
+//                                         return;
+//                                       }
+
+//                                       for (const order of selectedBulkOrders) {
+//                                         await changeStatus({
+//                                           id: order.id,
+//                                           newStatus: status,
+//                                           remark: selectedRemark,
+//                                         });
+//                                       }
+
+//                                       // Reset
+//                                       clearAllState();
+//                                     }}
+//                                   >
+//                                     {/* STATUS */}
+//                                     <select
+//                                       name="status"
+//                                       defaultValue=""
+//                                       onChange={(e) => {
+//                                         if (e.target.value === "cancelled") {
+//                                           setNewStatus(e.target.value);
+//                                         } else {
+//                                           setNewStatus("");
+//                                         }
 //                                       }}
-//                                       className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md bg-[#0446DB] px-4 text-sm font-medium text-white transition-colors hover:bg-[#0339b5]"
+//                                       className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none lg:flex-1 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
 //                                     >
-//                                       Change Action
-//                                     </button>
-//                                   ) : (
-//                                     <form
-//                                       className="flex w-full flex-col gap-3 lg:flex-row lg:items-start"
-//                                       onSubmit={async (e) => {
-//                                         e.preventDefault();
+//                                       <option value="">Select Status</option>
 
-//                                         const status =
-//                                           e.currentTarget.elements.status.value;
-//                                         const selectedRemark =
-//                                           e.currentTarget.elements.remark
-//                                             ?.value || "";
+//                                       <option value="cancelled">Cancel Orders</option>
+//                                     </select>
 
-//                                         if (!status) {
-//                                           toast.error("Please select status");
-//                                           return;
-//                                         }
-
-//                                         if (
-//                                           status === "cancelled" &&
-//                                           !selectedRemark
-//                                         ) {
-//                                           toast.error("Please select remark");
-//                                           return;
-//                                         }
-
-//                                         for (const order of selectedBulkOrders) {
-//                                           await changeStatus({
-//                                             id: order.id,
-//                                             newStatus: status,
-//                                             remark: selectedRemark,
-//                                           });
-//                                         }
-
-//                                         // Reset
-//                                         clearAllState();
-//                                       }}
-//                                     >
-//                                       {/* STATUS */}
+//                                     {/* REMARK */}
+//                                     {newStatus === "cancelled" && (
 //                                       <select
-//                                         name="status"
+//                                         name="remark"
 //                                         defaultValue=""
 //                                         onChange={(e) => {
-//                                           if (e.target.value === "cancelled") {
-//                                             setNewStatus(e.target.value);
-//                                           } else {
-//                                             setNewStatus("");
-//                                           }
+//                                           setRemark(e.target.value);
 //                                         }}
 //                                         className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none lg:flex-1 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
 //                                       >
-//                                         <option value="">Select Status</option>
+//                                         <option value="">Select Remark</option>
 
-//                                         <option value="cancelled">
-//                                           Cancel Orders
+//                                         <option value="Seller Requested Future Pick up">
+//                                           Seller Requested Future Pick up
+//                                         </option>
+
+//                                         <option value="Awb rejected">AWB Rejected</option>
+
+//                                         <option value="Duplicate Pickup Request">
+//                                           Duplicate Pickup Request
+//                                         </option>
+
+//                                         <option value="Non Serviceable Location">
+//                                           Non Serviceable Location
+//                                         </option>
+
+//                                         <option value="Pick Failed Due to Dangerous Goods">
+//                                           Pick Failed Due to Dangerous Goods
+//                                         </option>
+
+//                                         <option value="Product packaging Issue">
+//                                           Product Packaging Issue
+//                                         </option>
+
+//                                         <option value="Shipment Handedover to other courier">
+//                                           Shipment Handedover to Other Courier
+//                                         </option>
+
+//                                         <option value="Seller Closed">Seller Closed</option>
+
+//                                         <option value="Pick up Request Expired">
+//                                           Pick up Request Expired
+//                                         </option>
+
+//                                         <option value="Entry not Permitted">
+//                                           Entry not Permitted
+//                                         </option>
+
+//                                         <option value="Customer wants refund/replacement first">
+//                                           Customer wants refund/replacement first
 //                                         </option>
 //                                       </select>
+//                                     )}
 
-//                                       {/* REMARK */}
-//                                       {newStatus === "cancelled" && (
-//                                         <select
-//                                           name="remark"
-//                                           defaultValue=""
-//                                           onChange={(e) => {
-//                                             setRemark(e.target.value);
-//                                           }}
-//                                           className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none lg:flex-1 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-//                                         >
-//                                           <option value="">
-//                                             Select Remark
-//                                           </option>
+//                                     <button
+//                                       type="submit"
+//                                       className="h-10 w-full shrink-0 cursor-pointer rounded-md bg-[#0446DB] px-5 text-sm font-medium text-white hover:bg-[#0339b5] lg:w-auto"
+//                                     >
+//                                       Apply Action
+//                                     </button>
+//                                   </form>
+//                                 )}
+//                               </div>
+//                             </div>
 
-//                                           <option value="Seller Requested Future Pick up">
-//                                             Seller Requested Future Pick up
-//                                           </option>
+//                             {/* map dc  */}
 
-//                                           <option value="Awb rejected">
-//                                             AWB Rejected
-//                                           </option>
+//                             {false && (
+//                               <div className="overflow-hidden rounded-sm border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+//                                 <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-800/40">
+//                                   <div>
+//                                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+//                                       Assign Orders to DC
+//                                     </h3>
 
-//                                           <option value="Duplicate Pickup Request">
-//                                             Duplicate Pickup Request
-//                                           </option>
+//                                     <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+//                                       Assign all selected orders to a distribution center.
+//                                     </p>
+//                                   </div>
 
-//                                           <option value="Non Serviceable Location">
-//                                             Non Serviceable Location
-//                                           </option>
+//                                   <div className="hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 sm:block dark:bg-blue-500/10 dark:text-blue-400">
+//                                     Bulk Action
+//                                   </div>
+//                                 </div>
 
-//                                           <option value="Pick Failed Due to Dangerous Goods">
-//                                             Pick Failed Due to Dangerous Goods
-//                                           </option>
+//                                 <div className="p-5">
+//                                   {!dcBulkOrder ? (
+//                                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+//                                       <div>
+//                                         <p className="text-sm font-medium text-gray-700 dark:text-neutral-200">
+//                                           Select a distribution center
+//                                         </p>
 
-//                                           <option value="Product packaging Issue">
-//                                             Product Packaging Issue
-//                                           </option>
-
-//                                           <option value="Shipment Handedover to other courier">
-//                                             Shipment Handedover to Other Courier
-//                                           </option>
-
-//                                           <option value="Seller Closed">
-//                                             Seller Closed
-//                                           </option>
-
-//                                           <option value="Pick up Request Expired">
-//                                             Pick up Request Expired
-//                                           </option>
-
-//                                           <option value="Entry not Permitted">
-//                                             Entry not Permitted
-//                                           </option>
-
-//                                           <option value="Customer wants refund/replacement first">
-//                                             Customer wants refund/replacement
-//                                             first
-//                                           </option>
-//                                         </select>
-//                                       )}
+//                                         <p className="mt-1 text-xs text-gray-500 dark:text-neutral-500">
+//                                           Choose a DC to map the selected orders.
+//                                         </p>
+//                                       </div>
 
 //                                       <button
-//                                         type="submit"
-//                                         className="h-10 w-full shrink-0 cursor-pointer rounded-md bg-[#0446DB] px-5 text-sm font-medium text-white hover:bg-[#0339b5] lg:w-auto"
+//                                         type="button"
+//                                         onClick={() => setDcBulkOrder(true)}
+//                                         className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0446DB] px-5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
 //                                       >
-//                                         Apply Action
+//                                         Assign to DC
 //                                       </button>
+//                                     </div>
+//                                   ) : (
+//                                     <form
+//                                       className="space-y-4"
+//                                       onSubmit={async (e) => {
+//                                         e.preventDefault();
+
+//                                         const dcId = Number(e.currentTarget.elements.dc_id.value);
+
+//                                         if (!dcId) {
+//                                           toast.error("Please select a DC");
+//                                           return;
+//                                         }
+
+//                                         const orderIds = selectedBulkOrders.map(
+//                                           (order) => order.id,
+//                                         );
+
+//                                         await assignOrdersToDc({
+//                                           order_ids: orderIds,
+//                                           dc_id: dcId,
+//                                         });
+//                                       }}
+//                                     >
+//                                       <div>
+//                                         <label
+//                                           htmlFor="dc_id"
+//                                           className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-neutral-300"
+//                                         >
+//                                           Distribution Center
+//                                         </label>
+
+//                                         <div className="relative">
+//                                           <select
+//                                             id="dc_id"
+//                                             name="dc_id"
+//                                             defaultValue=""
+//                                             className="h-11 w-full cursor-pointer appearance-none rounded-lg border border-gray-300 bg-white px-3 pr-10 text-sm text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:border-blue-500"
+//                                           >
+//                                             <option value="" disabled>
+//                                               Select a distribution center
+//                                             </option>
+
+//                                             {dcList?.map((dc) => (
+//                                               <option key={dc.id} value={dc.id}>
+//                                                 {dc?.dc_code} : {dc?.dc_name}
+//                                               </option>
+//                                             ))}
+//                                           </select>
+
+//                                           <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+//                                             <svg
+//                                               className="h-4 w-4 text-gray-400"
+//                                               viewBox="0 0 20 20"
+//                                               fill="currentColor"
+//                                             >
+//                                               <path
+//                                                 fillRule="evenodd"
+//                                                 d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+//                                                 clipRule="evenodd"
+//                                               />
+//                                             </svg>
+//                                           </div>
+//                                         </div>
+//                                       </div>
+
+//                                       <div className="flex flex-col-reverse gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end dark:border-neutral-800">
+//                                         <button
+//                                           type="button"
+//                                           onClick={() => setDcBulkOrder(false)}
+//                                           className="h-10 cursor-pointer rounded-sm border border-gray-300 bg-white px-5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+//                                         >
+//                                           Cancel
+//                                         </button>
+
+//                                         <button
+//                                           type="submit"
+//                                           className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-6 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
+//                                         >
+//                                           Assign Orders
+//                                         </button>
+//                                       </div>
 //                                     </form>
 //                                   )}
 //                                 </div>
 //                               </div>
+//                             )}
 
-//                               {/* map dc  */}
+//                             {/* ============================================
+//                                                     VENDOR ASSIGNMENT
+//                                                 ============================================ */}
+//                             {/* ================= VENDOR ASSIGNMENT ================= */}
+//                             <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+//                               {/* Header */}
+//                               <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+//                                 <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+//                                   Vendor Assignment
+//                                 </h3>
 
-//                               {false && (
-//                                 <div className="overflow-hidden rounded-sm border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-//                                   <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-800/40">
+//                                 <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+//                                   Find an available vendor and assign the selected orders.
+//                                 </p>
+//                               </div>
+
+//                               <div className="p-4">
+//                                 {!fetchBulkAssignmentVendor ? (
+//                                   /* ================= GET AVAILABLE VENDOR ================= */
+//                                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 //                                     <div>
-//                                       <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-//                                         Assign Orders to DC
-//                                       </h3>
+//                                       <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+//                                         Available Vendors
+//                                       </p>
 
-//                                       <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
-//                                         Assign all selected orders to a
-//                                         distribution center.
+//                                       <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+//                                         Get eligible vendors for{" "}
+//                                         <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+//                                           {selectedBulkOrders?.length || 0}
+//                                         </span>{" "}
+//                                         selected orders.
 //                                       </p>
 //                                     </div>
 
-//                                     <div className="hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 sm:block dark:bg-blue-500/10 dark:text-blue-400">
-//                                       Bulk Action
-//                                     </div>
+//                                     <button
+//                                       type="button"
+//                                       onClick={() => {
+//                                         setFetchBulkAssignmentVendor(true);
+
+//                                         const order_ids = [
+//                                           ...new Set(selectedBulkOrders.map((order) => order.id)),
+//                                         ];
+
+//                                         fetchVendor(order_ids);
+//                                       }}
+//                                       className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
+//                                     >
+//                                       Get Available Vendor
+//                                     </button>
 //                                   </div>
+//                                 ) : vendor?.length > 0 ? (
+//                                   /* ================= VENDOR FOUND ================= */
+//                                   <div className="space-y-4">
+//                                     <div>
+//                                       <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+//                                         Select Vendor
+//                                       </label>
 
-//                                   <div className="p-5">
-//                                     {!dcBulkOrder ? (
-//                                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-//                                         <div>
-//                                           <p className="text-sm font-medium text-gray-700 dark:text-neutral-200">
-//                                             Select a distribution center
-//                                           </p>
+//                                       <select
+//                                         value={assignmentState}
+//                                         onChange={(e) => setAssignmentState(e.target.value)}
+//                                         className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+//                                       >
+//                                         <option value="">Select Vendor for Bulk Assignment</option>
 
-//                                           <p className="mt-1 text-xs text-gray-500 dark:text-neutral-500">
-//                                             Choose a DC to map the selected
-//                                             orders.
-//                                           </p>
-//                                         </div>
+//                                         {vendor?.map((vendorItem) => (
+//                                           <option
+//                                             key={vendorItem?.vendor_id}
+//                                             value={vendorItem?.vendor_id}
+//                                           >
+//                                             {vendorItem?.vendor_id} : {vendorItem?.vendor_name}
+//                                           </option>
+//                                         ))}
+//                                       </select>
+//                                     </div>
 
-//                                         <button
-//                                           type="button"
-//                                           onClick={() => setDcBulkOrder(true)}
-//                                           className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0446DB] px-5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
-//                                         >
-//                                           Assign to DC
-//                                         </button>
+//                                     {/* Selected Orders Info */}
+//                                     <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
+//                                       <div>
+//                                         <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+//                                           Selected Orders
+//                                         </p>
+
+//                                         <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+//                                           Selected vendor will be assigned to all orders.
+//                                         </p>
 //                                       </div>
-//                                     ) : (
-//                                       <form
-//                                         className="space-y-4"
-//                                         onSubmit={async (e) => {
-//                                           e.preventDefault();
 
-//                                           const dcId = Number(
-//                                             e.currentTarget.elements.dc_id
-//                                               .value,
-//                                           );
+//                                       <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+//                                         {selectedBulkOrders?.length || 0}
+//                                       </span>
+//                                     </div>
 
-//                                           if (!dcId) {
-//                                             toast.error("Please select a DC");
+//                                     {/* Action */}
+//                                     <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
+//                                       <button
+//                                         type="button"
+//                                         disabled={!assignmentState}
+//                                         onClick={async () => {
+//                                           if (!assignmentState) {
+//                                             toast.warn("Please select a vendor");
 //                                             return;
 //                                           }
 
-//                                           const orderIds =
-//                                             selectedBulkOrders.map(
-//                                               (order) => order.id,
-//                                             );
-
-//                                           await assignOrdersToDc({
-//                                             order_ids: orderIds,
-//                                             dc_id: dcId,
-//                                           });
-//                                         }}
-//                                       >
-//                                         <div>
-//                                           <label
-//                                             htmlFor="dc_id"
-//                                             className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-neutral-300"
-//                                           >
-//                                             Distribution Center
-//                                           </label>
-
-//                                           <div className="relative">
-//                                             <select
-//                                               id="dc_id"
-//                                               name="dc_id"
-//                                               defaultValue=""
-//                                               className="h-11 w-full cursor-pointer appearance-none rounded-lg border border-gray-300 bg-white px-3 pr-10 text-sm text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:focus:border-blue-500"
-//                                             >
-//                                               <option value="" disabled>
-//                                                 Select a distribution center
-//                                               </option>
-
-//                                               {dcList?.map((dc) => (
-//                                                 <option
-//                                                   key={dc.id}
-//                                                   value={dc.id}
-//                                                 >
-//                                                   {dc?.dc_code} : {dc?.dc_name}
-//                                                 </option>
-//                                               ))}
-//                                             </select>
-
-//                                             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-//                                               <svg
-//                                                 className="h-4 w-4 text-gray-400"
-//                                                 viewBox="0 0 20 20"
-//                                                 fill="currentColor"
-//                                               >
-//                                                 <path
-//                                                   fillRule="evenodd"
-//                                                   d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-//                                                   clipRule="evenodd"
-//                                                 />
-//                                               </svg>
-//                                             </div>
-//                                           </div>
-//                                         </div>
-
-//                                         <div className="flex flex-col-reverse gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end dark:border-neutral-800">
-//                                           <button
-//                                             type="button"
-//                                             onClick={() =>
-//                                               setDcBulkOrder(false)
-//                                             }
-//                                             className="h-10 cursor-pointer rounded-sm border border-gray-300 bg-white px-5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
-//                                           >
-//                                             Cancel
-//                                           </button>
-
-//                                           <button
-//                                             type="submit"
-//                                             className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-6 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0339b5] hover:shadow-md active:scale-[0.98]"
-//                                           >
-//                                             Assign Orders
-//                                           </button>
-//                                         </div>
-//                                       </form>
-//                                     )}
-//                                   </div>
-//                                 </div>
-//                               )}
-
-//                               {/* ============================================
-//                                                     VENDOR ASSIGNMENT
-//                                                 ============================================ */}
-//                               {/* ================= VENDOR ASSIGNMENT ================= */}
-//                               <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
-//                                 {/* Header */}
-//                                 <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
-//                                   <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-//                                     Vendor Assignment
-//                                   </h3>
-
-//                                   <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                     Find an available vendor and assign the
-//                                     selected orders.
-//                                   </p>
-//                                 </div>
-
-//                                 <div className="p-4">
-//                                   {!fetchBulkAssignmentVendor ? (
-//                                     /* ================= GET AVAILABLE VENDOR ================= */
-//                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-//                                       <div>
-//                                         <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-//                                           Available Vendors
-//                                         </p>
-
-//                                         <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-//                                           Get eligible vendors for{" "}
-//                                           <span className="font-semibold text-[#0446DB] dark:text-blue-400">
-//                                             {selectedBulkOrders?.length || 0}
-//                                           </span>{" "}
-//                                           selected orders.
-//                                         </p>
-//                                       </div>
-
-//                                       <button
-//                                         type="button"
-//                                         onClick={() => {
-//                                           setFetchBulkAssignmentVendor(true);
-
-//                                           const order_ids = [
-//                                             ...new Set(
-//                                               selectedBulkOrders.map(
-//                                                 (order) => order.id,
-//                                               ),
-//                                             ),
-//                                           ];
-
-//                                           fetchVendor(order_ids);
-//                                         }}
-//                                         className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
-//                                       >
-//                                         Get Available Vendor
-//                                       </button>
-//                                     </div>
-//                                   ) : vendor?.length > 0 ? (
-//                                     /* ================= VENDOR FOUND ================= */
-//                                     <div className="space-y-4">
-//                                       <div>
-//                                         <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
-//                                           Select Vendor
-//                                         </label>
-
-//                                         <select
-//                                           value={assignmentState}
-//                                           onChange={(e) =>
-//                                             setAssignmentState(e.target.value)
-//                                           }
-//                                           className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
-//                                         >
-//                                           <option value="">
-//                                             Select Vendor for Bulk Assignment
-//                                           </option>
-
-//                                           {vendor?.map((vendorItem) => (
-//                                             <option
-//                                               key={vendorItem?.vendor_id}
-//                                               value={vendorItem?.vendor_id}
-//                                             >
-//                                               {vendorItem?.vendor_id} :{" "}
-//                                               {vendorItem?.vendor_name}
-//                                             </option>
-//                                           ))}
-//                                         </select>
-//                                       </div>
-
-//                                       {/* Selected Orders Info */}
-//                                       <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
-//                                         <div>
-//                                           <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-//                                             Selected Orders
-//                                           </p>
-
-//                                           <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
-//                                             Selected vendor will be assigned to
-//                                             all orders.
-//                                           </p>
-//                                         </div>
-
-//                                         <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-//                                           {selectedBulkOrders?.length || 0}
-//                                         </span>
-//                                       </div>
-
-//                                       {/* Action */}
-//                                       <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
-//                                         <button
-//                                           type="button"
-//                                           disabled={!assignmentState}
-//                                           onClick={async () => {
-//                                             if (!assignmentState) {
-//                                               toast.warn(
-//                                                 "Please select a vendor",
-//                                               );
-//                                               return;
-//                                             }
-
-//                                             const order_ids =
-//                                               selectedBulkOrders.map(
-//                                                 (order) => order.id,
-//                                               );
-
-//                                             await assignBulkOrderVendor(
-//                                               order_ids,
-//                                               assignmentState,
-//                                             );
-
-//                                             setSelectedBulkOrders([]);
-//                                             setBulkOrderWeight(0);
-//                                             setFetchBulkAssignmentVendor(false);
-//                                           }}
-//                                           className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500"
-//                                         >
-//                                           Bulk Assign
-//                                         </button>
-//                                       </div>
-//                                     </div>
-//                                   ) : (
-//                                     /* ================= NO VENDOR ================= */
-//                                     <div className="rounded-sm border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/20 dark:bg-amber-500/5">
-//                                       <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
-//                                         No Vendor Available
-//                                       </p>
-
-//                                       <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-//                                         No eligible vendor was found for the
-//                                         selected orders.
-//                                       </p>
-
-//                                       <button
-//                                         type="button"
-//                                         onClick={() => {
-//                                           setFetchBulkAssignmentVendor(false);
-//                                           setAssignmentState("");
-//                                           setVendor([]);
-//                                         }}
-//                                         className="mt-3 h-8 cursor-pointer rounded-sm border border-amber-300 bg-white px-3 text-xs font-medium text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-neutral-900 dark:text-amber-400"
-//                                       >
-//                                         Try Again
-//                                       </button>
-//                                     </div>
-//                                   )}
-//                                 </div>
-//                               </div>
-
-//                               {/* ================= GENERATE BULK PICKUP REQUEST ================= */}
-//                               <div className="overflow-hidden rounded-sm border border-emerald-200 dark:border-emerald-500/20">
-//                                 {/* Header */}
-//                                 <div className="border-b border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-//                                   <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-//                                     Schedule Self Pickup
-//                                   </h3>
-
-//                                   <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                     Schedule self-assignment for all selected
-//                                     orders.
-//                                   </p>
-//                                 </div>
-
-//                                 {/* Content */}
-//                                 <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-//                                   {/* Info */}
-//                                   <div>
-//                                     <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-//                                       Schedule Self Pickup for Selected Orders
-//                                     </p>
-
-//                                     <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-//                                       <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-//                                         {selectedBulkOrders?.length || 0}
-//                                       </span>{" "}
-//                                       selected orders will be included in the
-//                                       self-pickup schedule.
-//                                     </p>
-//                                   </div>
-
-//                                   {/* Button */}
-//                                   <button
-//                                     type="submit"
-//                                     disabled={!selectedBulkOrders?.length}
-//                                     onClick={async () => {
-//                                       if (!selectedBulkOrders?.length) {
-//                                         toast.warn(
-//                                           "Please select at least one order",
-//                                         );
-//                                         return;
-//                                       }
-
-//                                       const order_ids = [
-//                                         ...new Set(
-//                                           selectedBulkOrders.map(
+//                                           const order_ids = selectedBulkOrders.map(
 //                                             (order) => order.id,
-//                                           ),
-//                                         ),
-//                                       ];
+//                                           );
 
-//                                       await generateBulkPickupRequest(
-//                                         order_ids,
-//                                       );
+//                                           await assignBulkOrderVendor(order_ids, assignmentState);
 
-//                                       clearAllState();
-//                                     }}
-//                                     className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-emerald-600 px-5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
-//                                   >
-//                                     Schedule Self Pickup
-//                                   </button>
-//                                 </div>
-//                               </div>
-
-//                               {/* ============================================
-//                                                     CLEAR SELECTED ORDERS
-//                                                 ============================================ */}
-//                               <div className="rounded-md border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5">
-//                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-//                                   <div>
-//                                     <h3 className="text-sm font-semibold text-gray-800 dark:text-neutral-200">
-//                                       Clear Selection
-//                                     </h3>
-
-//                                     <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
-//                                       Remove all currently selected orders.
-//                                     </p>
+//                                           setSelectedBulkOrders([]);
+//                                           setBulkOrderWeight(0);
+//                                           setFetchBulkAssignmentVendor(false);
+//                                         }}
+//                                         className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-500"
+//                                       >
+//                                         Bulk Assign
+//                                       </button>
+//                                     </div>
 //                                   </div>
+//                                 ) : (
+//                                   /* ================= NO VENDOR ================= */
+//                                   <div className="rounded-sm border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/20 dark:bg-amber-500/5">
+//                                     <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+//                                       No Vendor Available
+//                                     </p>
 
-//                                   <button
-//                                     type="button"
-//                                     onClick={() => {
-//                                       setSelectedBulkOrders([]);
-//                                       setBulkOrderWeight(0);
+//                                     <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+//                                       No eligible vendor was found for the selected orders.
+//                                     </p>
 
-//                                       setFetchBulkAssignmentRider(false);
-//                                       setFetchBulkAssignmentVendor(false);
-
-//                                       setcanceledBulkOrder(false);
-
-//                                       clearAllState();
-//                                     }}
-//                                     className="h-10 shrink-0 cursor-pointer rounded-md border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
-//                                   >
-//                                     Clear Selected Orders
-//                                   </button>
-//                                 </div>
+//                                     <button
+//                                       type="button"
+//                                       onClick={() => {
+//                                         setFetchBulkAssignmentVendor(false);
+//                                         setAssignmentState("");
+//                                         setVendor([]);
+//                                       }}
+//                                       className="mt-3 h-8 cursor-pointer rounded-sm border border-amber-300 bg-white px-3 text-xs font-medium text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-neutral-900 dark:text-amber-400"
+//                                     >
+//                                       Try Again
+//                                     </button>
+//                                   </div>
+//                                 )}
 //                               </div>
 //                             </div>
 
-//                             {/* =========================
+//                             {/* ================= GENERATE BULK PICKUP REQUEST ================= */}
+//                             <div className="overflow-hidden rounded-sm border border-emerald-200 dark:border-emerald-500/20">
+//                               {/* Header */}
+//                               <div className="border-b border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+//                                 <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+//                                   Schedule Self Pickup
+//                                 </h3>
+
+//                                 <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+//                                   Schedule self-assignment for all selected orders.
+//                                 </p>
+//                               </div>
+
+//                               {/* Content */}
+//                               <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+//                                 {/* Info */}
+//                                 <div>
+//                                   <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+//                                     Schedule Self Pickup for Selected Orders
+//                                   </p>
+
+//                                   <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+//                                     <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+//                                       {selectedBulkOrders?.length || 0}
+//                                     </span>{" "}
+//                                     selected orders will be included in the self-pickup schedule.
+//                                   </p>
+//                                 </div>
+
+//                                 {/* Button */}
+//                                 <button
+//                                   type="submit"
+//                                   disabled={!selectedBulkOrders?.length}
+//                                   onClick={async () => {
+//                                     if (!selectedBulkOrders?.length) {
+//                                       toast.warn("Please select at least one order");
+//                                       return;
+//                                     }
+
+//                                     const order_ids = [
+//                                       ...new Set(selectedBulkOrders.map((order) => order.id)),
+//                                     ];
+
+//                                     await generateBulkPickupRequest(order_ids);
+
+//                                     clearAllState();
+//                                   }}
+//                                   className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-emerald-600 px-5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+//                                 >
+//                                   Schedule Self Pickup
+//                                 </button>
+//                               </div>
+//                             </div>
+
+//                             {/* ============================================
+//                                                     CLEAR SELECTED ORDERS
+//                                                 ============================================ */}
+//                             <div className="rounded-md border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5">
+//                               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+//                                 <div>
+//                                   <h3 className="text-sm font-semibold text-gray-800 dark:text-neutral-200">
+//                                     Clear Selection
+//                                   </h3>
+
+//                                   <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+//                                     Remove all currently selected orders.
+//                                   </p>
+//                                 </div>
+
+//                                 <button
+//                                   type="button"
+//                                   onClick={() => {
+//                                     setSelectedBulkOrders([]);
+//                                     setBulkOrderWeight(0);
+
+//                                     setFetchBulkAssignmentRider(false);
+//                                     setFetchBulkAssignmentVendor(false);
+
+//                                     setcanceledBulkOrder(false);
+
+//                                     clearAllState();
+//                                   }}
+//                                   className="h-10 shrink-0 cursor-pointer rounded-md border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
+//                                 >
+//                                   Clear Selected Orders
+//                                 </button>
+//                               </div>
+//                             </div>
+//                           </div>
+
+//                           {/* =========================
 //                                                   FOOTER
 //                                               ========================= */}
-//                             <AlertDialogFooter className="border-t border-gray-200 bg-gray-50 px-6 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
-//                               <AlertDialogCancel
-//                                 onClick={() => {
-//                                   clearAll();
-//                                   clearAllState();
-//                                 }}
-//                                 className="cursor-pointer"
-//                               >
-//                                 Close
-//                               </AlertDialogCancel>
-//                             </AlertDialogFooter>
-//                           </AlertDialogContent>
-//                         </AlertDialog>
-//                       </>
-//                     )}
+//                           <AlertDialogFooter className="border-t border-gray-200 bg-gray-50 px-6 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
+//                             <AlertDialogCancel
+//                               onClick={() => {
+//                                 clearAll();
+//                                 clearAllState();
+//                               }}
+//                               className="cursor-pointer"
+//                             >
+//                               Close
+//                             </AlertDialogCancel>
+//                           </AlertDialogFooter>
+//                         </AlertDialogContent>
+//                       </AlertDialog>
+//                     </>
+//                   )}
 
 //                   {selectedBulkOrders.length > 0 &&
-//                     (selectedStatus === "picked" ||
-//                       selectedStatus === "undelivered") && (
+//                     (selectedStatus === "picked" || selectedStatus === "undelivered") && (
 //                       <>
 //                         <AlertDialog>
 //                           {/* =====================================================
 //           OPEN BULK ACTION DIALOG
 //       ===================================================== */}
 //                           <AlertDialogTrigger>
-//                             <CustomButton
-//                               variant="primary"
-//                               size="sm"
-//                               className="rounded-sm  mb-2 "
-//                             >
+//                             <CustomButton variant="primary" size="sm" className="rounded-sm  mb-2 ">
 //                               Action
 //                             </CustomButton>
 //                           </AlertDialogTrigger>
@@ -7701,8 +7482,7 @@ export default OrderDetails;
 //                                       </h3>
 
 //                                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                         Apply an action to the selected mapped
-//                                         orders.
+//                                         Apply an action to the selected mapped orders.
 //                                       </p>
 //                                     </div>
 
@@ -7716,9 +7496,7 @@ export default OrderDetails;
 
 //                                             await Promise.all(
 //                                               selectedBulkOrders.map((order) =>
-//                                                 cancelVendorAssignment(
-//                                                   order.id,
-//                                                 ),
+//                                                 cancelVendorAssignment(order.id),
 //                                               ),
 //                                             );
 
@@ -7730,9 +7508,7 @@ export default OrderDetails;
 //                                             className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
 //                                             name="status"
 //                                           >
-//                                             <option value="">
-//                                               Select Status
-//                                             </option>
+//                                             <option value="">Select Status</option>
 
 //                                             <option value="Cancel Vendor Mapped">
 //                                               Cancel Vendor Mapping
@@ -7772,8 +7548,7 @@ export default OrderDetails;
 //                                       </h3>
 
 //                                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                         Find an available vendor and assign the
-//                                         selected orders.
+//                                         Find an available vendor and assign the selected orders.
 //                                       </p>
 //                                     </div>
 
@@ -7786,11 +7561,7 @@ export default OrderDetails;
 //                                             setFetchBulkAssignmentVendor(true);
 
 //                                             const order_ids = [
-//                                               ...new Set(
-//                                                 selectedBulkOrders.map(
-//                                                   (o) => o.id,
-//                                                 ),
-//                                               ),
+//                                               ...new Set(selectedBulkOrders.map((o) => o.id)),
 //                                             ];
 
 //                                             fetchVendor(order_ids);
@@ -7806,15 +7577,10 @@ export default OrderDetails;
 //                                               <select
 //                                                 className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
 //                                                 value={assignmentState}
-//                                                 onChange={(e) =>
-//                                                   setAssignmentState(
-//                                                     e.target.value,
-//                                                   )
-//                                                 }
+//                                                 onChange={(e) => setAssignmentState(e.target.value)}
 //                                               >
 //                                                 <option value="">
-//                                                   Select Vendor for Bulk
-//                                                   Assignment
+//                                                   Select Vendor for Bulk Assignment
 //                                                 </option>
 
 //                                                 {vendor.map((vendorItem) => (
@@ -7832,28 +7598,22 @@ export default OrderDetails;
 //                                                 <button
 //                                                   onClick={async () => {
 //                                                     if (!assignmentState) {
-//                                                       toast.warn(
-//                                                         "Please select a vendor",
-//                                                       );
+//                                                       toast.warn("Please select a vendor");
 //                                                       return;
 //                                                     }
 
-//                                                     const order_ids =
-//                                                       selectedBulkOrders.map(
-//                                                         (order) => order.id,
-//                                                       );
+//                                                     const order_ids = selectedBulkOrders.map(
+//                                                       (order) => order.id,
+//                                                     );
 
-//                                                     const result =
-//                                                       await assignBulkOrderVendor(
-//                                                         order_ids,
-//                                                         assignmentState,
-//                                                       );
+//                                                     const result = await assignBulkOrderVendor(
+//                                                       order_ids,
+//                                                       assignmentState,
+//                                                     );
 
 //                                                     setSelectedBulkOrders([]);
 //                                                     setBulkOrderWeight(0);
-//                                                     setFetchBulkAssignmentVendor(
-//                                                       false,
-//                                                     );
+//                                                     setFetchBulkAssignmentVendor(false);
 //                                                     setSelectedMapType(null);
 //                                                     setAssignmentState("");
 //                                                   }}
@@ -7873,10 +7633,8 @@ export default OrderDetails;
 //                                 {/* =================================================
 //                 RIDER ASSIGNMENT
 //             ================================================= */}
-//                                 {((selectedStatus === "picked" &&
-//                                   canMarkInTransit) ||
-//                                   (selectedStatus === "undelivered" &&
-//                                     canAssignUndelivered)) && (
+//                                 {((selectedStatus === "picked" && canMarkInTransit) ||
+//                                   (selectedStatus === "undelivered" && canAssignUndelivered)) && (
 //                                   <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
 //                                     {/* HEADER */}
 //                                     <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
@@ -7885,22 +7643,18 @@ export default OrderDetails;
 //                                       </h3>
 
 //                                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                         Find an available rider and assign the
-//                                         selected orders.
+//                                         Find an available rider and assign the selected orders.
 //                                       </p>
 //                                     </div>
 
 //                                     {/* CONTENT */}
 //                                     <div className="p-4">
-//                                       {selectedBulkOrders.length > 0 &&
-//                                       riders.length === 0 ? (
+//                                       {selectedBulkOrders.length > 0 && riders.length === 0 ? (
 //                                         <button
 //                                           onClick={() => {
 //                                             const vendor_ids = [
 //                                               ...new Set(
-//                                                 selectedBulkOrders.map(
-//                                                   (o) => o.mapped_with,
-//                                                 ),
+//                                                 selectedBulkOrders.map((o) => o.mapped_with),
 //                                               ),
 //                                             ];
 
@@ -7917,22 +7671,14 @@ export default OrderDetails;
 //                                               <select
 //                                                 className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
 //                                                 value={assignmentState}
-//                                                 onChange={(e) =>
-//                                                   setAssignmentState(
-//                                                     e.target.value,
-//                                                   )
-//                                                 }
+//                                                 onChange={(e) => setAssignmentState(e.target.value)}
 //                                               >
 //                                                 <option value="">
-//                                                   Select Rider for Bulk
-//                                                   Assignment
+//                                                   Select Rider for Bulk Assignment
 //                                                 </option>
 
 //                                                 {riders.map((rider) => (
-//                                                   <option
-//                                                     key={rider.id}
-//                                                     value={rider.id}
-//                                                   >
+//                                                   <option key={rider.id} value={rider.id}>
 //                                                     {rider.id} : {rider.name}
 //                                                   </option>
 //                                                 ))}
@@ -7942,22 +7688,18 @@ export default OrderDetails;
 //                                                 <button
 //                                                   onClick={async () => {
 //                                                     if (!assignmentState) {
-//                                                       toast.warn(
-//                                                         "Please select a rider",
-//                                                       );
+//                                                       toast.warn("Please select a rider");
 //                                                       return;
 //                                                     }
 
-//                                                     const order_ids =
-//                                                       selectedBulkOrders.map(
-//                                                         (o) => o.id,
-//                                                       );
+//                                                     const order_ids = selectedBulkOrders.map(
+//                                                       (o) => o.id,
+//                                                     );
 
 //                                                     await changeOrderStatus({
 //                                                       order_ids: order_ids,
 //                                                       newStatus:
-//                                                         selectedStatus ===
-//                                                         "undelivered"
+//                                                         selectedStatus === "undelivered"
 //                                                           ? "undelivered assigned"
 //                                                           : "in transit",
 //                                                       rider_id: assignmentState,
@@ -7981,109 +7723,94 @@ export default OrderDetails;
 //                                   </div>
 //                                 )}
 
-
-
-
 //                                 {allSelectedUndelivered && (
-//   <div className="space-y-3 rounded-sm border border-gray-200 p-4 dark:border-neutral-700">
-//     <div>
-//       <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-//         Vendor Mapping
-//       </h3>
+//                                   <div className="space-y-3 rounded-sm border border-gray-200 p-4 dark:border-neutral-700">
+//                                     <div>
+//                                       <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+//                                         Vendor Mapping
+//                                       </h3>
 
-//       <p className="mt-1 text-xs text-gray-500">
-//         Manage vendor mapping for {undeliveredOrders.length} selected
-//         undelivered orders.
-//       </p>
-//     </div>
+//                                       <p className="mt-1 text-xs text-gray-500">
+//                                         Manage vendor mapping for {undeliveredOrders.length}{" "}
+//                                         selected undelivered orders.
+//                                       </p>
+//                                     </div>
 
-//     {!bulkMappingOpen ? (
-//       <button
-//         type="button"
-//         disabled={bulkMappingLoading}
-//         onClick={async()=>{
-//           handleOpenBulkVendorMapping()
-//          await checkVendorMappingStatus(selectedBulkOrders[0].id);
-//          await fetchVendor(selectedBulkOrders[0].id);
-//         }}
-//         className="w-full rounded-sm bg-[#0446DB] px-3 py-2 text-sm font-medium text-white hover:bg-[#0339b5] disabled:opacity-50"
-//       >
-//         Manage Vendor Mapping
-//       </button>
-//     ) : (
-//       <div className="space-y-3">
-//         {
-//           checkVendorMapping?.canChangeMapping && (
+//                                     {!bulkMappingOpen ? (
+//                                       <button
+//                                         type="button"
+//                                         disabled={bulkMappingLoading}
+//                                         onClick={async () => {
+//                                           handleOpenBulkVendorMapping();
+//                                           await checkVendorMappingStatus(selectedBulkOrders[0].id);
+//                                           await fetchVendor(selectedBulkOrders[0].id);
+//                                         }}
+//                                         className="w-full rounded-sm bg-[#0446DB] px-3 py-2 text-sm font-medium text-white hover:bg-[#0339b5] disabled:opacity-50"
+//                                       >
+//                                         Manage Vendor Mapping
+//                                       </button>
+//                                     ) : (
+//                                       <div className="space-y-3">
+//                                         {checkVendorMapping?.canChangeMapping && (
+//                                           <form
+//                                             onSubmit={handleBulkChangeVendorMapping}
+//                                             className="space-y-3"
+//                                           >
+//                                             <select
+//                                               value={assignmentState}
+//                                               onChange={(e) => setAssignmentState(e.target.value)}
+//                                               required
+//                                               disabled={bulkMappingLoading}
+//                                               className="h-10 w-full rounded-sm border border-gray-300 bg-white px-3 text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+//                                             >
+//                                               <option value="" disabled>
+//                                                 Select Vendor
+//                                               </option>
 
-//         <form
-//           onSubmit={handleBulkChangeVendorMapping}
-//           className="space-y-3"
-//         >
-//           <select
-//             value={assignmentState}
-//             onChange={(e) => setAssignmentState(e.target.value)}
-//             required
-//             disabled={bulkMappingLoading}
-//             className="h-10 w-full rounded-sm border border-gray-300 bg-white px-3 text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
-//           >
-//             <option value="" disabled>
-//               Select Vendor
-//             </option>
+//                                               {vendor.map((item) => (
+//                                                 <option key={item.vendor_id} value={item.vendor_id}>
+//                                                   {item.vendor_id} : {item.vendor_name}
+//                                                 </option>
+//                                               ))}
+//                                             </select>
 
-//             {vendor.map((item) => (
-//               <option
-//                 key={item.vendor_id}
-//                 value={item.vendor_id}
-//               >
-//                 {item.vendor_id} : {item.vendor_name}
-//               </option>
-//             ))}
-//           </select>
+//                                             <button
+//                                               type="submit"
+//                                               disabled={bulkMappingLoading || !assignmentState}
+//                                               className="w-full rounded-sm bg-[#0446DB] px-3 py-2 text-sm font-medium text-white hover:bg-[#0339b5] disabled:opacity-50"
+//                                             >
+//                                               Assign New Vendor
+//                                             </button>
+//                                           </form>
+//                                         )}
 
-//           <button
-//             type="submit"
-//             disabled={bulkMappingLoading || !assignmentState}
-//             className="w-full rounded-sm bg-[#0446DB] px-3 py-2 text-sm font-medium text-white hover:bg-[#0339b5] disabled:opacity-50"
-//           >
-//             Assign New Vendor
-//           </button>
-//         </form>
-//           )
-//         }
+//                                         {!checkVendorMapping?.canChangeMapping && (
+//                                           <button
+//                                             type="button"
+//                                             disabled={bulkMappingLoading}
+//                                             onClick={handleBulkRevokeVendorMapping}
+//                                             className="w-full rounded-sm bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+//                                           >
+//                                             Revoke Vendor Mapping
+//                                           </button>
+//                                         )}
 
-        
-
-//         {
-//           !checkVendorMapping?.canChangeMapping && (
-
-//         <button
-//           type="button"
-//           disabled={bulkMappingLoading}
-//           onClick={handleBulkRevokeVendorMapping}
-//           className="w-full rounded-sm bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-//         >
-//           Revoke Vendor Mapping
-//         </button>
-//           )
-//         }
-
-
-//         <button
-//           type="button"
-//           disabled={bulkMappingLoading}
-//           onClick={() => {
-//             setBulkMappingOpen(false);
-//             setAssignmentState("");
-//             setCheckVendorMapping(null);
-//           }}
-//           className="w-full rounded-sm border border-gray-300 px-3 py-2 text-sm dark:border-neutral-700"
-//         >
-//           Close
-//         </button>
-//       </div>
-//     )}
-//   </div>
-//                                  )}
+//                                         <button
+//                                           type="button"
+//                                           disabled={bulkMappingLoading}
+//                                           onClick={() => {
+//                                             setBulkMappingOpen(false);
+//                                             setAssignmentState("");
+//                                             setCheckVendorMapping(null);
+//                                           }}
+//                                           className="w-full rounded-sm border border-gray-300 px-3 py-2 text-sm dark:border-neutral-700"
+//                                         >
+//                                           Close
+//                                         </button>
+//                                       </div>
+//                                     )}
+//                                   </div>
+//                                 )}
 
 //                                 {/* =================================================
 //                 CLEAR SELECTED ORDERS
@@ -8095,8 +7822,7 @@ export default OrderDetails;
 //                                     </p>
 
 //                                     <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-//                                       Remove all currently selected orders and
-//                                       reset bulk actions.
+//                                       Remove all currently selected orders and reset bulk actions.
 //                                     </p>
 //                                   </div>
 
@@ -8124,7 +7850,6 @@ export default OrderDetails;
 //                             <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
 //                               <AlertDialogCancel
 //                                 onClick={() => {
-                                  
 //                                   clearAllState();
 //                                 }}
 //                                 className="cursor-pointer rounded-sm"
@@ -8146,11 +7871,7 @@ export default OrderDetails;
 //           OPEN DIALOG BUTTON
 //       ===================================================== */}
 //                           <AlertDialogTrigger>
-//                             <CustomButton
-//                               variant="primary"
-//                               size="sm"
-//                               className="rounded-sm  mb-2 "
-//                             >
+//                             <CustomButton variant="primary" size="sm" className="rounded-sm  mb-2 ">
 //                               Action
 //                             </CustomButton>
 //                           </AlertDialogTrigger>
@@ -8195,26 +7916,20 @@ export default OrderDetails;
 //                                       </h3>
 
 //                                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                         Select an action to apply to all
-//                                         selected orders.
+//                                         Select an action to apply to all selected orders.
 //                                       </p>
 //                                     </div>
 
 //                                     {/* CONTENT */}
 //                                     <div className="p-4">
-//                                       {selectedBulkOrders.length > 0 &&
-//                                       openOfd.length == 0 ? (
+//                                       {selectedBulkOrders.length > 0 && openOfd.length == 0 ? (
 //                                         /* =========================================
 //                           CHANGE ACTION
 //                       ========================================= */
 //                                         <button
 //                                           onClick={() => {
 //                                             const order_ids = [
-//                                               ...new Set(
-//                                                 selectedBulkOrders.map(
-//                                                   (o) => o.id,
-//                                                 ),
-//                                               ),
+//                                               ...new Set(selectedBulkOrders.map((o) => o.id)),
 //                                             ];
 
 //                                             setopenOfd(order_ids);
@@ -8234,38 +7949,22 @@ export default OrderDetails;
 //                                               <select
 //                                                 className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
 //                                                 value={assignmentState}
-//                                                 onChange={(e) =>
-//                                                   setAssignmentState(
-//                                                     e.target.value,
-//                                                   )
-//                                                 }
+//                                                 onChange={(e) => setAssignmentState(e.target.value)}
 //                                               >
-//                                                 <option value="">
-//                                                   Select Status
-//                                                 </option>
+//                                                 <option value="">Select Status</option>
 
-//                                                 <option
-//                                                   value={"out for delivery"}
-//                                                 >
+//                                                 <option value={"out for delivery"}>
 //                                                   Mark Out For Delivery
 //                                                 </option>
 
-//                                                 {selectedStatus ==
-//                                                   "undelivered assigned" ||
-//                                                   (selectedStatus ==
-//                                                     "in transit" && (
-//                                                     <option
-//                                                       value={
-//                                                         "cancel rider assignment"
-//                                                       }
-//                                                     >
+//                                                 {selectedStatus == "undelivered assigned" ||
+//                                                   (selectedStatus == "in transit" && (
+//                                                     <option value={"cancel rider assignment"}>
 //                                                       Cancel Rider Assignment
 //                                                     </option>
 //                                                   ))}
 
-//                                                 <option value="lost">
-//                                                   Lost
-//                                                 </option>
+//                                                 <option value="lost">Lost</option>
 //                                               </select>
 
 //                                               {/* ===============================
@@ -8276,32 +7975,25 @@ export default OrderDetails;
 //                                                 <button
 //                                                   onClick={async () => {
 //                                                     if (!assignmentState) {
-//                                                       toast.warn(
-//                                                         "Please select a status",
-//                                                       );
+//                                                       toast.warn("Please select a status");
 //                                                       return;
 //                                                     }
 
-//                                                     const order_ids =
-//                                                       selectedBulkOrders.map(
-//                                                         (o) => o.id,
-//                                                       );
+//                                                     const order_ids = selectedBulkOrders.map(
+//                                                       (o) => o.id,
+//                                                     );
 
 //                                                     if (
-//                                                       assignmentState ===
-//                                                       "cancel rider assignment"
+//                                                       assignmentState === "cancel rider assignment"
 //                                                     ) {
-//                                                       await cancelRiderAssignments(
-//                                                         order_ids,
-//                                                       );
+//                                                       await cancelRiderAssignments(order_ids);
 //                                                     } else {
 //                                                       // for (const order of selectedBulkOrders) {
 //                                                       // }
 
 //                                                       await changeOrderStatus({
 //                                                         order_ids: order_ids,
-//                                                         newStatus:
-//                                                           assignmentState,
+//                                                         newStatus: assignmentState,
 //                                                         rider_id: "",
 //                                                       });
 //                                                     }
@@ -8312,8 +8004,7 @@ export default OrderDetails;
 //                                                 >
 //                                                   {assignmentState == ""
 //                                                     ? "Select Status"
-//                                                     : assignmentState ===
-//                                                         "cancel rider assignment"
+//                                                     : assignmentState === "cancel rider assignment"
 //                                                       ? "Cancel Rider Assignment"
 //                                                       : "Mark Bulk Orders as Out for Delivery"}
 //                                                 </button>
@@ -8337,8 +8028,7 @@ export default OrderDetails;
 //                                     </p>
 
 //                                     <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-//                                       Remove all currently selected orders and
-//                                       reset bulk actions.
+//                                       Remove all currently selected orders and reset bulk actions.
 //                                     </p>
 //                                   </div>
 
@@ -8380,610 +8070,512 @@ export default OrderDetails;
 //                       </>
 //                     )}
 
-//                   {selectedBulkOrders.length > 0 &&
-//                     selectedStatus === "out for delivery" && (
-//                       <>
-//                         <AlertDialog>
-//                           {/* =====================================================
+//                   {selectedBulkOrders.length > 0 && selectedStatus === "out for delivery" && (
+//                     <>
+//                       <AlertDialog>
+//                         {/* =====================================================
 //           OPEN BULK ACTIONS
 //       ===================================================== */}
-//                           <AlertDialogTrigger>
-//                             <CustomButton
-//                               variant="primary"
-//                               size="sm"
-//                               className="rounded-sm  mb-2 "
-//                             >
-//                               Action
-//                             </CustomButton>
-//                           </AlertDialogTrigger>
+//                         <AlertDialogTrigger>
+//                           <CustomButton variant="primary" size="sm" className="rounded-sm  mb-2 ">
+//                             Action
+//                           </CustomButton>
+//                         </AlertDialogTrigger>
 
-//                           {/* =====================================================
+//                         {/* =====================================================
 //           MAIN BULK ACTION DIALOG
 //       ===================================================== */}
-//                           <AlertDialogContent className="!max-w-2xl overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
-//                             {/* HEADER */}
-//                             <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-//                               <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
-//                                 Bulk Order Actions
-//                               </AlertDialogTitle>
+//                         <AlertDialogContent className="!max-w-2xl overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+//                           {/* HEADER */}
+//                           <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+//                             <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+//                               Bulk Order Actions
+//                             </AlertDialogTitle>
 
-//                               <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-//                                 Manage{" "}
-//                                 <span className="font-semibold text-[#0446DB] dark:text-blue-400">
-//                                   {selectedBulkOrders?.length || 0}
-//                                 </span>{" "}
-//                                 selected orders.
-//                               </AlertDialogDescription>
-//                             </AlertDialogHeader>
+//                             <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+//                               Manage{" "}
+//                               <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+//                                 {selectedBulkOrders?.length || 0}
+//                               </span>{" "}
+//                               selected orders.
+//                             </AlertDialogDescription>
+//                           </AlertDialogHeader>
 
-//                             {/* =====================================================
+//                           {/* =====================================================
 //             BODY
 //         ===================================================== */}
-//                             <div className="max-h-[70vh] overflow-y-auto px-5 py-5">
-//                               <div className="space-y-4">
-//                                 {/* =================================================
+//                           <div className="max-h-[70vh] overflow-y-auto px-5 py-5">
+//                             <div className="space-y-4">
+//                               {/* =================================================
 //                 OUT FOR DELIVERY ACTIONS
 //             ================================================= */}
-//                                 {selectedStatus === "out for delivery" && (
-//                                   <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
-//                                     {/* SECTION HEADER */}
-//                                     <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
-//                                       <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-//                                         Change Order Action
-//                                       </h3>
+//                               {selectedStatus === "out for delivery" && (
+//                                 <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+//                                   {/* SECTION HEADER */}
+//                                   <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+//                                     <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+//                                       Change Order Action
+//                                     </h3>
 
-//                                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                         Update the status of selected out for
-//                                         delivery orders.
-//                                       </p>
-//                                     </div>
+//                                     <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+//                                       Update the status of selected out for delivery orders.
+//                                     </p>
+//                                   </div>
 
-//                                     {/* CONTENT */}
-//                                     <div className="p-4">
-//                                       {selectedBulkOrders.length > 0 &&
-//                                       openDelivered.length == 0 ? (
-//                                         /* =========================================
+//                                   {/* CONTENT */}
+//                                   <div className="p-4">
+//                                     {selectedBulkOrders.length > 0 && openDelivered.length == 0 ? (
+//                                       /* =========================================
 //                         CHANGE ACTION BUTTON
 //                     ========================================= */
-//                                         <button
-//                                           onClick={() => {
-//                                             const order_ids = [
-//                                               ...new Set(
-//                                                 selectedBulkOrders.map(
-//                                                   (o) => o.id,
-//                                                 ),
-//                                               ),
-//                                             ];
+//                                       <button
+//                                         onClick={() => {
+//                                           const order_ids = [
+//                                             ...new Set(selectedBulkOrders.map((o) => o.id)),
+//                                           ];
 
-//                                             setopenDeliverde(order_ids);
-//                                           }}
-//                                           className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
-//                                         >
-//                                           Change Action
-//                                         </button>
-//                                       ) : (
-//                                         <>
-//                                           {openDelivered.length > 0 && (
-//                                             <div className="space-y-4">
-//                                               {/* =====================================
+//                                           setopenDeliverde(order_ids);
+//                                         }}
+//                                         className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+//                                       >
+//                                         Change Action
+//                                       </button>
+//                                     ) : (
+//                                       <>
+//                                         {openDelivered.length > 0 && (
+//                                           <div className="space-y-4">
+//                                             {/* =====================================
 //                               STATUS SELECT
 //                           ===================================== */}
-//                                               <div>
-//                                                 <label className="mb-2 block text-xs font-medium text-neutral-600 dark:text-neutral-300">
-//                                                   Select New Status
-//                                                 </label>
+//                                             <div>
+//                                               <label className="mb-2 block text-xs font-medium text-neutral-600 dark:text-neutral-300">
+//                                                 Select New Status
+//                                               </label>
 
-//                                                 <select
-//                                                   className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-//                                                   value={assignmentState}
-//                                                   onChange={(e) =>
-//                                                     setAssignmentState(
-//                                                       e.target.value,
-//                                                     )
-//                                                   }
-//                                                 >
-//                                                   <option value="">
-//                                                     Select Status
-//                                                   </option>
+//                                               <select
+//                                                 className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+//                                                 value={assignmentState}
+//                                                 onChange={(e) => setAssignmentState(e.target.value)}
+//                                               >
+//                                                 <option value="">Select Status</option>
 
-//                                                   <option value={"delivered"}>
-//                                                     Mark Delivered
-//                                                   </option>
+//                                                 <option value={"delivered"}>Mark Delivered</option>
 
-//                                                   <option value={"ndr"}>
-//                                                     Mark NDR
-//                                                   </option>
+//                                                 <option value={"ndr"}>Mark NDR</option>
 
-//                                                   <option value="lost">
-//                                                     Mark Lost
-//                                                   </option>
-//                                                 </select>
-//                                               </div>
+//                                                 <option value="lost">Mark Lost</option>
+//                                               </select>
+//                                             </div>
 
-//                                               {/* =====================================
+//                                             {/* =====================================
 //                               NDR
 //                           ===================================== */}
-//                                               {assignmentState == "ndr" && (
-//                                                 <>
-//                                                   <Dialog className="w-5xl">
-//                                                     <DialogTrigger asChild>
-//                                                       <Button
-//                                                         variant="outline"
-//                                                         className="h-10 cursor-pointer rounded-sm border border-[#0446DB] bg-[#0446DB] px-5 text-sm font-semibold text-white hover:bg-[#0339B5] hover:text-white"
-//                                                       >
-//                                                         <span>
-//                                                           Mark Bulk Orders as
-//                                                           NDR
-//                                                         </span>
-//                                                       </Button>
-//                                                     </DialogTrigger>
+//                                             {assignmentState == "ndr" && (
+//                                               <>
+//                                                 <Dialog className="w-5xl">
+//                                                   <DialogTrigger asChild>
+//                                                     <Button
+//                                                       variant="outline"
+//                                                       className="h-10 cursor-pointer rounded-sm border border-[#0446DB] bg-[#0446DB] px-5 text-sm font-semibold text-white hover:bg-[#0339B5] hover:text-white"
+//                                                     >
+//                                                       <span>Mark Bulk Orders as NDR</span>
+//                                                     </Button>
+//                                                   </DialogTrigger>
 
-//                                                     {/* ===============================
+//                                                   {/* ===============================
 //                                     NDR DIALOG
 //                                 =============================== */}
-//                                                     <DialogContent className="!max-w-lg overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 dark:border-neutral-800 dark:bg-neutral-900">
-//                                                       {/* NDR HEADER */}
-//                                                       <DialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-//                                                         <DialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
-//                                                           NDR
-//                                                         </DialogTitle>
+//                                                   <DialogContent className="!max-w-lg overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 dark:border-neutral-800 dark:bg-neutral-900">
+//                                                     {/* NDR HEADER */}
+//                                                     <DialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+//                                                       <DialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+//                                                         NDR
+//                                                       </DialogTitle>
 
-//                                                         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-//                                                           Add undelivered
-//                                                           details for selected
-//                                                           orders.
-//                                                         </p>
-//                                                       </DialogHeader>
+//                                                       <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+//                                                         Add undelivered details for selected orders.
+//                                                       </p>
+//                                                     </DialogHeader>
 
-//                                                       {/* NDR BODY */}
-//                                                       <div className="max-h-[65vh] space-y-4 overflow-y-auto px-5 py-5">
-//                                                         {/* ===========================
+//                                                     {/* NDR BODY */}
+//                                                     <div className="max-h-[65vh] space-y-4 overflow-y-auto px-5 py-5">
+//                                                       {/* ===========================
 //                                         DELIVERY REASON
 //                                     =========================== */}
-//                                                         <div>
-//                                                           <label
-//                                                             htmlFor="delivery_reason"
-//                                                             className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
-//                                                           >
-//                                                             Undelivered Reason
-//                                                           </label>
+//                                                       <div>
+//                                                         <label
+//                                                           htmlFor="delivery_reason"
+//                                                           className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+//                                                         >
+//                                                           Undelivered Reason
+//                                                         </label>
 
-//                                                           <select
-//                                                             name="delivery_reason"
-//                                                             id="delivery_reason"
-//                                                             onChange={(e) => {
-//                                                               setRemarks(
-//                                                                 e.target.value,
-//                                                               );
-//                                                               setRescheduleDate(
-//                                                                 "",
-//                                                               );
-//                                                               setSub_remarks(
-//                                                                 "",
-//                                                               );
-//                                                             }}
-//                                                             className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-//                                                           >
-//                                                             <option value="">
-//                                                               -- Select Reason
-//                                                               --
-//                                                             </option>
+//                                                         <select
+//                                                           name="delivery_reason"
+//                                                           id="delivery_reason"
+//                                                           onChange={(e) => {
+//                                                             setRemarks(e.target.value);
+//                                                             setRescheduleDate("");
+//                                                             setSub_remarks("");
+//                                                           }}
+//                                                           className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+//                                                         >
+//                                                           <option value="">
+//                                                             -- Select Reason --
+//                                                           </option>
 
-//                                                             <option value="Address Incorrect / Incomplete">
-//                                                               Address Incorrect
-//                                                               / Incomplete
-//                                                             </option>
+//                                                           <option value="Address Incorrect / Incomplete">
+//                                                             Address Incorrect / Incomplete
+//                                                           </option>
 
-//                                                             <option value="Customer Requested Reschedule">
-//                                                               Customer Requested
-//                                                               Reschedule
-//                                                             </option>
+//                                                           <option value="Customer Requested Reschedule">
+//                                                             Customer Requested Reschedule
+//                                                           </option>
 
-//                                                             <option value="Customer Refused / Cancelled">
-//                                                               Customer Refused /
-//                                                               Cancelled
-//                                                             </option>
+//                                                           <option value="Customer Refused / Cancelled">
+//                                                             Customer Refused / Cancelled
+//                                                           </option>
 
-//                                                             <option value="Delivery Attempted – Not Reachable">
-//                                                               Delivery Attempted
-//                                                               – Not Reachable
-//                                                             </option>
+//                                                           <option value="Delivery Attempted – Not Reachable">
+//                                                             Delivery Attempted – Not Reachable
+//                                                           </option>
 
-//                                                             <option value="Delivery Attempted – No Response">
-//                                                               Delivery Attempted
-//                                                               – No Response
-//                                                             </option>
+//                                                           <option value="Delivery Attempted – No Response">
+//                                                             Delivery Attempted – No Response
+//                                                           </option>
 
-//                                                             <option value="Wrong Pincode / Address">
-//                                                               Wrong Pincode /
-//                                                               Address
-//                                                             </option>
+//                                                           <option value="Wrong Pincode / Address">
+//                                                             Wrong Pincode / Address
+//                                                           </option>
 
-//                                                             <option value="Wrong Contact Details">
-//                                                               Wrong Contact
-//                                                               Details
-//                                                             </option>
+//                                                           <option value="Wrong Contact Details">
+//                                                             Wrong Contact Details
+//                                                           </option>
 
-//                                                             <option value="Vehicle / Weather / Road Issue">
-//                                                               Vehicle / Weather
-//                                                               / Road Issue
-//                                                             </option>
+//                                                           <option value="Vehicle / Weather / Road Issue">
+//                                                             Vehicle / Weather / Road Issue
+//                                                           </option>
 
-//                                                             <option value="Package Damaged">
-//                                                               Package Damaged
-//                                                             </option>
-//                                                           </select>
-//                                                         </div>
-
-//                                                         {/* ===========================
-//                                         RESCHEDULE DATE
-//                                     =========================== */}
-//                                                         {remarks ==
-//                                                           "Customer Requested Reschedule" && (
-//                                                           <>
-//                                                             <div>
-//                                                               <label
-//                                                                 htmlFor=""
-//                                                                 className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
-//                                                               >
-//                                                                 Reschedule Date
-//                                                               </label>
-
-//                                                               <input
-//                                                                 type="date"
-//                                                                 value={
-//                                                                   rescheduleDate
-//                                                                 }
-//                                                                 onClick={(e) =>
-//                                                                   e.target.showPicker?.()
-//                                                                 }
-//                                                                 onChange={(e) =>
-//                                                                   setRescheduleDate(
-//                                                                     e.target
-//                                                                       .value,
-//                                                                   )
-//                                                                 }
-//                                                                 className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-//                                                               />
-//                                                             </div>
-//                                                           </>
-//                                                         )}
-
-//                                                         {/* ===========================
-//                                         RESCHEDULE SUB REMARK
-//                                     =========================== */}
-//                                                         {remarks ==
-//                                                           "Customer Requested Reschedule" && (
-//                                                           <>
-//                                                             <div>
-//                                                               <label
-//                                                                 htmlFor=""
-//                                                                 className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
-//                                                               >
-//                                                                 Sub Remark
-//                                                               </label>
-
-//                                                               <select
-//                                                                 onChange={(
-//                                                                   e,
-//                                                                 ) => {
-//                                                                   setSub_remarks(
-//                                                                     e.target
-//                                                                       .value,
-//                                                                   );
-//                                                                 }}
-//                                                                 className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-//                                                               >
-//                                                                 <option value="">
-//                                                                   -- Select
-//                                                                   Reason --
-//                                                                 </option>
-
-//                                                                 <option value="Unavailable at Location">
-//                                                                   Unavailable at
-//                                                                   Location
-//                                                                 </option>
-
-//                                                                 <option value="Out of Station">
-//                                                                   Out of Station
-//                                                                 </option>
-
-//                                                                 <option value="COD Amount Not Ready">
-//                                                                   COD Amount Not
-//                                                                   Ready
-//                                                                 </option>
-
-//                                                                 <option value="Require Different Time Slot">
-//                                                                   Require
-//                                                                   Different Time
-//                                                                   Slot
-//                                                                 </option>
-
-//                                                                 <option value="Other">
-//                                                                   Other
-//                                                                 </option>
-//                                                               </select>
-//                                                             </div>
-//                                                           </>
-//                                                         )}
-
-//                                                         {/* ===========================
-//                                         CUSTOMER REFUSED SUB REMARK
-//                                     =========================== */}
-//                                                         {remarks ==
-//                                                           "Customer Refused / Cancelled" && (
-//                                                           <>
-//                                                             <div>
-//                                                               <label
-//                                                                 htmlFor=""
-//                                                                 className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
-//                                                               >
-//                                                                 Sub Remark
-//                                                               </label>
-
-//                                                               <select
-//                                                                 onChange={(
-//                                                                   e,
-//                                                                 ) => {
-//                                                                   setSub_remarks(
-//                                                                     e.target
-//                                                                       .value,
-//                                                                   );
-//                                                                 }}
-//                                                                 className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-//                                                               >
-//                                                                 <option value="">
-//                                                                   -- Select
-//                                                                   Reason --
-//                                                                 </option>
-
-//                                                                 <option value="Duplicate Order">
-//                                                                   Duplicate
-//                                                                   Order
-//                                                                 </option>
-
-//                                                                 <option value="Order Placed by Mistake">
-//                                                                   Order Placed
-//                                                                   by Mistake
-//                                                                 </option>
-
-//                                                                 <option value="COD Amount Not Ready">
-//                                                                   COD Amount Not
-//                                                                   Ready
-//                                                                 </option>
-
-//                                                                 <option value="Better Price Elsewhere">
-//                                                                   Better Price
-//                                                                   Elsewhere
-//                                                                 </option>
-
-//                                                                 <option value="Other">
-//                                                                   Other
-//                                                                 </option>
-//                                                               </select>
-//                                                             </div>
-//                                                           </>
-//                                                         )}
-
-//                                                         {/* ===========================
-//                                         DETAILED REMARK
-//                                     =========================== */}
-//                                                         <div>
-//                                                           <label
-//                                                             htmlFor="remark"
-//                                                             className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
-//                                                           >
-//                                                             Remark (Optional)
-//                                                           </label>
-
-//                                                           <input
-//                                                             type="text"
-//                                                             value={
-//                                                               detailed_remarks
-//                                                             }
-//                                                             placeholder="Enter remark"
-//                                                             onChange={(e) =>
-//                                                               setdetailed_remarks(
-//                                                                 e.target.value,
-//                                                               )
-//                                                             }
-//                                                             className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors placeholder:text-neutral-400 focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-//                                                           />
-//                                                         </div>
+//                                                           <option value="Package Damaged">
+//                                                             Package Damaged
+//                                                           </option>
+//                                                         </select>
 //                                                       </div>
 
-//                                                       {/* ===============================
+//                                                       {/* ===========================
+//                                         RESCHEDULE DATE
+//                                     =========================== */}
+//                                                       {remarks ==
+//                                                         "Customer Requested Reschedule" && (
+//                                                         <>
+//                                                           <div>
+//                                                             <label
+//                                                               htmlFor=""
+//                                                               className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+//                                                             >
+//                                                               Reschedule Date
+//                                                             </label>
+
+//                                                             <input
+//                                                               type="date"
+//                                                               value={rescheduleDate}
+//                                                               onClick={(e) =>
+//                                                                 e.target.showPicker?.()
+//                                                               }
+//                                                               onChange={(e) =>
+//                                                                 setRescheduleDate(e.target.value)
+//                                                               }
+//                                                               className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+//                                                             />
+//                                                           </div>
+//                                                         </>
+//                                                       )}
+
+//                                                       {/* ===========================
+//                                         RESCHEDULE SUB REMARK
+//                                     =========================== */}
+//                                                       {remarks ==
+//                                                         "Customer Requested Reschedule" && (
+//                                                         <>
+//                                                           <div>
+//                                                             <label
+//                                                               htmlFor=""
+//                                                               className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+//                                                             >
+//                                                               Sub Remark
+//                                                             </label>
+
+//                                                             <select
+//                                                               onChange={(e) => {
+//                                                                 setSub_remarks(e.target.value);
+//                                                               }}
+//                                                               className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+//                                                             >
+//                                                               <option value="">
+//                                                                 -- Select Reason --
+//                                                               </option>
+
+//                                                               <option value="Unavailable at Location">
+//                                                                 Unavailable at Location
+//                                                               </option>
+
+//                                                               <option value="Out of Station">
+//                                                                 Out of Station
+//                                                               </option>
+
+//                                                               <option value="COD Amount Not Ready">
+//                                                                 COD Amount Not Ready
+//                                                               </option>
+
+//                                                               <option value="Require Different Time Slot">
+//                                                                 Require Different Time Slot
+//                                                               </option>
+
+//                                                               <option value="Other">Other</option>
+//                                                             </select>
+//                                                           </div>
+//                                                         </>
+//                                                       )}
+
+//                                                       {/* ===========================
+//                                         CUSTOMER REFUSED SUB REMARK
+//                                     =========================== */}
+//                                                       {remarks ==
+//                                                         "Customer Refused / Cancelled" && (
+//                                                         <>
+//                                                           <div>
+//                                                             <label
+//                                                               htmlFor=""
+//                                                               className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+//                                                             >
+//                                                               Sub Remark
+//                                                             </label>
+
+//                                                             <select
+//                                                               onChange={(e) => {
+//                                                                 setSub_remarks(e.target.value);
+//                                                               }}
+//                                                               className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+//                                                             >
+//                                                               <option value="">
+//                                                                 -- Select Reason --
+//                                                               </option>
+
+//                                                               <option value="Duplicate Order">
+//                                                                 Duplicate Order
+//                                                               </option>
+
+//                                                               <option value="Order Placed by Mistake">
+//                                                                 Order Placed by Mistake
+//                                                               </option>
+
+//                                                               <option value="COD Amount Not Ready">
+//                                                                 COD Amount Not Ready
+//                                                               </option>
+
+//                                                               <option value="Better Price Elsewhere">
+//                                                                 Better Price Elsewhere
+//                                                               </option>
+
+//                                                               <option value="Other">Other</option>
+//                                                             </select>
+//                                                           </div>
+//                                                         </>
+//                                                       )}
+
+//                                                       {/* ===========================
+//                                         DETAILED REMARK
+//                                     =========================== */}
+//                                                       <div>
+//                                                         <label
+//                                                           htmlFor="remark"
+//                                                           className="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200"
+//                                                         >
+//                                                           Remark (Optional)
+//                                                         </label>
+
+//                                                         <input
+//                                                           type="text"
+//                                                           value={detailed_remarks}
+//                                                           placeholder="Enter remark"
+//                                                           onChange={(e) =>
+//                                                             setdetailed_remarks(e.target.value)
+//                                                           }
+//                                                           className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors placeholder:text-neutral-400 focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+//                                                         />
+//                                                       </div>
+//                                                     </div>
+
+//                                                     {/* ===============================
 //                                       NDR FOOTER
 //                                   =============================== */}
-//                                                       <DialogFooter className="border-t border-neutral-200 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
-//                                                         <DialogClose asChild>
-//                                                           <Button
-//                                                             variant="outline"
-//                                                             onClick={() => {
-//                                                               clearAllState();
-//                                                             }}
-//                                                           >
-//                                                             Cancel
-//                                                           </Button>
-//                                                         </DialogClose>
-
+//                                                     <DialogFooter className="border-t border-neutral-200 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+//                                                       <DialogClose asChild>
 //                                                         <Button
-//                                                           onClick={async () => {
-//                                                             const order_ids =
-//                                                               selectedBulkOrders.map(
-//                                                                 (o) => o.id,
-//                                                               );
-
-//                                                             await changeOrderStatus(
-//                                                               {
-//                                                                 order_ids:
-//                                                                   order_ids,
-//                                                                 newStatus:
-//                                                                   assignmentState,
-//                                                                 remarks:
-//                                                                   remarks,
-//                                                                 sub_remarks:
-//                                                                   sub_remarks,
-//                                                                 detailed_remarks:
-//                                                                   detailed_remarks,
-//                                                                 rescheduled_date:
-//                                                                   rescheduleDate,
-//                                                                 rider_id: "",
-//                                                               },
-//                                                             );
-
-//                                                             // for (const order of selectedBulkOrders) {
-//                                                             // }
+//                                                           variant="outline"
+//                                                           onClick={() => {
+//                                                             clearAllState();
 //                                                           }}
-//                                                           className="bg-[#0446DB] text-white hover:bg-[#0339B5]"
 //                                                         >
-//                                                           Submit
+//                                                           Cancel
 //                                                         </Button>
-//                                                       </DialogFooter>
-//                                                     </DialogContent>
-//                                                   </Dialog>
-//                                                 </>
-//                                               )}
+//                                                       </DialogClose>
 
-//                                               {/* =====================================
+//                                                       <Button
+//                                                         onClick={async () => {
+//                                                           const order_ids = selectedBulkOrders.map(
+//                                                             (o) => o.id,
+//                                                           );
+
+//                                                           await changeOrderStatus({
+//                                                             order_ids: order_ids,
+//                                                             newStatus: assignmentState,
+//                                                             remarks: remarks,
+//                                                             sub_remarks: sub_remarks,
+//                                                             detailed_remarks: detailed_remarks,
+//                                                             rescheduled_date: rescheduleDate,
+//                                                             rider_id: "",
+//                                                           });
+
+//                                                           // for (const order of selectedBulkOrders) {
+//                                                           // }
+//                                                         }}
+//                                                         className="bg-[#0446DB] text-white hover:bg-[#0339B5]"
+//                                                       >
+//                                                         Submit
+//                                                       </Button>
+//                                                     </DialogFooter>
+//                                                   </DialogContent>
+//                                                 </Dialog>
+//                                               </>
+//                                             )}
+
+//                                             {/* =====================================
 //                               DELIVERED
 //                           ===================================== */}
-//                                               {assignmentState ==
-//                                                 "delivered" && (
-//                                                 <button
-//                                                   onClick={async () => {
-//                                                     if (!assignmentState) {
-//                                                       toast.warn(
-//                                                         "Please select a status",
-//                                                       );
-//                                                       return;
-//                                                     }
+//                                             {assignmentState == "delivered" && (
+//                                               <button
+//                                                 onClick={async () => {
+//                                                   if (!assignmentState) {
+//                                                     toast.warn("Please select a status");
+//                                                     return;
+//                                                   }
 
-//                                                     const order_ids =
-//                                                       selectedBulkOrders.map(
-//                                                         (o) => o.id,
-//                                                       );
+//                                                   const order_ids = selectedBulkOrders.map(
+//                                                     (o) => o.id,
+//                                                   );
 
-//                                                     await changeOrderStatus({
-//                                                       order_ids: order_ids,
-//                                                       newStatus:
-//                                                         assignmentState,
-//                                                       rider_id: "",
-//                                                     });
+//                                                   await changeOrderStatus({
+//                                                     order_ids: order_ids,
+//                                                     newStatus: assignmentState,
+//                                                     rider_id: "",
+//                                                   });
 
-//                                                     // for (const order of selectedBulkOrders) {
-//                                                     // }
+//                                                   // for (const order of selectedBulkOrders) {
+//                                                   // }
 
-//                                                     clearAllState();
-//                                                   }}
-//                                                   className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
-//                                                 >
-//                                                   Mark Bulk Orders as{" "}
-//                                                   {assignmentState ==
-//                                                   "delivered"
-//                                                     ? "Delivered"
-//                                                     : "NDR"}
-//                                                 </button>
-//                                               )}
+//                                                   clearAllState();
+//                                                 }}
+//                                                 className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+//                                               >
+//                                                 Mark Bulk Orders as{" "}
+//                                                 {assignmentState == "delivered"
+//                                                   ? "Delivered"
+//                                                   : "NDR"}
+//                                               </button>
+//                                             )}
 
-//                                               {/* =====================================
+//                                             {/* =====================================
 //                               LOST
 //                           ===================================== */}
-//                                               {assignmentState == "lost" && (
-//                                                 <button
-//                                                   onClick={async () => {
-//                                                     if (!assignmentState) {
-//                                                       toast.warn(
-//                                                         "Please select a status",
-//                                                       );
-//                                                       return;
-//                                                     }
+//                                             {assignmentState == "lost" && (
+//                                               <button
+//                                                 onClick={async () => {
+//                                                   if (!assignmentState) {
+//                                                     toast.warn("Please select a status");
+//                                                     return;
+//                                                   }
 
-//                                                     const order_ids =
-//                                                       selectedBulkOrders.map(
-//                                                         (o) => o.id,
-//                                                       );
+//                                                   const order_ids = selectedBulkOrders.map(
+//                                                     (o) => o.id,
+//                                                   );
 
-//                                                     await changeOrderStatus({
-//                                                       order_ids: order_ids,
-//                                                       newStatus:
-//                                                         assignmentState,
-//                                                       rider_id: "",
-//                                                     });
+//                                                   await changeOrderStatus({
+//                                                     order_ids: order_ids,
+//                                                     newStatus: assignmentState,
+//                                                     rider_id: "",
+//                                                   });
 
-//                                                     // for (const order of selectedBulkOrders) {
-//                                                     // }
+//                                                   // for (const order of selectedBulkOrders) {
+//                                                   // }
 
-//                                                     clearAllState();
-//                                                   }}
-//                                                   className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
-//                                                 >
-//                                                   Mark Bulk Orders as{" "}
-//                                                   {assignmentState == "lost"
-//                                                     ? "Lost"
-//                                                     : ""}
-//                                                 </button>
-//                                               )}
-//                                             </div>
-//                                           )}
-//                                         </>
-//                                       )}
-//                                     </div>
+//                                                   clearAllState();
+//                                                 }}
+//                                                 className="h-10 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0339B5]"
+//                                               >
+//                                                 Mark Bulk Orders as{" "}
+//                                                 {assignmentState == "lost" ? "Lost" : ""}
+//                                               </button>
+//                                             )}
+//                                           </div>
+//                                         )}
+//                                       </>
+//                                     )}
 //                                   </div>
-//                                 )}
+//                                 </div>
+//                               )}
 
-//                                 {/* =================================================
+//                               {/* =================================================
 //                 CLEAR SELECTED ORDERS
 //             ================================================= */}
-//                                 <div className="flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
-//                                   <div className="min-w-0">
-//                                     <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-//                                       Clear Selection
-//                                     </p>
+//                               <div className="flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
+//                                 <div className="min-w-0">
+//                                   <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+//                                     Clear Selection
+//                                   </p>
 
-//                                     <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-//                                       Remove all currently selected orders and
-//                                       reset bulk actions.
-//                                     </p>
-//                                   </div>
-
-//                                   <button
-//                                     className="h-10 shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
-//                                     onClick={() => {
-//                                       clearAllState();
-//                                       setSelectedBulkOrders([]);
-//                                       setBulkOrderWeight(0);
-//                                       setFetchBulkAssignmentRider(false);
-//                                       setFetchBulkAssignmentVendor(false);
-//                                       setcanceledBulkOrder(false);
-//                                       setSelectedMapType(null);
-//                                       clearAllState();
-//                                     }}
-//                                   >
-//                                     Clear Selected Orders
-//                                   </button>
+//                                   <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+//                                     Remove all currently selected orders and reset bulk actions.
+//                                   </p>
 //                                 </div>
+
+//                                 <button
+//                                   className="h-10 shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10"
+//                                   onClick={() => {
+//                                     clearAllState();
+//                                     setSelectedBulkOrders([]);
+//                                     setBulkOrderWeight(0);
+//                                     setFetchBulkAssignmentRider(false);
+//                                     setFetchBulkAssignmentVendor(false);
+//                                     setcanceledBulkOrder(false);
+//                                     setSelectedMapType(null);
+//                                     clearAllState();
+//                                   }}
+//                                 >
+//                                   Clear Selected Orders
+//                                 </button>
 //                               </div>
 //                             </div>
+//                           </div>
 
-//                             {/* =====================================================
+//                           {/* =====================================================
 //             FOOTER
 //         ===================================================== */}
-//                             <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 my-0 dark:border-neutral-800 dark:bg-neutral-950/30">
-//                               <AlertDialogCancel
-//                                 onClick={() => {
-//                                   clearAll();
-//                                   clearAllState();
-//                                 }}
-//                                 className="cursor-pointer rounded-sm"
-//                               >
-//                                 Close
-//                               </AlertDialogCancel>
-//                             </AlertDialogFooter>
-//                           </AlertDialogContent>
-//                         </AlertDialog>
-//                       </>
-//                     )}
+//                           <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 my-0 dark:border-neutral-800 dark:bg-neutral-950/30">
+//                             <AlertDialogCancel
+//                               onClick={() => {
+//                                 clearAll();
+//                                 clearAllState();
+//                               }}
+//                               className="cursor-pointer rounded-sm"
+//                             >
+//                               Close
+//                             </AlertDialogCancel>
+//                           </AlertDialogFooter>
+//                         </AlertDialogContent>
+//                       </AlertDialog>
+//                     </>
+//                   )}
 
 //                   {selectedBulkOrders.length > 0 &&
 //                     (selectedStatus === "rto in transit" ||
@@ -9035,8 +8627,7 @@ export default OrderDetails;
 //                                     </h3>
 
 //                                     <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                       Update the status of all selected RTO in
-//                                       transit orders.
+//                                       Update the status of all selected RTO in transit orders.
 //                                     </p>
 //                                   </div>
 
@@ -9048,9 +8639,7 @@ export default OrderDetails;
 //                                         onSubmit={async (e) => {
 //                                           e.preventDefault();
 
-//                                           const ids = selectedBulkOrders.map(
-//                                             (order) => order.id,
-//                                           );
+//                                           const ids = selectedBulkOrders.map((order) => order.id);
 
 //                                           if (!ndrstatus) {
 //                                             toast.error("Please select status");
@@ -9073,29 +8662,22 @@ export default OrderDetails;
 //                                           onChange={handleStatusChange}
 //                                           className="h-10 min-w-0 flex-1 rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition-colors focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
 //                                         >
-//                                           <option value="">
-//                                             Select Status
-//                                           </option>
+//                                           <option value="">Select Status</option>
 
-//                                           {selectedStatus ===
-//                                             "rto in transit" && (
+//                                           {selectedStatus === "rto in transit" && (
 //                                             <option value="rto out for delivery">
 //                                               RTO Out For Delivery
 //                                             </option>
 //                                           )}
 
-//                                           {selectedStatus ===
-//                                             "rto out for delivery" && (
+//                                           {selectedStatus === "rto out for delivery" && (
 //                                             <>
-//                                               <option value="rto delivered">
-//                                                 RTO Delivered
-//                                               </option>
+//                                               <option value="rto delivered">RTO Delivered</option>
 //                                               <option value="ndr">RTO Undelivered</option>
 //                                             </>
 //                                           )}
 
-//                                           {selectedStatus ==
-//                                             "rto undelivered" && (
+//                                           {selectedStatus == "rto undelivered" && (
 //                                             <option value="rto out for delivery">
 //                                               RTO Out For Delivery
 //                                             </option>
@@ -9107,8 +8689,7 @@ export default OrderDetails;
 //                                         <AlertDialog
 //                                           open={ndrDialogOpen}
 //                                           onOpenChange={(open) => {
-//                                             if (!ndrLoading)
-//                                               setNdrDialogOpen(open);
+//                                             if (!ndrLoading) setNdrDialogOpen(open);
 //                                           }}
 //                                         >
 //                                           <AlertDialogContent className="w-[calc(100%-32px)] max-w-[440px] overflow-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
@@ -9117,36 +8698,25 @@ export default OrderDetails;
 //                                                 Update NDR Status
 //                                               </AlertDialogTitle>
 //                                               <AlertDialogDescription className="text-sm text-neutral-500 dark:text-neutral-400">
-//                                                 Select the reason for marking
-//                                                 this order as NDR.
+//                                                 Select the reason for marking this order as NDR.
 //                                               </AlertDialogDescription>
 //                                             </AlertDialogHeader>
 
 //                                             <div className="space-y-4 px-5 py-5">
 //                                               <div className="space-y-2">
 //                                                 <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-//                                                   NDR Reason{" "}
-//                                                   <span className="text-red-500">
-//                                                     *
-//                                                   </span>
+//                                                   NDR Reason <span className="text-red-500">*</span>
 //                                                 </label>
 
 //                                                 <select
 //                                                   value={ndrReason}
-//                                                   onChange={(e) =>
-//                                                     setNdrReason(e.target.value)
-//                                                   }
+//                                                   onChange={(e) => setNdrReason(e.target.value)}
 //                                                   disabled={ndrLoading}
 //                                                   className="h-10 w-full rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none focus:border-[#0446DB] focus:ring-1 focus:ring-[#0446DB] dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
 //                                                 >
-//                                                   <option value="">
-//                                                     Select NDR Reason
-//                                                   </option>
+//                                                   <option value="">Select NDR Reason</option>
 //                                                   {NDR_REASONS.map((reason) => (
-//                                                     <option
-//                                                       key={reason}
-//                                                       value={reason}
-//                                                     >
+//                                                     <option key={reason} value={reason}>
 //                                                       {reason}
 //                                                     </option>
 //                                                   ))}
@@ -9156,18 +8726,12 @@ export default OrderDetails;
 //                                               <div className="space-y-2">
 //                                                 <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
 //                                                   Remarks{" "}
-//                                                   {ndrReason === "Other"
-//                                                     ? "*"
-//                                                     : "(Optional)"}
+//                                                   {ndrReason === "Other" ? "*" : "(Optional)"}
 //                                                 </label>
 
 //                                                 <textarea
 //                                                   value={ndrRemarks}
-//                                                   onChange={(e) =>
-//                                                     setNdrRemarks(
-//                                                       e.target.value,
-//                                                     )
-//                                                   }
+//                                                   onChange={(e) => setNdrRemarks(e.target.value)}
 //                                                   maxLength={500}
 //                                                   disabled={ndrLoading}
 //                                                   placeholder="Enter additional details..."
@@ -9193,25 +8757,20 @@ export default OrderDetails;
 //                                                 disabled={
 //                                                   ndrLoading ||
 //                                                   !ndrReason ||
-//                                                   (ndrReason === "Other" &&
-//                                                     !ndrRemarks.trim())
+//                                                   (ndrReason === "Other" && !ndrRemarks.trim())
 //                                                 }
 //                                                 onClick={async () => {
-//                                                   const ids =
-//                                                     selectedBulkOrders.map(
-//                                                       (order) => order.id,
-//                                                     );
+//                                                   const ids = selectedBulkOrders.map(
+//                                                     (order) => order.id,
+//                                                   );
 //                                                   await changeOrderStatus({
 //                                                     order_ids: ids,
-//                                                     newStatus:
-//                                                       "rto undelivered",
+//                                                     newStatus: "rto undelivered",
 //                                                   });
 //                                                 }}
 //                                                 className="flex-1 rounded-sm bg-[#0446DB] text-white hover:bg-[#0339B5]"
 //                                               >
-//                                                 {ndrLoading
-//                                                   ? "Submitting..."
-//                                                   : "Submit NDR"}
+//                                                 {ndrLoading ? "Submitting..." : "Submit NDR"}
 //                                               </Button>
 //                                             </AlertDialogFooter>
 //                                           </AlertDialogContent>
@@ -9249,8 +8808,7 @@ export default OrderDetails;
 //                                     </p>
 
 //                                     <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-//                                       Remove all selected orders and reset bulk
-//                                       actions.
+//                                       Remove all selected orders and reset bulk actions.
 //                                     </p>
 //                                   </div>
 
@@ -9288,537 +8846,467 @@ export default OrderDetails;
 //                     )}
 
 //                   {/* Bulk Pending Pickup Handle */}
-//                   {selectedBulkOrders.length > 0 &&
-//                     selectedStatus === "pending pickup" && (
-//                       <>
-//                         <AlertDialog>
-//                           <AlertDialogTrigger>
-//                             <CustomButton
-//                               variant="primary"
-//                               size="sm"
-//                               className="rounded-sm  mb-2 "
-//                             >
-//                               Action
-//                             </CustomButton>
-//                           </AlertDialogTrigger>
+//                   {selectedBulkOrders.length > 0 && selectedStatus === "pending pickup" && (
+//                     <>
+//                       <AlertDialog>
+//                         <AlertDialogTrigger>
+//                           <CustomButton variant="primary" size="sm" className="rounded-sm  mb-2 ">
+//                             Action
+//                           </CustomButton>
+//                         </AlertDialogTrigger>
 
-//                           <AlertDialogContent className="!max-w-3xl !max-h-[90Vh] overflow-y-scroll overflow-x-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
-//                             <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-//                               <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
-//                                 Bulk Order Actions
-//                               </AlertDialogTitle>
+//                         <AlertDialogContent className="!max-w-3xl !max-h-[90Vh] overflow-y-scroll overflow-x-hidden rounded-sm border border-neutral-200 bg-white p-0 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+//                           <AlertDialogHeader className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+//                             <AlertDialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+//                               Bulk Order Actions
+//                             </AlertDialogTitle>
 
-//                               <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-//                                 Change action for{" "}
-//                                 <span className="font-semibold text-[#0446DB] dark:text-blue-400">
-//                                   {selectedBulkOrders?.length || 0}
-//                                 </span>{" "}
-//                                 selected orders.
-//                               </AlertDialogDescription>
-//                             </AlertDialogHeader>
+//                             <AlertDialogDescription className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+//                               Change action for{" "}
+//                               <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+//                                 {selectedBulkOrders?.length || 0}
+//                               </span>{" "}
+//                               selected orders.
+//                             </AlertDialogDescription>
+//                           </AlertDialogHeader>
 
-//                             <div className="px-5 py-5">
-//                               <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
-//                                 <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
-//                                   <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-//                                     Change Order Status
-//                                   </h3>
+//                           <div className="px-5 py-5">
+//                             <div className="overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-800">
+//                               <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+//                                 <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+//                                   Change Order Status
+//                                 </h3>
 
-//                                   <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                     Select an action to apply to all selected
-//                                     orders.
-//                                   </p>
+//                                 <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+//                                   Select an action to apply to all selected orders.
+//                                 </p>
+//                               </div>
+
+//                               <div className="space-y-4 p-4">
+//                                 <div>
+//                                   <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+//                                     Select Status
+//                                   </label>
+
+//                                   <select
+//                                     className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+//                                     value={bulkStatusState}
+//                                     onChange={(e) => {
+//                                       const value = e.target.value;
+
+//                                       setBulkStatusState(value);
+
+//                                       if (value === "cancelled") {
+//                                         setNewStatus(value);
+//                                       } else {
+//                                         setNewStatus("");
+//                                         setRemark("");
+//                                       }
+//                                     }}
+//                                   >
+//                                     <option value="">Select Status</option>
+
+//                                     <option value="cancelled">Mark Cancelled</option>
+//                                     {selectedBulkOrders[0].mapped_with !== null && (
+//                                       <option value="Cancel Vendor Mapped">
+//                                         Cancel Vendor Mapping
+//                                       </option>
+//                                     )}
+//                                     {selectedBulkOrders[0].mapped_dc_id !== null && (
+//                                       <option value="Cancel DC Mapped">Cancel DC Mapping</option>
+//                                     )}
+//                                   </select>
 //                                 </div>
 
-//                                 <div className="space-y-4 p-4">
-//                                   <div>
-//                                     <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
-//                                       Select Status
-//                                     </label>
+//                                 {newStatus === "cancelled" && (
+//                                   <div className="rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5">
+//                                     <div className="mb-3">
+//                                       <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+//                                         Cancellation Details
+//                                       </p>
 
-//                                     <select
-//                                       className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
-//                                       value={bulkStatusState}
-//                                       onChange={(e) => {
-//                                         const value = e.target.value;
+//                                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+//                                         Select a cancellation remark for all selected orders.
+//                                       </p>
+//                                     </div>
 
-//                                         setBulkStatusState(value);
+//                                     <div>
+//                                       <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+//                                         Cancel Remark
+//                                         <span className="ml-1 text-red-500">*</span>
+//                                       </label>
 
-//                                         if (value === "cancelled") {
-//                                           setNewStatus(value);
-//                                         } else {
-//                                           setNewStatus("");
-//                                           setRemark("");
-//                                         }
-//                                       }}
-//                                     >
-//                                       <option value="">Select Status</option>
+//                                       <select
+//                                         name="remark"
+//                                         value={remark || ""}
+//                                         onChange={(e) => {
+//                                           setRemark(e.target.value);
+//                                         }}
+//                                         className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+//                                       >
+//                                         <option value="">Select Remark</option>
 
-//                                       <option value="cancelled">
-//                                         Mark Cancelled
-//                                       </option>
-//                                       {selectedBulkOrders[0].mapped_with !==
-//                                         null && (
-//                                         <option value="Cancel Vendor Mapped">
-//                                           Cancel Vendor Mapping
+//                                         <option value="Seller Requested Future Pick up">
+//                                           Seller Requested Future Pick up
 //                                         </option>
-//                                       )}
-//                                       {selectedBulkOrders[0].mapped_dc_id !==
-//                                         null && (
-//                                         <option value="Cancel DC Mapped">
-//                                           Cancel DC Mapping
+
+//                                         <option value="Awb rejected">AWB Rejected</option>
+
+//                                         <option value="Duplicate Pickup Request">
+//                                           Duplicate Pickup Request
 //                                         </option>
-//                                       )}
-//                                     </select>
+
+//                                         <option value="Non Serviceable Location">
+//                                           Non Serviceable Location
+//                                         </option>
+
+//                                         <option value="Pick Failed Due to Dangerous Goods">
+//                                           Pick Failed Due to Dangerous Goods
+//                                         </option>
+
+//                                         <option value="Product packaging Issue">
+//                                           Product Packaging Issue
+//                                         </option>
+
+//                                         <option value="Shipment Handedover to other courier">
+//                                           Shipment Handedover to Other Courier
+//                                         </option>
+
+//                                         <option value="Seller Closed">Seller Closed</option>
+
+//                                         <option value="Pick up Request Expired">
+//                                           Pick up Request Expired
+//                                         </option>
+
+//                                         <option value="Entry not Permitted">
+//                                           Entry not Permitted
+//                                         </option>
+
+//                                         <option value="Customer wants refund/replacement first">
+//                                           Customer wants refund/replacement first
+//                                         </option>
+//                                       </select>
+
+//                                       <p className="mt-1.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+//                                         This remark will be applied to all{" "}
+//                                         <span className="font-semibold text-red-600 dark:text-red-400">
+//                                           {selectedBulkOrders?.length || 0}
+//                                         </span>{" "}
+//                                         selected orders.
+//                                       </p>
+//                                     </div>
 //                                   </div>
+//                                 )}
 
-//                                   {newStatus === "cancelled" && (
-//                                     <div className="rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5">
-//                                       <div className="mb-3">
-//                                         <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-//                                           Cancellation Details
-//                                         </p>
+//                                 {bulkStatusState && (
+//                                   <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
+//                                     <div>
+//                                       <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+//                                         Selected Orders
+//                                       </p>
 
-//                                         <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                           Select a cancellation remark for all
-//                                           selected orders.
-//                                         </p>
-//                                       </div>
-
-//                                       <div>
-//                                         <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
-//                                           Cancel Remark
-//                                           <span className="ml-1 text-red-500">
-//                                             *
-//                                           </span>
-//                                         </label>
-
-//                                         <select
-//                                           name="remark"
-//                                           value={remark || ""}
-//                                           onChange={(e) => {
-//                                             setRemark(e.target.value);
-//                                           }}
-//                                           className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
-//                                         >
-//                                           <option value="">
-//                                             Select Remark
-//                                           </option>
-
-//                                           <option value="Seller Requested Future Pick up">
-//                                             Seller Requested Future Pick up
-//                                           </option>
-
-//                                           <option value="Awb rejected">
-//                                             AWB Rejected
-//                                           </option>
-
-//                                           <option value="Duplicate Pickup Request">
-//                                             Duplicate Pickup Request
-//                                           </option>
-
-//                                           <option value="Non Serviceable Location">
-//                                             Non Serviceable Location
-//                                           </option>
-
-//                                           <option value="Pick Failed Due to Dangerous Goods">
-//                                             Pick Failed Due to Dangerous Goods
-//                                           </option>
-
-//                                           <option value="Product packaging Issue">
-//                                             Product Packaging Issue
-//                                           </option>
-
-//                                           <option value="Shipment Handedover to other courier">
-//                                             Shipment Handedover to Other Courier
-//                                           </option>
-
-//                                           <option value="Seller Closed">
-//                                             Seller Closed
-//                                           </option>
-
-//                                           <option value="Pick up Request Expired">
-//                                             Pick up Request Expired
-//                                           </option>
-
-//                                           <option value="Entry not Permitted">
-//                                             Entry not Permitted
-//                                           </option>
-
-//                                           <option value="Customer wants refund/replacement first">
-//                                             Customer wants refund/replacement
-//                                             first
-//                                           </option>
-//                                         </select>
-
-//                                         <p className="mt-1.5 text-[11px] text-neutral-500 dark:text-neutral-400">
-//                                           This remark will be applied to all{" "}
-//                                           <span className="font-semibold text-red-600 dark:text-red-400">
-//                                             {selectedBulkOrders?.length || 0}
-//                                           </span>{" "}
-//                                           selected orders.
-//                                         </p>
-//                                       </div>
+//                                       <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+//                                         This action will be applied to all selected orders.
+//                                       </p>
 //                                     </div>
-//                                   )}
 
-//                                   {bulkStatusState && (
-//                                     <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
-//                                       <div>
-//                                         <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-//                                           Selected Orders
-//                                         </p>
+//                                     <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+//                                       {selectedBulkOrders?.length || 0}
+//                                     </span>
+//                                   </div>
+//                                 )}
 
-//                                         <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
-//                                           This action will be applied to all
-//                                           selected orders.
-//                                         </p>
-//                                       </div>
+//                                 {bulkStatusState && (
+//                                   <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
+//                                     <button
+//                                       type="button"
+//                                       onClick={async () => {
+//                                         if (!bulkStatusState) {
+//                                           toast.warn("Select new status");
+//                                           return;
+//                                         }
 
-//                                       <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-//                                         {selectedBulkOrders?.length || 0}
-//                                       </span>
-//                                     </div>
-//                                   )}
+//                                         if (bulkStatusState === "Cancel Assignment") {
+//                                           await Promise.all(
+//                                             selectedBulkOrders.map((order) =>
+//                                               cancelRiderAssignment(order.id),
+//                                             ),
+//                                           );
+//                                         } else if (bulkStatusState === "Cancel Vendor Mapped") {
+//                                           await Promise.all(
+//                                             selectedBulkOrders.map((order) =>
+//                                               cancelVendorAssignment(order.id),
+//                                             ),
+//                                           );
+//                                         } else if (bulkStatusState === "Cancel DC Mapped") {
+//                                           const orderIds = selectedBulkOrders.map(
+//                                             (order) => order.id,
+//                                           );
 
-//                                   {bulkStatusState && (
-//                                     <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
-//                                       <button
-//                                         type="button"
-//                                         onClick={async () => {
+//                                           console.log(
+//                                             "Cancel DC Mapped action triggered",
+//                                             orderIds,
+//                                           );
+//                                           CancelDcMapping({ orderIds });
+//                                           return;
+//                                         } else {
 //                                           if (!bulkStatusState) {
-//                                             toast.warn("Select new status");
+//                                             toast.error("Please select status");
 //                                             return;
 //                                           }
 
-//                                           if (
-//                                             bulkStatusState ===
-//                                             "Cancel Assignment"
-//                                           ) {
-//                                             await Promise.all(
-//                                               selectedBulkOrders.map((order) =>
-//                                                 cancelRiderAssignment(order.id),
-//                                               ),
-//                                             );
-//                                           } else if (
-//                                             bulkStatusState ===
-//                                             "Cancel Vendor Mapped"
-//                                           ) {
-//                                             await Promise.all(
-//                                               selectedBulkOrders.map((order) =>
-//                                                 cancelVendorAssignment(
-//                                                   order.id,
-//                                                 ),
-//                                               ),
-//                                             );
-//                                           } else if (
-//                                             bulkStatusState ===
-//                                             "Cancel DC Mapped"
-//                                           ) {
-//                                             const orderIds =
-//                                               selectedBulkOrders.map(
-//                                                 (order) => order.id,
-//                                               );
-
-//                                             console.log(
-//                                               "Cancel DC Mapped action triggered",
-//                                               orderIds,
-//                                             );
-//                                             CancelDcMapping({ orderIds });
-//                                             return;
-//                                           } else {
-//                                             if (!bulkStatusState) {
-//                                               toast.error(
-//                                                 "Please select status",
-//                                               );
+//                                           if (bulkStatusState === "cancelled") {
+//                                             if (!remark) {
+//                                               toast.error("Please select remark");
 //                                               return;
 //                                             }
-
-//                                             if (
-//                                               bulkStatusState === "cancelled"
-//                                             ) {
-//                                               if (!remark) {
-//                                                 toast.error(
-//                                                   "Please select remark",
-//                                                 );
-//                                                 return;
-//                                               }
-//                                             }
-
-//                                             await Promise.all(
-//                                               selectedBulkOrders.map((order) =>
-//                                                 changeStatus({
-//                                                   id: order.id,
-//                                                   newStatus: bulkStatusState,
-//                                                   remark: remark,
-//                                                 }),
-//                                               ),
-//                                             );
 //                                           }
 
-//                                           setSelectedBulkOrders([]);
-//                                           setBulkStatusState("");
-//                                         }}
-//                                         className={`h-9 w-full shrink-0 cursor-pointer rounded-sm px-5 text-sm font-medium text-white transition sm:w-auto ${
-//                                           bulkStatusState === "cancelled"
-//                                             ? "bg-red-600 hover:bg-red-700"
-//                                             : "bg-[#0446DB] hover:bg-indigo-800"
-//                                         }`}
-//                                       >
-//                                         {bulkStatusState ===
-//                                         "Cancel Vendor Mapped"
-//                                           ? "Cancel Vendor Mapped"
-//                                           : bulkStatusState === "cancelled"
-//                                             ? "Mark Cancelled"
-//                                             : bulkStatusState === "lost"
-//                                               ? "Mark Lost"
-//                                               : bulkStatusState ===
-//                                                   "Cancel DC Mapped"
-//                                                 ? "Cancel DC Mapped"
-//                                                 : "Change Action"}
-//                                       </button>
-//                                     </div>
-//                                   )}
-//                                 </div>
-//                               </div>
-
-//                               <div className="overflow-hidden mt-4 rounded-sm border border-neutral-200 dark:border-neutral-800">
-//                                 <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
-//                                   <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-//                                     Map Vendor
-//                                   </h3>
-
-//                                   <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-//                                     Select an available vendor and map selected
-//                                     orders.
-//                                   </p>
-//                                 </div>
-
-//                                 {/* Body */}
-//                                 <div className="p-4">
-//                                   {!fetchBulkAssignmentVendor ? (
-//                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-//                                       <div>
-//                                         <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-//                                           Available Vendors
-//                                         </p>
-
-//                                         <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-//                                           Get eligible vendors for{" "}
-//                                           <span className="font-semibold text-[#0446DB] dark:text-blue-400">
-//                                             {selectedBulkOrders?.length || 0}
-//                                           </span>{" "}
-//                                           selected orders.
-//                                         </p>
-//                                       </div>
-
-//                                       <button
-//                                         type="button"
-//                                         onClick={() => {
-//                                           if (
-//                                             !selectedBulkOrders ||
-//                                             selectedBulkOrders.length === 0
-//                                           ) {
-//                                             toast.warn(
-//                                               "Please select at least one order",
-//                                             );
-//                                             return;
-//                                           }
-
-//                                           const order_ids = [
-//                                             ...new Set(
-//                                               selectedBulkOrders.map(
-//                                                 (order) => order.id,
-//                                               ),
+//                                           await Promise.all(
+//                                             selectedBulkOrders.map((order) =>
+//                                               changeStatus({
+//                                                 id: order.id,
+//                                                 newStatus: bulkStatusState,
+//                                                 remark: remark,
+//                                               }),
 //                                             ),
-//                                           ];
+//                                           );
+//                                         }
 
-//                                           setFetchBulkAssignmentVendor(true);
-//                                           fetchVendor(order_ids);
-//                                         }}
-//                                         className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
-//                                       >
-//                                         Get Available Vendors
-//                                       </button>
-//                                     </div>
-//                                   ) : (
-//                                     <>
-//                                       {vendor?.length > 0 ? (
-//                                         <div className="space-y-4">
-//                                           <div>
-//                                             <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
-//                                               Select Vendor
-//                                             </label>
-
-//                                             <select
-//                                               value={assignmentState}
-//                                               onChange={(e) =>
-//                                                 setAssignmentState(
-//                                                   e.target.value,
-//                                                 )
-//                                               }
-//                                               className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
-//                                             >
-//                                               <option value="">
-//                                                 Select Vendor for Bulk
-//                                                 Assignment
-//                                               </option>
-
-//                                               {vendor.map((vendorItem) => (
-//                                                 <option
-//                                                   key={vendorItem.vendor_id}
-//                                                   value={vendorItem.vendor_id}
-//                                                 >
-//                                                   {vendorItem.vendor_id} :{" "}
-//                                                   {vendorItem.vendor_name}
-//                                                 </option>
-//                                               ))}
-//                                             </select>
-//                                           </div>
-
-//                                           <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
-//                                             <div>
-//                                               <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-//                                                 Selected Orders
-//                                               </p>
-
-//                                               <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
-//                                                 Selected vendor will be mapped
-//                                                 to all orders.
-//                                               </p>
-//                                             </div>
-
-//                                             <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-//                                               {selectedBulkOrders?.length || 0}
-//                                             </span>
-//                                           </div>
-
-//                                           <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
-//                                             <button
-//                                               type="button"
-//                                               onClick={async () => {
-//                                                 if (!assignmentState) {
-//                                                   toast.warn(
-//                                                     "Please select a vendor",
-//                                                   );
-//                                                   return;
-//                                                 }
-
-//                                                 const order_ids =
-//                                                   selectedBulkOrders.map(
-//                                                     (order) => order.id,
-//                                                   );
-
-//                                                 await assignBulkOrderVendor(
-//                                                   order_ids,
-//                                                   assignmentState,
-//                                                 );
-
-//                                                 setSelectedBulkOrders([]);
-//                                                 setBulkOrderWeight(0);
-//                                                 setFetchBulkAssignmentVendor(
-//                                                   false,
-//                                                 );
-//                                                 setAssignmentState("");
-//                                               }}
-//                                               className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800"
-//                                             >
-//                                               Map Vendor
-//                                             </button>
-//                                           </div>
-//                                         </div>
-//                                       ) : (
-//                                         <div className="space-y-4">
-//                                           <div className="rounded-sm border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/20 dark:bg-amber-500/5">
-//                                             <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
-//                                               No Vendor Available
-//                                             </p>
-
-//                                             <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-//                                               No eligible vendor was found for
-//                                               the selected orders.
-//                                             </p>
-//                                           </div>
-
-//                                           <div className="flex justify-end">
-//                                             <button
-//                                               type="button"
-//                                               onClick={() => {
-//                                                 if (
-//                                                   !selectedBulkOrders ||
-//                                                   selectedBulkOrders.length ===
-//                                                     0
-//                                                 ) {
-//                                                   toast.warn(
-//                                                     "Please select at least one order",
-//                                                   );
-//                                                   return;
-//                                                 }
-
-//                                                 const order_ids = [
-//                                                   ...new Set(
-//                                                     selectedBulkOrders.map(
-//                                                       (order) => order.id,
-//                                                     ),
-//                                                   ),
-//                                                 ];
-
-//                                                 setFetchBulkAssignmentVendor(
-//                                                   true,
-//                                                 );
-//                                                 fetchVendor(order_ids);
-//                                               }}
-//                                               className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
-//                                             >
-//                                               Get Available Vendors
-//                                             </button>
-//                                           </div>
-//                                         </div>
-//                                       )}
-//                                     </>
-//                                   )}
-//                                 </div>
-//                               </div>
-
-//                               <div className="mt-4 flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
-//                                 <div className="min-w-0">
-//                                   <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-//                                     Clear Selection
-//                                   </p>
-
-//                                   <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-//                                     Remove all selected orders from bulk action.
-//                                   </p>
-//                                 </div>
-
-//                                 <button
-//                                   type="button"
-//                                   className="h-10 w-full shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10 sm:w-auto"
-//                                   onClick={() => {
-//                                     setSelectedBulkOrders([]);
-//                                     clearAllState();
-//                                   }}
-//                                 >
-//                                   Clear Selected Orders
-//                                 </button>
+//                                         setSelectedBulkOrders([]);
+//                                         setBulkStatusState("");
+//                                       }}
+//                                       className={`h-9 w-full shrink-0 cursor-pointer rounded-sm px-5 text-sm font-medium text-white transition sm:w-auto ${
+//                                         bulkStatusState === "cancelled"
+//                                           ? "bg-red-600 hover:bg-red-700"
+//                                           : "bg-[#0446DB] hover:bg-indigo-800"
+//                                       }`}
+//                                     >
+//                                       {bulkStatusState === "Cancel Vendor Mapped"
+//                                         ? "Cancel Vendor Mapped"
+//                                         : bulkStatusState === "cancelled"
+//                                           ? "Mark Cancelled"
+//                                           : bulkStatusState === "lost"
+//                                             ? "Mark Lost"
+//                                             : bulkStatusState === "Cancel DC Mapped"
+//                                               ? "Cancel DC Mapped"
+//                                               : "Change Action"}
+//                                     </button>
+//                                   </div>
+//                                 )}
 //                               </div>
 //                             </div>
 
-//                             <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
-//                               <AlertDialogCancel
+//                             <div className="overflow-hidden mt-4 rounded-sm border border-neutral-200 dark:border-neutral-800">
+//                               <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+//                                 <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+//                                   Map Vendor
+//                                 </h3>
+
+//                                 <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+//                                   Select an available vendor and map selected orders.
+//                                 </p>
+//                               </div>
+
+//                               {/* Body */}
+//                               <div className="p-4">
+//                                 {!fetchBulkAssignmentVendor ? (
+//                                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+//                                     <div>
+//                                       <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+//                                         Available Vendors
+//                                       </p>
+
+//                                       <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+//                                         Get eligible vendors for{" "}
+//                                         <span className="font-semibold text-[#0446DB] dark:text-blue-400">
+//                                           {selectedBulkOrders?.length || 0}
+//                                         </span>{" "}
+//                                         selected orders.
+//                                       </p>
+//                                     </div>
+
+//                                     <button
+//                                       type="button"
+//                                       onClick={() => {
+//                                         if (
+//                                           !selectedBulkOrders ||
+//                                           selectedBulkOrders.length === 0
+//                                         ) {
+//                                           toast.warn("Please select at least one order");
+//                                           return;
+//                                         }
+
+//                                         const order_ids = [
+//                                           ...new Set(selectedBulkOrders.map((order) => order.id)),
+//                                         ];
+
+//                                         setFetchBulkAssignmentVendor(true);
+//                                         fetchVendor(order_ids);
+//                                       }}
+//                                       className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
+//                                     >
+//                                       Get Available Vendors
+//                                     </button>
+//                                   </div>
+//                                 ) : (
+//                                   <>
+//                                     {vendor?.length > 0 ? (
+//                                       <div className="space-y-4">
+//                                         <div>
+//                                           <label className="mb-1.5 block text-xs font-medium text-neutral-700 dark:text-neutral-300">
+//                                             Select Vendor
+//                                           </label>
+
+//                                           <select
+//                                             value={assignmentState}
+//                                             onChange={(e) => setAssignmentState(e.target.value)}
+//                                             className="h-10 w-full cursor-pointer rounded-sm border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-[#0446DB]/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
+//                                           >
+//                                             <option value="">
+//                                               Select Vendor for Bulk Assignment
+//                                             </option>
+
+//                                             {vendor.map((vendorItem) => (
+//                                               <option
+//                                                 key={vendorItem.vendor_id}
+//                                                 value={vendorItem.vendor_id}
+//                                               >
+//                                                 {vendorItem.vendor_id} : {vendorItem.vendor_name}
+//                                               </option>
+//                                             ))}
+//                                           </select>
+//                                         </div>
+
+//                                         <div className="flex items-center justify-between rounded-sm border border-blue-100 bg-blue-50/50 px-3 py-2.5 dark:border-blue-500/20 dark:bg-blue-500/5">
+//                                           <div>
+//                                             <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+//                                               Selected Orders
+//                                             </p>
+
+//                                             <p className="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+//                                               Selected vendor will be mapped to all orders.
+//                                             </p>
+//                                           </div>
+
+//                                           <span className="rounded-full bg-[#0446DB]/10 px-2.5 py-1 text-xs font-semibold text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
+//                                             {selectedBulkOrders?.length || 0}
+//                                           </span>
+//                                         </div>
+
+//                                         <div className="flex justify-end border-t border-neutral-100 pt-4 dark:border-neutral-800">
+//                                           <button
+//                                             type="button"
+//                                             onClick={async () => {
+//                                               if (!assignmentState) {
+//                                                 toast.warn("Please select a vendor");
+//                                                 return;
+//                                               }
+
+//                                               const order_ids = selectedBulkOrders.map(
+//                                                 (order) => order.id,
+//                                               );
+
+//                                               await assignBulkOrderVendor(
+//                                                 order_ids,
+//                                                 assignmentState,
+//                                               );
+
+//                                               setSelectedBulkOrders([]);
+//                                               setBulkOrderWeight(0);
+//                                               setFetchBulkAssignmentVendor(false);
+//                                               setAssignmentState("");
+//                                             }}
+//                                             className="h-9 cursor-pointer rounded-sm bg-[#0446DB] px-5 text-sm font-medium text-white transition hover:bg-indigo-800"
+//                                           >
+//                                             Map Vendor
+//                                           </button>
+//                                         </div>
+//                                       </div>
+//                                     ) : (
+//                                       <div className="space-y-4">
+//                                         <div className="rounded-sm border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/20 dark:bg-amber-500/5">
+//                                           <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+//                                             No Vendor Available
+//                                           </p>
+
+//                                           <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+//                                             No eligible vendor was found for the selected orders.
+//                                           </p>
+//                                         </div>
+
+//                                         <div className="flex justify-end">
+//                                           <button
+//                                             type="button"
+//                                             onClick={() => {
+//                                               if (
+//                                                 !selectedBulkOrders ||
+//                                                 selectedBulkOrders.length === 0
+//                                               ) {
+//                                                 toast.warn("Please select at least one order");
+//                                                 return;
+//                                               }
+
+//                                               const order_ids = [
+//                                                 ...new Set(
+//                                                   selectedBulkOrders.map((order) => order.id),
+//                                                 ),
+//                                               ];
+
+//                                               setFetchBulkAssignmentVendor(true);
+//                                               fetchVendor(order_ids);
+//                                             }}
+//                                             className="h-9 cursor-pointer whitespace-nowrap rounded-sm bg-[#0446DB] px-4 text-sm font-medium text-white transition hover:bg-indigo-800"
+//                                           >
+//                                             Get Available Vendors
+//                                           </button>
+//                                         </div>
+//                                       </div>
+//                                     )}
+//                                   </>
+//                                 )}
+//                               </div>
+//                             </div>
+
+//                             <div className="mt-4 flex flex-col gap-4 rounded-sm border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/5 sm:flex-row sm:items-center sm:justify-between">
+//                               <div className="min-w-0">
+//                                 <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+//                                   Clear Selection
+//                                 </p>
+
+//                                 <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+//                                   Remove all selected orders from bulk action.
+//                                 </p>
+//                               </div>
+
+//                               <button
+//                                 type="button"
+//                                 className="h-10 w-full shrink-0 cursor-pointer rounded-sm border border-red-200 bg-white px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-500/10 sm:w-auto"
 //                                 onClick={() => {
-//                                   clearAll();
+//                                   setSelectedBulkOrders([]);
 //                                   clearAllState();
 //                                 }}
-//                                 className="cursor-pointer rounded-sm"
 //                               >
-//                                 Close
-//                               </AlertDialogCancel>
-//                             </AlertDialogFooter>
-//                           </AlertDialogContent>
-//                         </AlertDialog>
-//                       </>
-//                     )}
+//                                 Clear Selected Orders
+//                               </button>
+//                             </div>
+//                           </div>
+
+//                           <AlertDialogFooter className="border-t border-neutral-200 bg-neutral-50/70 px-5 mb-1 mr-1  dark:border-neutral-800 dark:bg-neutral-950/30">
+//                             <AlertDialogCancel
+//                               onClick={() => {
+//                                 clearAll();
+//                                 clearAllState();
+//                               }}
+//                               className="cursor-pointer rounded-sm"
+//                             >
+//                               Close
+//                             </AlertDialogCancel>
+//                           </AlertDialogFooter>
+//                         </AlertDialogContent>
+//                       </AlertDialog>
+//                     </>
+//                   )}
 //                 </div>
 //               </div>
 //               <div className="min-h-0 min-w-0 flex-1 overflow-auto overscroll-contain bg-[#f5f8fb] dark:bg-neutral-900/50">
@@ -9848,8 +9336,7 @@ export default OrderDetails;
 //                                   selectedBulkOrders.length ===
 //                                   orders.filter(
 //                                     (o) =>
-//                                       o.tpc_awb_number === null &&
-//                                       o.rider_preference === "daakit",
+//                                       o.tpc_awb_number === null && o.rider_preference === "daakit",
 //                                   ).length
 //                                 }
 //                                 onChange={toggleSelectAll}
@@ -9922,17 +9409,11 @@ export default OrderDetails;
 //                       orders?.map((order) => {
 //                         let isSelected;
 //                         if (selectedStatus === "booked") {
-//                           isSelected = selectedBulkOrders.some(
-//                             (o) => o.id === order.id,
-//                           );
+//                           isSelected = selectedBulkOrders.some((o) => o.id === order.id);
 //                         } else if (selectedStatus === "pending pickup") {
-//                           isSelected = selectedBulkOrders.some(
-//                             (o) => o.id === order.id,
-//                           );
+//                           isSelected = selectedBulkOrders.some((o) => o.id === order.id);
 //                         } else if (selectedStatus === "rto in transit") {
-//                           isSelected = selectedBulkOrders.some(
-//                             (o) => o.id === order.id,
-//                           );
+//                           isSelected = selectedBulkOrders.some((o) => o.id === order.id);
 //                         }
 
 //                         return (
@@ -9950,15 +9431,12 @@ export default OrderDetails;
 //                               <td className="py-2 text-center">
 //                                 {(() => {
 //                                   const currentIsMapped =
-//                                     order?.mapped_with !== null &&
-//                                     order?.mapped_with !== undefined;
+//                                     order?.mapped_with !== null && order?.mapped_with !== undefined;
 
 //                                   const firstSelectedIsMapped =
 //                                     selectedBulkOrders.length > 0
-//                                       ? selectedBulkOrders[0]?.mapped_with !==
-//                                           null &&
-//                                         selectedBulkOrders[0]?.mapped_with !==
-//                                           undefined
+//                                       ? selectedBulkOrders[0]?.mapped_with !== null &&
+//                                         selectedBulkOrders[0]?.mapped_with !== undefined
 //                                       : null;
 
 //                                   const isDifferentMappingType =
@@ -9994,24 +9472,18 @@ export default OrderDetails;
 //                                         ) {
 //                                           if (isChecked) {
 //                                             if (
-//                                               selectedStatus ===
-//                                                 "pending pickup" &&
+//                                               selectedStatus === "pending pickup" &&
 //                                               selectedBulkOrders.length > 0
 //                                             ) {
 //                                               const firstIsMapped =
-//                                                 selectedBulkOrders[0]
-//                                                   ?.mapped_with !== null &&
-//                                                 selectedBulkOrders[0]
-//                                                   ?.mapped_with !== undefined;
+//                                                 selectedBulkOrders[0]?.mapped_with !== null &&
+//                                                 selectedBulkOrders[0]?.mapped_with !== undefined;
 
 //                                               const thisIsMapped =
 //                                                 order?.mapped_with !== null &&
-//                                                 order?.mapped_with !==
-//                                                   undefined;
+//                                                 order?.mapped_with !== undefined;
 
-//                                               if (
-//                                                 firstIsMapped !== thisIsMapped
-//                                               ) {
+//                                               if (firstIsMapped !== thisIsMapped) {
 //                                                 return;
 //                                               }
 //                                             }
@@ -10032,20 +9504,13 @@ export default OrderDetails;
 
 //                                             setBulkOrderWeight(
 //                                               (prev) =>
-//                                                 Number(prev) +
-//                                                 Number(
-//                                                   order?.total_weight || 0,
-//                                                 ),
+//                                                 Number(prev) + Number(order?.total_weight || 0),
 //                                             );
 //                                           } else {
 //                                             setSelectedBulkOrders((prev) => {
-//                                               const updated = prev.filter(
-//                                                 (o) => o.id !== order.id,
-//                                               );
+//                                               const updated = prev.filter((o) => o.id !== order.id);
 
-//                                               const order_ids = updated.map(
-//                                                 (o) => o.id,
-//                                               );
+//                                               const order_ids = updated.map((o) => o.id);
 
 //                                               // Booked ka existing logic
 //                                               if (selectedStatus === "booked") {
@@ -10058,10 +9523,7 @@ export default OrderDetails;
 //                                             setBulkOrderWeight((prev) =>
 //                                               Math.max(
 //                                                 0,
-//                                                 Number(prev) -
-//                                                   Number(
-//                                                     order?.total_weight || 0,
-//                                                   ),
+//                                                 Number(prev) - Number(order?.total_weight || 0),
 //                                               ),
 //                                             );
 //                                           }
@@ -10078,15 +9540,8 @@ export default OrderDetails;
 //                               <td className="px-6 py-4 text-center">
 //                                 <input
 //                                   type="checkbox"
-//                                   checked={selectedBulkOrders.some(
-//                                     (item) => item.id === order.id,
-//                                   )}
-//                                   onChange={(e) =>
-//                                     handleBulkOrderSelect(
-//                                       order,
-//                                       e.target.checked,
-//                                     )
-//                                   }
+//                                   checked={selectedBulkOrders.some((item) => item.id === order.id)}
+//                                   onChange={(e) => handleBulkOrderSelect(order, e.target.checked)}
 //                                   className="w-4 h-4 text-[#0446DB] border-gray-300 rounded"
 //                                 />
 //                               </td>
@@ -10104,32 +9559,22 @@ export default OrderDetails;
 //                                         if (isChecked) {
 //                                           setSelectedBulkOrders((prev) => {
 //                                             const updated = [...prev, order];
-//                                             const order_ids = updated.map(
-//                                               (o) => o.id,
-//                                             );
+//                                             const order_ids = updated.map((o) => o.id);
 //                                             return updated;
 //                                           });
 
 //                                           setBulkOrderWeight(
-//                                             (prev) =>
-//                                               Number(prev) +
-//                                               Number(order.total_weight),
+//                                             (prev) => Number(prev) + Number(order.total_weight),
 //                                           );
 //                                         } else {
 //                                           setSelectedBulkOrders((prev) => {
-//                                             const updated = prev.filter(
-//                                               (o) => o.id !== order.id,
-//                                             );
-//                                             const order_ids = updated.map(
-//                                               (o) => o.id,
-//                                             );
+//                                             const updated = prev.filter((o) => o.id !== order.id);
+//                                             const order_ids = updated.map((o) => o.id);
 //                                             return updated;
 //                                           });
 
 //                                           setBulkOrderWeight(
-//                                             (prev) =>
-//                                               Number(prev) -
-//                                               Number(order.total_weight), // ✅ fixed bug
+//                                             (prev) => Number(prev) - Number(order.total_weight), // ✅ fixed bug
 //                                           );
 //                                         }
 //                                       }
@@ -10145,8 +9590,7 @@ export default OrderDetails;
 //                                 "rto out for delivery",
 //                                 "undelivered assigned",
 //                                 "rto undelivered",
-//                               ].includes(selectedStatus) &&
-//                               order?.rider_preference == "daakit" ? (
+//                               ].includes(selectedStatus) && order?.rider_preference == "daakit" ? (
 //                               <>
 //                                 <td className="px-6 py-4 text-center">
 //                                   <input
@@ -10180,25 +9624,17 @@ export default OrderDetails;
 //                                         });
 
 //                                         setBulkOrderWeight(
-//                                           (prev) =>
-//                                             Number(prev) +
-//                                             Number(order.total_weight),
+//                                           (prev) => Number(prev) + Number(order.total_weight),
 //                                         );
 //                                       } else {
 //                                         setSelectedBulkOrders((prev) => {
-//                                           const updated = prev.filter(
-//                                             (o) => o.id !== order.id,
-//                                           );
-//                                           const order_ids = updated.map(
-//                                             (o) => o.id,
-//                                           );
+//                                           const updated = prev.filter((o) => o.id !== order.id);
+//                                           const order_ids = updated.map((o) => o.id);
 //                                           return updated;
 //                                         });
 
 //                                         setBulkOrderWeight(
-//                                           (prev) =>
-//                                             Number(prev) -
-//                                             Number(order.total_weight), // ✅ fixed bug
+//                                           (prev) => Number(prev) - Number(order.total_weight), // ✅ fixed bug
 //                                         );
 //                                       }
 //                                     }}
@@ -10242,25 +9678,17 @@ export default OrderDetails;
 //                                         });
 
 //                                         setBulkOrderWeight(
-//                                           (prev) =>
-//                                             Number(prev) +
-//                                             Number(order.total_weight),
+//                                           (prev) => Number(prev) + Number(order.total_weight),
 //                                         );
 //                                       } else {
 //                                         setSelectedBulkOrders((prev) => {
-//                                           const updated = prev.filter(
-//                                             (o) => o.id !== order.id,
-//                                           );
-//                                           const order_ids = updated.map(
-//                                             (o) => o.id,
-//                                           );
+//                                           const updated = prev.filter((o) => o.id !== order.id);
+//                                           const order_ids = updated.map((o) => o.id);
 //                                           return updated;
 //                                         });
 
 //                                         setBulkOrderWeight(
-//                                           (prev) =>
-//                                             Number(prev) -
-//                                             Number(order.total_weight),
+//                                           (prev) => Number(prev) - Number(order.total_weight),
 //                                         );
 //                                       }
 //                                     }}
@@ -10277,18 +9705,15 @@ export default OrderDetails;
 //                             {/* Order ID */}
 //                             <td className=" py-2 text-left whitespace-pre-line">
 //                               <p className="text-sm text-gray-500 dark:text-white">
-//                                 {new Date(order.created_at).toLocaleString(
-//                                   "en-IN",
-//                                   {
-//                                     timeZone: "Asia/Kolkata",
-//                                     day: "2-digit",
-//                                     month: "2-digit",
-//                                     year: "numeric",
-//                                     hour: "2-digit",
-//                                     minute: "2-digit",
-//                                     hour12: true,
-//                                   },
-//                                 )}
+//                                 {new Date(order.created_at).toLocaleString("en-IN", {
+//                                   timeZone: "Asia/Kolkata",
+//                                   day: "2-digit",
+//                                   month: "2-digit",
+//                                   year: "numeric",
+//                                   hour: "2-digit",
+//                                   minute: "2-digit",
+//                                   hour12: true,
+//                                 })}
 //                                 <span
 //                                   className={`ml-2 inline-flex mb-1 items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-xs font-semibold ${
 //                                     order?.rider_preference === "daakit"
@@ -10296,15 +9721,13 @@ export default OrderDetails;
 //                                       : "border-emerald-500 bg-emerald-50/50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
 //                                   }`}
 //                                 >
-//                                   {order?.rider_preference === "daakit"
-//                                     ? "DDN"
-//                                     : "BYOB"}
+//                                   {order?.rider_preference === "daakit" ? "DDN" : "BYOB"}
 //                                 </span>
 //                               </p>
 //                               <p className="text-left text-gray-800 flex items-center">
 //                                 <Link
 //                                   to={`/admin/order-history?awb_number=${encodeURIComponent(order.awb_number)}`}
-//                                    target="_blank"
+//                                   target="_blank"
 //                                   rel="noopener noreferrer"
 //                                   className="underline text-[#0446DB] hover:text-blue-500"
 //                                 >
@@ -10314,9 +9737,7 @@ export default OrderDetails;
 //                                 <button
 //                                   className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
 //                                   onClick={() => {
-//                                     navigator.clipboard.writeText(
-//                                       order.awb_number,
-//                                     );
+//                                     navigator.clipboard.writeText(order.awb_number);
 //                                     setCopySuccess(order.awb_number);
 //                                     setTimeout(() => {
 //                                       setCopySuccess(null);
@@ -10353,24 +9774,20 @@ export default OrderDetails;
 //                                       </h3>
 //                                       <div className="grid grid-cols-2 gap-4">
 //                                         <div>
-//                                           <strong>Order ID:</strong>{" "}
-//                                           {order.merchant_order_id}
+//                                           <strong>Order ID:</strong> {order.merchant_order_id}
 //                                           <button
 //                                             className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
 //                                             onClick={() => {
 //                                               navigator.clipboard.writeText(
 //                                                 order.merchant_order_id,
 //                                               );
-//                                               setCopySuccess(
-//                                                 order.merchant_order_id,
-//                                               );
+//                                               setCopySuccess(order.merchant_order_id);
 //                                               setTimeout(() => {
 //                                                 setCopySuccess(null);
 //                                               }, 2000);
 //                                             }}
 //                                           >
-//                                             {copySuccess ===
-//                                             order.merchant_order_id ? (
+//                                             {copySuccess === order.merchant_order_id ? (
 //                                               <CiCircleCheck />
 //                                             ) : (
 //                                               <FaRegCopy />
@@ -10378,22 +9795,18 @@ export default OrderDetails;
 //                                           </button>
 //                                         </div>
 //                                         <div>
-//                                           <strong>AWB No:</strong>{" "}
-//                                           {order.awb_number}
+//                                           <strong>AWB No:</strong> {order.awb_number}
 //                                           <button
 //                                             className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
 //                                             onClick={() => {
-//                                               navigator.clipboard.writeText(
-//                                                 order.awb_number,
-//                                               );
+//                                               navigator.clipboard.writeText(order.awb_number);
 //                                               setCopySuccess(order.awb_number);
 //                                               setTimeout(() => {
 //                                                 setCopySuccess(null);
 //                                               }, 2000);
 //                                             }}
 //                                           >
-//                                             {copySuccess ===
-//                                             order.awb_number ? (
+//                                             {copySuccess === order.awb_number ? (
 //                                               <CiCircleCheck />
 //                                             ) : (
 //                                               <FaRegCopy />
@@ -10402,13 +9815,10 @@ export default OrderDetails;
 //                                         </div>
 //                                         <div>
 //                                           <strong>Order Type:</strong>{" "}
-//                                           {order.order_type === "cod"
-//                                             ? "COD"
-//                                             : "Prepaid"}
+//                                           {order.order_type === "cod" ? "COD" : "Prepaid"}
 //                                         </div>
 //                                         <div>
-//                                           <strong>Weight Slab:</strong>{" "}
-//                                           {order.order_specific}
+//                                           <strong>Weight Slab:</strong> {order.order_specific}
 //                                         </div>
 //                                         <div>
 //                                           <strong>Order Status:</strong>{" "}
@@ -10416,9 +9826,7 @@ export default OrderDetails;
 //                                         </div>
 //                                         <div>
 //                                           <strong>Total Amount:</strong> ₹
-//                                           {Number(
-//                                             order.total_amount,
-//                                           ).toLocaleString()}
+//                                           {Number(order.total_amount).toLocaleString()}
 //                                         </div>
 //                                         {/* <div>
 //                                           <strong>Order Weight:</strong>{" "}
@@ -10429,10 +9837,7 @@ export default OrderDetails;
 //                                         </div> */}
 //                                         <div>
 //                                           <strong>Charge Weight:</strong>{" "}
-//                                           {Number(
-//                                             order.charged_weight,
-//                                           ).toLocaleString()}
-//                                           g
+//                                           {Number(order.charged_weight).toLocaleString()}g
 //                                         </div>
 //                                         <div>
 //                                           <strong>Number of Packets:</strong>{" "}
@@ -10449,14 +9854,11 @@ export default OrderDetails;
 //                                             variant="outline"
 //                                             size="sm"
 //                                             onClick={() => {
-//                                               if (
-//                                                 editingDeliveryId === order.id
-//                                               ) {
+//                                               if (editingDeliveryId === order.id) {
 //                                                 // Save logic here - you'll need to create an API endpoint
 //                                                 handleUpdateDeliveryDetails({
 //                                                   order_id: order.id,
-//                                                   delivery_details:
-//                                                     deliveryFormData,
+//                                                   delivery_details: deliveryFormData,
 //                                                 });
 //                                               } else {
 //                                                 setEditingDeliveryId(order.id);
@@ -10465,20 +9867,15 @@ export default OrderDetails;
 //                                                     order.delivery_contact_name,
 //                                                   delivery_address_line:
 //                                                     order.delivery_address_line,
-//                                                   delivery_city:
-//                                                     order.delivery_city,
-//                                                   delivery_state:
-//                                                     order.delivery_state,
-//                                                   delivery_pincode:
-//                                                     order.delivery_pincode,
+//                                                   delivery_city: order.delivery_city,
+//                                                   delivery_state: order.delivery_state,
+//                                                   delivery_pincode: order.delivery_pincode,
 //                                                 });
 //                                               }
 //                                             }}
 //                                             className="text-xs"
 //                                           >
-//                                             {editingDeliveryId === order.id
-//                                               ? "Save"
-//                                               : "Edit"}
+//                                             {editingDeliveryId === order.id ? "Save" : "Edit"}
 //                                           </Button>
 //                                         </div>
 
@@ -10490,17 +9887,12 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   deliveryFormData.delivery_contact_name
-//                                                 }
+//                                                 value={deliveryFormData.delivery_contact_name}
 //                                                 onChange={(e) =>
-//                                                   setDeliveryFormData(
-//                                                     (prev) => ({
-//                                                       ...prev,
-//                                                       delivery_contact_name:
-//                                                         e.target.value,
-//                                                     }),
-//                                                   )
+//                                                   setDeliveryFormData((prev) => ({
+//                                                     ...prev,
+//                                                     delivery_contact_name: e.target.value,
+//                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
 //                                               />
@@ -10511,17 +9903,12 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   deliveryFormData.delivery_address_line
-//                                                 }
+//                                                 value={deliveryFormData.delivery_address_line}
 //                                                 onChange={(e) =>
-//                                                   setDeliveryFormData(
-//                                                     (prev) => ({
-//                                                       ...prev,
-//                                                       delivery_address_line:
-//                                                         e.target.value,
-//                                                     }),
-//                                                   )
+//                                                   setDeliveryFormData((prev) => ({
+//                                                     ...prev,
+//                                                     delivery_address_line: e.target.value,
+//                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
 //                                               />
@@ -10532,17 +9919,12 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   deliveryFormData.delivery_city
-//                                                 }
+//                                                 value={deliveryFormData.delivery_city}
 //                                                 onChange={(e) =>
-//                                                   setDeliveryFormData(
-//                                                     (prev) => ({
-//                                                       ...prev,
-//                                                       delivery_city:
-//                                                         e.target.value,
-//                                                     }),
-//                                                   )
+//                                                   setDeliveryFormData((prev) => ({
+//                                                     ...prev,
+//                                                     delivery_city: e.target.value,
+//                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
 //                                               />
@@ -10553,17 +9935,12 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   deliveryFormData.delivery_state
-//                                                 }
+//                                                 value={deliveryFormData.delivery_state}
 //                                                 onChange={(e) =>
-//                                                   setDeliveryFormData(
-//                                                     (prev) => ({
-//                                                       ...prev,
-//                                                       delivery_state:
-//                                                         e.target.value,
-//                                                     }),
-//                                                   )
+//                                                   setDeliveryFormData((prev) => ({
+//                                                     ...prev,
+//                                                     delivery_state: e.target.value,
+//                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
 //                                               />
@@ -10574,17 +9951,12 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   deliveryFormData.delivery_pincode
-//                                                 }
+//                                                 value={deliveryFormData.delivery_pincode}
 //                                                 onChange={(e) =>
-//                                                   setDeliveryFormData(
-//                                                     (prev) => ({
-//                                                       ...prev,
-//                                                       delivery_pincode:
-//                                                         e.target.value,
-//                                                     }),
-//                                                   )
+//                                                   setDeliveryFormData((prev) => ({
+//                                                     ...prev,
+//                                                     delivery_pincode: e.target.value,
+//                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
 //                                               />
@@ -10593,9 +9965,7 @@ export default OrderDetails;
 //                                               <Button
 //                                                 variant="ghost"
 //                                                 size="sm"
-//                                                 onClick={() =>
-//                                                   setEditingDeliveryId(null)
-//                                                 }
+//                                                 onClick={() => setEditingDeliveryId(null)}
 //                                                 className="text-red-500"
 //                                               >
 //                                                 Cancel
@@ -10631,40 +10001,29 @@ export default OrderDetails;
 //                                             variant="outline"
 //                                             size="sm"
 //                                             onClick={() => {
-//                                               if (
-//                                                 editingPickupId === order.id
-//                                               ) {
+//                                               if (editingPickupId === order.id) {
 //                                                 // Save logic here
 //                                                 handleUpdateDeliveryDetails({
 //                                                   order_id: order.id,
-//                                                   pickup_details:
-//                                                     pickupFormData,
+//                                                   pickup_details: pickupFormData,
 //                                                 });
 //                                               } else {
 //                                                 setEditingPickupId(order.id);
 //                                                 setPickupFormData({
 //                                                   pickup_contact_name:
-//                                                     order.pickup_contact_name ||
-//                                                     "",
-//                                                   pickup_phone:
-//                                                     order.pickup_phone || "",
+//                                                     order.pickup_contact_name || "",
+//                                                   pickup_phone: order.pickup_phone || "",
 //                                                   pickup_address_line:
-//                                                     order.pickup_address_line ||
-//                                                     "",
-//                                                   pickup_city:
-//                                                     order.pickup_city || "",
-//                                                   pickup_state:
-//                                                     order.pickup_state || "",
-//                                                   pickup_pincode:
-//                                                     order.pickup_pincode || "",
+//                                                     order.pickup_address_line || "",
+//                                                   pickup_city: order.pickup_city || "",
+//                                                   pickup_state: order.pickup_state || "",
+//                                                   pickup_pincode: order.pickup_pincode || "",
 //                                                 });
 //                                               }
 //                                             }}
 //                                             className="text-xs"
 //                                           >
-//                                             {editingPickupId === order.id
-//                                               ? "Save"
-//                                               : "Edit"}
+//                                             {editingPickupId === order.id ? "Save" : "Edit"}
 //                                           </Button>
 //                                         </div>
 
@@ -10676,14 +10035,11 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   pickupFormData.pickup_contact_name
-//                                                 }
+//                                                 value={pickupFormData.pickup_contact_name}
 //                                                 onChange={(e) =>
 //                                                   setPickupFormData((prev) => ({
 //                                                     ...prev,
-//                                                     pickup_contact_name:
-//                                                       e.target.value,
+//                                                     pickup_contact_name: e.target.value,
 //                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
@@ -10695,14 +10051,11 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   pickupFormData.pickup_phone
-//                                                 }
+//                                                 value={pickupFormData.pickup_phone}
 //                                                 onChange={(e) =>
 //                                                   setPickupFormData((prev) => ({
 //                                                     ...prev,
-//                                                     pickup_phone:
-//                                                       e.target.value,
+//                                                     pickup_phone: e.target.value,
 //                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
@@ -10714,14 +10067,11 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   pickupFormData.pickup_address_line
-//                                                 }
+//                                                 value={pickupFormData.pickup_address_line}
 //                                                 onChange={(e) =>
 //                                                   setPickupFormData((prev) => ({
 //                                                     ...prev,
-//                                                     pickup_address_line:
-//                                                       e.target.value,
+//                                                     pickup_address_line: e.target.value,
 //                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
@@ -10733,9 +10083,7 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   pickupFormData.pickup_city
-//                                                 }
+//                                                 value={pickupFormData.pickup_city}
 //                                                 onChange={(e) =>
 //                                                   setPickupFormData((prev) => ({
 //                                                     ...prev,
@@ -10751,14 +10099,11 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   pickupFormData.pickup_state
-//                                                 }
+//                                                 value={pickupFormData.pickup_state}
 //                                                 onChange={(e) =>
 //                                                   setPickupFormData((prev) => ({
 //                                                     ...prev,
-//                                                     pickup_state:
-//                                                       e.target.value,
+//                                                     pickup_state: e.target.value,
 //                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
@@ -10770,14 +10115,11 @@ export default OrderDetails;
 //                                               </label>
 //                                               <input
 //                                                 type="text"
-//                                                 value={
-//                                                   pickupFormData.pickup_pincode
-//                                                 }
+//                                                 value={pickupFormData.pickup_pincode}
 //                                                 onChange={(e) =>
 //                                                   setPickupFormData((prev) => ({
 //                                                     ...prev,
-//                                                     pickup_pincode:
-//                                                       e.target.value,
+//                                                     pickup_pincode: e.target.value,
 //                                                   }))
 //                                                 }
 //                                                 className="w-full border rounded-md px-2 py-1 text-sm"
@@ -10787,9 +10129,7 @@ export default OrderDetails;
 //                                               <Button
 //                                                 variant="ghost"
 //                                                 size="sm"
-//                                                 onClick={() =>
-//                                                   setEditingPickupId(null)
-//                                                 }
+//                                                 onClick={() => setEditingPickupId(null)}
 //                                                 className="text-red-500"
 //                                               >
 //                                                 Cancel
@@ -10800,8 +10140,7 @@ export default OrderDetails;
 //                                           <div className="grid grid-cols-2 gap-4">
 //                                             <div>
 //                                               <strong>Name:</strong>{" "}
-//                                               {order.pickup_contact_name ||
-//                                                 "N/A"}
+//                                               {order.pickup_contact_name || "N/A"}
 //                                             </div>
 //                                             <div>
 //                                               <strong>Pickup Phone No:</strong>{" "}
@@ -10809,8 +10148,7 @@ export default OrderDetails;
 //                                             </div>
 //                                             <div>
 //                                               <strong>Address:</strong>{" "}
-//                                               {order.pickup_address_line ||
-//                                                 "N/A"}
+//                                               {order.pickup_address_line || "N/A"}
 //                                             </div>
 //                                             <div>
 //                                               <strong>City:</strong>{" "}
@@ -10856,9 +10194,7 @@ export default OrderDetails;
 //                                   <button
 //                                     className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
 //                                     onClick={() => {
-//                                       navigator.clipboard.writeText(
-//                                         order.tpc_awb_number,
-//                                       );
+//                                       navigator.clipboard.writeText(order.tpc_awb_number);
 //                                       setCopySuccess(order.tpc_awb_number);
 //                                       setTimeout(() => {
 //                                         setCopySuccess(null);
@@ -10878,16 +10214,11 @@ export default OrderDetails;
 //                                 MOID:{" "}
 //                                 {order.merchant_order_id?.length <= 20
 //                                   ? order.merchant_order_id
-//                                   : `${order.merchant_order_id.slice(
-//                                       0,
-//                                       16,
-//                                     )}...`}
+//                                   : `${order.merchant_order_id.slice(0, 16)}...`}
 //                                 <button
 //                                   className="pl-2 text-lg text-gray-600 dark:text-white hover:text-[#0446DB] transition"
 //                                   onClick={() => {
-//                                     navigator.clipboard.writeText(
-//                                       order.merchant_order_id,
-//                                     );
+//                                     navigator.clipboard.writeText(order.merchant_order_id);
 //                                     setCopySuccess(order.merchant_order_id);
 //                                     setTimeout(() => {
 //                                       setCopySuccess(null);
@@ -10912,9 +10243,7 @@ export default OrderDetails;
 //                                   </span>{" "}
 //                                   {order?.merchant_id ?? "N/A"}
 //                                 </p>
-//                                 {
-//                                   console.log(order)
-//                                 }
+//                                 {console.log(order)}
 
 //                                 {order?.brand_name && (
 //                                   <p className="text-gray-700 dark:text-gray-300">
@@ -10924,7 +10253,6 @@ export default OrderDetails;
 //                                     {order?.brand_name}
 //                                   </p>
 //                                 )}
-                              
 
 //                                 {order?.merchant_company_name && (
 //                                   <p className="text-gray-700 dark:text-gray-300">
@@ -10934,7 +10262,6 @@ export default OrderDetails;
 //                                     {order.merchant_company_name}
 //                                   </p>
 //                                 )}
-                                
 //                               </div>
 //                             </td>
 
@@ -10999,9 +10326,8 @@ export default OrderDetails;
 //                                   ...
 //                                 </HoverCardTrigger>
 //                                 <HoverCardContent className="bg-[#0446DB] text-white">
-//                                   {order.delivery_address_line},{" "}
-//                                   {order.delivery_city}, {order.delivery_state}{" "}
-//                                   - {order.delivery_pincode}
+//                                   {order.delivery_address_line}, {order.delivery_city},{" "}
+//                                   {order.delivery_state} - {order.delivery_pincode}
 //                                 </HoverCardContent>
 //                               </HoverCard>
 //                               <p className="text-xs text-gray-500 dark:text-white">
@@ -11009,9 +10335,7 @@ export default OrderDetails;
 //                                 {order.delivery_pincode}
 //                               </p>
 
-//                               <p className="text-xs text-gray-400">
-//                                 {order.delivery_country}
-//                               </p>
+//                               <p className="text-xs text-gray-400">{order.delivery_country}</p>
 //                             </td>
 
 //                             {/* Package Details */}
@@ -11030,7 +10354,6 @@ export default OrderDetails;
 //                                 {/* <span className="dark:text-white">
 //                                   {Number(order.total_weight).toLocaleString()}g
 //                                 </span> */}
-                                
 
 //                                 {selectedStatus !== "cancelled" && (
 //                                   <span
@@ -11049,54 +10372,51 @@ export default OrderDetails;
 //                                 )}
 //                               </p>
 //                               {order?.order_type && (
-//                                   <p className="flex flex-wrap mt-1 items-center gap-2 text-gray-700 dark:text-gray-300">
-//                                     <span className="font-medium text-gray-900 dark:text-white">
-//                                       Payment Details:
-//                                     </span>
+//                                 <p className="flex flex-wrap mt-1 items-center gap-2 text-gray-700 dark:text-gray-300">
+//                                   <span className="font-medium text-gray-900 dark:text-white">
+//                                     Payment Details:
+//                                   </span>
 
-//                                     <span
-//                                       className={`inline-flex items-center gap-2  text-xs font-bold ${
-//                                         order.order_type.toUpperCase() === "COD"
-//                                           ? " text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
-//                                           : order.order_type.toUpperCase() === "PREPAID"
-//                                             ? " text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-//                                             : "border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-//                                       }`}
-//                                     >
-                                      
-
-//                                       <span className="font-extrabold">
-//                                         {Number(order.total_amount || 0).toLocaleString("en-IN", {
-//                                           style: "currency",
-//                                           currency: "INR",
-//                                           maximumFractionDigits: 2,
-//                                         })}
-//                                       </span>
-
-//                                       <span className="opacity-40">|</span>
-
-//                                       {order.order_type.toUpperCase() === "COD"
-//                                         ? "COD"
+//                                   <span
+//                                     className={`inline-flex items-center gap-2  text-xs font-bold ${
+//                                       order.order_type.toUpperCase() === "COD"
+//                                         ? " text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
 //                                         : order.order_type.toUpperCase() === "PREPAID"
-//                                           ? "Prepaid"
-//                                           : order.order_type}
+//                                           ? " text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+//                                           : "border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+//                                     }`}
+//                                   >
+//                                     <span className="font-extrabold">
+//                                       {Number(order.total_amount || 0).toLocaleString("en-IN", {
+//                                         style: "currency",
+//                                         currency: "INR",
+//                                         maximumFractionDigits: 2,
+//                                       })}
 //                                     </span>
-//                                   </p>
-//                                 )}
-                                
+
+//                                     <span className="opacity-40">|</span>
+
+//                                     {order.order_type.toUpperCase() === "COD"
+//                                       ? "COD"
+//                                       : order.order_type.toUpperCase() === "PREPAID"
+//                                         ? "Prepaid"
+//                                         : order.order_type}
+//                                   </span>
+//                                 </p>
+//                               )}
+
 //                               <p>
 //                                 <span className="font-medium dark:text-white text-gray-800">
 //                                   Dimensions:
 //                                 </span>{" "}
 //                                 <span className=" dark:text-white">
-//                                   {order.package_length}x{order.package_breadth}
-//                                   x{order.package_height}
+//                                   {order.package_length}x{order.package_breadth}x
+//                                   {order.package_height}
 //                                 </span>
 //                               </p>
 //                             </td>
 
 //                             {/* Assignment */}
-                            
 
 //                             {/* Status */}
 //                             {selectedStatus === "All" ? (
@@ -11166,25 +10486,18 @@ export default OrderDetails;
 //                                           onSubmit={async (e) => {
 //                                             e.preventDefault();
 
-//                                             const newStatus =
-//                                               e.target.elements.status.value;
+//                                             const newStatus = e.target.elements.status.value;
 
 //                                             if (
-//                                               selectedStatus ===
-//                                                 "rto in transit" &&
+//                                               selectedStatus === "rto in transit" &&
 //                                               newStatus == "rto delivered"
 //                                             ) {
 //                                               await rtoDelivered([order.id]);
 //                                               return;
 //                                             }
 
-//                                             if (
-//                                               newStatus ==
-//                                               "cancel rider assignment"
-//                                             ) {
-//                                               cancelRiderAssignments([
-//                                                 order.id,
-//                                               ]);
+//                                             if (newStatus == "cancel rider assignment") {
+//                                               cancelRiderAssignments([order.id]);
 //                                             }
 
 //                                             await changeOrderStatus({
@@ -11198,91 +10511,61 @@ export default OrderDetails;
 //                                               name="status"
 //                                               defaultValue={order.status}
 //                                               onChange={(e) => {
-//                                                 setAssignmentState(
-//                                                   e.target.value,
-//                                                 );
+//                                                 setAssignmentState(e.target.value);
 //                                               }}
 //                                               className="text-xs border border-gray-300 rounded-md px-2 py-1"
 //                                               required
 //                                             >
-//                                               <option value="">
-//                                                 Change Status
-//                                               </option>
+//                                               <option value="">Change Status</option>
 //                                               {order.status === "booked" && (
 //                                                 <>
-//                                                   <option value="cancelled">
-//                                                     Cancelled
-//                                                   </option>
+//                                                   <option value="cancelled">Cancelled</option>
 //                                                 </>
 //                                               )}
 //                                               {order.status === "picked" && (
 //                                                 <>
-//                                                   <option value="in transit">
-//                                                     In Transit
-//                                                   </option>
+//                                                   <option value="in transit">In Transit</option>
 //                                                 </>
 //                                               )}
-//                                               {order.status ===
-//                                                 "undelivered" && (
+//                                               {order.status === "undelivered" && (
 //                                                 <>
 //                                                   <option value="undelivered assigned">
 //                                                     Undelivered Assigned
 //                                                   </option>
-//                                                   <option value="lost">
-//                                                     Lost
-//                                                   </option>
+//                                                   <option value="lost">Lost</option>
 //                                                 </>
 //                                               )}
-//                                               {order.status ===
-//                                                 "pending pickup" && (
+//                                               {order.status === "pending pickup" && (
 //                                                 <>
-//                                                   <option value="in transit">
-//                                                     In Transit
-//                                                   </option>
-//                                                   <option value="cancelled">
-//                                                     Cancelled
-//                                                   </option>
+//                                                   <option value="in transit">In Transit</option>
+//                                                   <option value="cancelled">Cancelled</option>
 //                                                 </>
 //                                               )}
-//                                               {order.status ===
-//                                                 "in transit" && (
+//                                               {order.status === "in transit" && (
 //                                                 <>
 //                                                   <option value="out for delivery">
 //                                                     Mark Out For Delivery
 //                                                   </option>
-//                                                   <option value="lost">
-//                                                     Mark Lost
-//                                                   </option>
+//                                                   <option value="lost">Mark Lost</option>
 //                                                 </>
 //                                               )}
-//                                               {order.status ===
-//                                                 "out for delivery" && (
+//                                               {order.status === "out for delivery" && (
 //                                                 <>
-//                                                   <option value="delivered">
-//                                                     Delivered
-//                                                   </option>
-//                                                   <option value="ndr">
-//                                                     NDR
-//                                                   </option>
-//                                                   <option value="lost">
-//                                                     Lost
-//                                                   </option>
+//                                                   <option value="delivered">Delivered</option>
+//                                                   <option value="ndr">NDR</option>
+//                                                   <option value="lost">Lost</option>
 //                                                 </>
 //                                               )}
 
-//                                               {order.status ==
-//                                                 "rto out for delivery" && (
+//                                               {order.status == "rto out for delivery" && (
 //                                                 <>
 //                                                   <option value="rto delivered">
 //                                                     RTO Delivered
 //                                                   </option>
-//                                                   <option value="ndr">
-//                                                     RTO Undelivered
-//                                                   </option>
+//                                                   <option value="ndr">RTO Undelivered</option>
 //                                                 </>
 //                                               )}
-//                                               {order.status ===
-//                                                 "rto in transit" && (
+//                                               {order.status === "rto in transit" && (
 //                                                 <>
 //                                                   {/* <option value="rto delivered">
 //                                                         RTO Delivered
@@ -11290,25 +10573,19 @@ export default OrderDetails;
 //                                                   <option value="rto out for delivery">
 //                                                     RTO Out For Delivery
 //                                                   </option>
-//                                                   <option value="lost">
-//                                                     Lost
-//                                                   </option>
+//                                                   <option value="lost">Lost</option>
 //                                                 </>
 //                                               )}
-//                                               {order.status ===
-//                                                 "rto undelivered" && (
+//                                               {order.status === "rto undelivered" && (
 //                                                 <>
 //                                                   <option value="rto out for delivery">
 //                                                     RTO Out For Delivery
 //                                                   </option>
 
-//                                                   <option value="lost">
-//                                                     Lost
-//                                                   </option>
+//                                                   <option value="lost">Lost</option>
 //                                                 </>
 //                                               )}
-//                                               {order.status ===
-//                                                 "undelivered assigned" && (
+//                                               {order.status === "undelivered assigned" && (
 //                                                 <>
 //                                                   <option value="out for delivery">
 //                                                     Mark Out For Delivery
@@ -11316,9 +10593,7 @@ export default OrderDetails;
 //                                                   <option value="cancel rider assignment">
 //                                                     Cancel Rider Assignemnt
 //                                                   </option>
-//                                                   <option value="lost">
-//                                                     Mark Lost
-//                                                   </option>
+//                                                   <option value="lost">Mark Lost</option>
 //                                                 </>
 //                                               )}
 //                                             </select>
@@ -11330,13 +10605,20 @@ export default OrderDetails;
 //                                                       variant="outline"
 //                                                       className="text-sm font-medium rounded-sm border py-0.5 bg-[#0446DB] hover:text-[#FFF] text-white border-[#0446DB]  hover:bg-[#0446DB] inline-block cursor-pointer"
 //                                                     >
-//                                                       <span>Mark as {selectedStatus=='rto out for delivery'?"RTO":"NDR"}</span>
+//                                                       <span>
+//                                                         Mark as{" "}
+//                                                         {selectedStatus == "rto out for delivery"
+//                                                           ? "RTO"
+//                                                           : "NDR"}
+//                                                       </span>
 //                                                     </Button>
 //                                                   </DialogTrigger>
 //                                                   <DialogContent className="">
 //                                                     <DialogHeader>
 //                                                       <DialogTitle>
-//                                                         {selectedStatus=='rto out for delivery'?"RTO":"NDR"}
+//                                                         {selectedStatus == "rto out for delivery"
+//                                                           ? "RTO"
+//                                                           : "NDR"}
 //                                                       </DialogTitle>
 //                                                     </DialogHeader>
 
@@ -11351,9 +10633,7 @@ export default OrderDetails;
 //                                                         name="delivery_reason"
 //                                                         id="delivery_reason"
 //                                                         onChange={(e) => {
-//                                                           setRemarks(
-//                                                             e.target.value,
-//                                                           );
+//                                                           setRemarks(e.target.value);
 //                                                           setRescheduleDate("");
 //                                                           setSub_remarks("");
 //                                                         }}
@@ -11362,47 +10642,32 @@ export default OrderDetails;
 //                                                         <option value="">
 //                                                           -- Select Reason --
 //                                                         </option>
-//                                                         {assignmentState ==
-//                                                           "ndr" &&
-//                                                           selectedStatus ==
-//                                                             "out for delivery" && (
+//                                                         {assignmentState == "ndr" &&
+//                                                           selectedStatus == "out for delivery" && (
 //                                                             <>
 //                                                               <option value="Address Incorrect / Incomplete">
-//                                                                 Address
-//                                                                 Incorrect /
-//                                                                 Incomplete
+//                                                                 Address Incorrect / Incomplete
 //                                                               </option>
 //                                                               <option value="Customer Requested Reschedule">
-//                                                                 Customer
-//                                                                 Requested
-//                                                                 Reschedule
+//                                                                 Customer Requested Reschedule
 //                                                               </option>
 //                                                               <option value="Customer Refused / Cancelled">
-//                                                                 Customer Refused
-//                                                                 / Cancelled
+//                                                                 Customer Refused / Cancelled
 //                                                               </option>
 //                                                               <option value="Delivery Attempted – Not Reachable">
-//                                                                 Delivery
-//                                                                 Attempted – Not
-//                                                                 Reachable
+//                                                                 Delivery Attempted – Not Reachable
 //                                                               </option>
 //                                                               <option value="Delivery Attempted – No Response">
-//                                                                 Delivery
-//                                                                 Attempted – No
-//                                                                 Response
+//                                                                 Delivery Attempted – No Response
 //                                                               </option>
 //                                                               <option value="Wrong Pincode / Address">
-//                                                                 Wrong Pincode /
-//                                                                 Address
+//                                                                 Wrong Pincode / Address
 //                                                               </option>
 //                                                               <option value="Wrong Contact Details">
-//                                                                 Wrong Contact
-//                                                                 Details
+//                                                                 Wrong Contact Details
 //                                                               </option>
 //                                                               <option value="Vehicle / Weather / Road Issue">
-//                                                                 Vehicle /
-//                                                                 Weather / Road
-//                                                                 Issue
+//                                                                 Vehicle / Weather / Road Issue
 //                                                               </option>
 //                                                               <option value="Package Damaged">
 //                                                                 Package Damaged
@@ -11415,41 +10680,31 @@ export default OrderDetails;
 //                                                           <>
 //                                                             {[
 //                                                               {
-//                                                                 label:
-//                                                                   "Origin Unavailable",
+//                                                                 label: "Origin Unavailable",
 //                                                               },
 //                                                               {
-//                                                                 label:
-//                                                                   "Origin Closed",
+//                                                                 label: "Origin Closed",
 //                                                               },
 //                                                               {
-//                                                                 label:
-//                                                                   "Origin Refused",
+//                                                                 label: "Origin Refused",
 //                                                               },
 //                                                               {
-//                                                                 label:
-//                                                                   "Contact Person Unavailable",
+//                                                                 label: "Contact Person Unavailable",
 //                                                               },
 //                                                               {
-//                                                                 label:
-//                                                                   "Origin Not Reachable",
+//                                                                 label: "Origin Not Reachable",
 //                                                               },
 //                                                               {
-//                                                                 label:
-//                                                                   "Address Not Found",
+//                                                                 label: "Address Not Found",
 //                                                               },
 //                                                               {
-//                                                                 label:
-//                                                                   "Delivery Attempt Failed",
+//                                                                 label: "Delivery Attempt Failed",
 //                                                               },
 //                                                               {
 //                                                                 label: "Other",
 //                                                               },
 //                                                             ].map((e) => (
-//                                                               <option
-//                                                                 key={e.label}
-//                                                                 value={e.label}
-//                                                               >
+//                                                               <option key={e.label} value={e.label}>
 //                                                                 {e.label}
 //                                                               </option>
 //                                                             ))}
@@ -11470,17 +10725,12 @@ export default OrderDetails;
 //                                                             </label>
 //                                                             <input
 //                                                               type="date"
-//                                                               value={
-//                                                                 rescheduleDate
-//                                                               }
+//                                                               value={rescheduleDate}
 //                                                               onClick={(e) =>
 //                                                                 e.target.showPicker?.()
 //                                                               }
 //                                                               onChange={(e) =>
-//                                                                 setRescheduleDate(
-//                                                                   e.target
-//                                                                     .value,
-//                                                                 )
+//                                                                 setRescheduleDate(e.target.value)
 //                                                               }
 //                                                               className=" border w-full py-2 px-2 rounded"
 //                                                             />
@@ -11498,34 +10748,26 @@ export default OrderDetails;
 //                                                           </label>
 //                                                           <select
 //                                                             onChange={(e) => {
-//                                                               setSub_remarks(
-//                                                                 e.target.value,
-//                                                               );
+//                                                               setSub_remarks(e.target.value);
 //                                                             }}
 //                                                             className="border w-full py-2 px-2 rounded"
 //                                                           >
 //                                                             <option value="">
-//                                                               -- Select Reason
-//                                                               --
+//                                                               -- Select Reason --
 //                                                             </option>
 //                                                             <option value="Unavailable at Location">
-//                                                               Unavailable at
-//                                                               Location
+//                                                               Unavailable at Location
 //                                                             </option>
 //                                                             <option value="Out of Station">
 //                                                               Out of Station
 //                                                             </option>
 //                                                             <option value="COD Amount Not Ready">
-//                                                               COD Amount Not
-//                                                               Ready
+//                                                               COD Amount Not Ready
 //                                                             </option>
 //                                                             <option value="Require Different Time Slot">
-//                                                               Require Different
-//                                                               Time Slot
+//                                                               Require Different Time Slot
 //                                                             </option>
-//                                                             <option value="Other">
-//                                                               Other
-//                                                             </option>
+//                                                             <option value="Other">Other</option>
 //                                                           </select>
 //                                                         </>
 //                                                       )}
@@ -11540,34 +10782,26 @@ export default OrderDetails;
 //                                                           </label>
 //                                                           <select
 //                                                             onChange={(e) => {
-//                                                               setSub_remarks(
-//                                                                 e.target.value,
-//                                                               );
+//                                                               setSub_remarks(e.target.value);
 //                                                             }}
 //                                                             className="border w-full py-2 px-2 rounded"
 //                                                           >
 //                                                             <option value="">
-//                                                               -- Select Reason
-//                                                               --
+//                                                               -- Select Reason --
 //                                                             </option>
 //                                                             <option value="Duplicate Order">
 //                                                               Duplicate Order
 //                                                             </option>
 //                                                             <option value="Order Placed by Mistake">
-//                                                               Order Placed by
-//                                                               Mistake
+//                                                               Order Placed by Mistake
 //                                                             </option>
 //                                                             <option value="COD Amount Not Ready">
-//                                                               COD Amount Not
-//                                                               Ready
+//                                                               COD Amount Not Ready
 //                                                             </option>
 //                                                             <option value="Better Price Elsewhere">
-//                                                               Better Price
-//                                                               Elsewhere
+//                                                               Better Price Elsewhere
 //                                                             </option>
-//                                                             <option value="Other">
-//                                                               Other
-//                                                             </option>
+//                                                             <option value="Other">Other</option>
 //                                                           </select>
 //                                                         </>
 //                                                       )}
@@ -11581,14 +10815,10 @@ export default OrderDetails;
 //                                                         </label>
 //                                                         <input
 //                                                           type="text"
-//                                                           value={
-//                                                             detailed_remarks
-//                                                           }
+//                                                           value={detailed_remarks}
 //                                                           placeholder="Enter remark"
 //                                                           onChange={(e) =>
-//                                                             setdetailed_remarks(
-//                                                               e.target.value,
-//                                                             )
+//                                                             setdetailed_remarks(e.target.value)
 //                                                           }
 //                                                           className=" border w-full py-2 px-2 rounded"
 //                                                         />
@@ -11598,26 +10828,18 @@ export default OrderDetails;
 //                                                     <Button
 //                                                       onClick={async () => {
 //                                                         // const order_ids = selectedBulkOrders.map((o) => o.id);
-//                                                         await changeOrderStatus(
-//                                                           {
-//                                                             order_ids: [
-//                                                               order.id,
-//                                                             ],
-//                                                             newStatus:
-//                                                               order.status ==
-//                                                               "rto out for delivery"
-//                                                                 ? "rto undelivered"
-//                                                                 : assignmentState,
-//                                                             remarks: remarks,
-//                                                             sub_remarks:
-//                                                               sub_remarks,
-//                                                             detailed_remarks:
-//                                                               detailed_remarks,
-//                                                             rescheduled_date:
-//                                                               rescheduleDate,
-//                                                             rider_id: "",
-//                                                           },
-//                                                         );
+//                                                         await changeOrderStatus({
+//                                                           order_ids: [order.id],
+//                                                           newStatus:
+//                                                             order.status == "rto out for delivery"
+//                                                               ? "rto undelivered"
+//                                                               : assignmentState,
+//                                                           remarks: remarks,
+//                                                           sub_remarks: sub_remarks,
+//                                                           detailed_remarks: detailed_remarks,
+//                                                           rescheduled_date: rescheduleDate,
+//                                                           rider_id: "",
+//                                                         });
 //                                                       }}
 //                                                       className={"bg-[#0446DB]"}
 //                                                     >
@@ -11640,10 +10862,8 @@ export default OrderDetails;
 //                                                 </Dialog>
 //                                               </>
 //                                             )}
-//                                             {(assignmentState ==
-//                                               "undelivered assigned" ||
-//                                               assignmentState ==
-//                                                 "in transit") && (
+//                                             {(assignmentState == "undelivered assigned" ||
+//                                               assignmentState == "in transit") && (
 //                                               <>
 //                                                 <Dialog className="w-5xl">
 //                                                   <DialogTrigger asChild>
@@ -11656,9 +10876,7 @@ export default OrderDetails;
 //                                                   </DialogTrigger>
 //                                                   <DialogContent className="">
 //                                                     <DialogHeader>
-//                                                       <DialogTitle>
-//                                                         Select a Rider
-//                                                       </DialogTitle>
+//                                                       <DialogTitle>Select a Rider</DialogTitle>
 //                                                     </DialogHeader>
 
 //                                                     <div>
@@ -11672,41 +10890,28 @@ export default OrderDetails;
 //                                                         name="delivery_reason"
 //                                                         id="delivery_reason"
 //                                                         onChange={(e) => {
-//                                                           setRiderID(
-//                                                             e.target.value,
-//                                                           );
+//                                                           setRiderID(e.target.value);
 //                                                         }}
 //                                                         className=" border w-full py-2 px-2 rounded"
 //                                                       >
-//                                                         <option value="">
-//                                                           -- Select Rider --
-//                                                         </option>
+//                                                         <option value="">-- Select Rider --</option>
 //                                                         {riders.map((rider) => (
-//                                                           <option
-//                                                             key={rider.id}
-//                                                             value={rider.id}
-//                                                           >
-//                                                             {rider.id} :{" "}
-//                                                             {rider.name}
+//                                                           <option key={rider.id} value={rider.id}>
+//                                                             {rider.id} : {rider.name}
 //                                                           </option>
 //                                                         ))}
 //                                                       </select>
 //                                                     </div>
 //                                                     <Button
 //                                                       onClick={async () => {
-//                                                         await changeOrderStatus(
-//                                                           {
-//                                                             order_ids: [
-//                                                               order.id,
-//                                                             ],
-//                                                             newStatus:
-//                                                               assignmentState ==
-//                                                               "in transit"
-//                                                                 ? "in transit"
-//                                                                 : "undelivered assigned",
-//                                                             rider_id: riderID,
-//                                                           },
-//                                                         );
+//                                                         await changeOrderStatus({
+//                                                           order_ids: [order.id],
+//                                                           newStatus:
+//                                                             assignmentState == "in transit"
+//                                                               ? "in transit"
+//                                                               : "undelivered assigned",
+//                                                           rider_id: riderID,
+//                                                         });
 //                                                       }}
 //                                                       className={"bg-[#0446DB]"}
 //                                                     >
@@ -11732,10 +10937,8 @@ export default OrderDetails;
 
 //                                             {assignmentState &&
 //                                               assignmentState !== "ndr" &&
-//                                               assignmentState !==
-//                                                 "in transit" &&
-//                                               assignmentState !==
-//                                                 "undelivered assigned" && (
+//                                               assignmentState !== "in transit" &&
+//                                               assignmentState !== "undelivered assigned" && (
 //                                                 <button
 //                                                   type="submit"
 //                                                   className="bg-[#0446DB] text-white text-xs px-2 py-1 rounded hover:bg-indigo-800"
@@ -11759,90 +10962,61 @@ export default OrderDetails;
 //                                         <>
 //                                           <span
 //                                             onClick={() => {
-//                                               if (
-//                                                 order.rider_preference ===
-//                                                 "self"
-//                                               ) {
+//                                               if (order.rider_preference === "self") {
+//                                                 return;
+//                                               }
+//                                               if (order.status == "in transit") {
+//                                                 setEditingStatusId(order.id);
+//                                                 return;
+//                                               }
+//                                               if (order.status == "undelivered assigned") {
+//                                                 setEditingStatusId(order.id);
 //                                                 return;
 //                                               }
 //                                               if (
-//                                                 order.status == "in transit"
+//                                                 order.status == "out for delivery" ||
+//                                                 order.status == "rto out for delivery"
 //                                               ) {
 //                                                 setEditingStatusId(order.id);
 //                                                 return;
 //                                               }
 //                                               if (
-//                                                 order.status ==
-//                                                 "undelivered assigned"
-//                                               ) {
-//                                                 setEditingStatusId(order.id);
-//                                                 return;
-//                                               }
-//                                               if (
-//                                                 order.status ==
-//                                                   "out for delivery" ||
-//                                                 order.status ==
-//                                                   "rto out for delivery"
-//                                               ) {
-//                                                 setEditingStatusId(order.id);
-//                                                 return;
-//                                               }
-//                                               if (
-//                                                 (order.status ===
-//                                                   "undelivered" ||
+//                                                 (order.status === "undelivered" ||
 //                                                   order.status === "picked") &&
 //                                                 order.mapped_with &&
 //                                                 (order.pickup_stage === null ||
-//                                                   order.pickup_stage ===
-//                                                     "at_vendor")
+//                                                   order.pickup_stage === "at_vendor")
 //                                               ) {
-//                                                 const vendor_ids = [
-//                                                   order?.mapped_with,
-//                                                 ];
+//                                                 const vendor_ids = [order?.mapped_with];
 //                                                 fetchRider(vendor_ids);
 //                                                 setEditingStatusId(order.id);
 //                                                 return;
 //                                               }
 //                                               if (
-//                                                 order.status ===
-//                                                   "pending pickup" &&
+//                                                 order.status === "pending pickup" &&
 //                                                 order.tpc_awb_number !== null
 //                                               ) {
 //                                                 return;
 //                                               }
-//                                               if (
-//                                                 selectedStatus ===
-//                                                 "rto in transit"
-//                                               ) {
+//                                               if (selectedStatus === "rto in transit") {
 //                                                 setEditingStatusId(order.id);
 //                                                 return;
 //                                               }
 
 //                                               if (
-//                                                 selectedStatus ===
-//                                                   "rto in transit" ||
-//                                                 selectedStatus ==
-//                                                   "rto undelivered"
+//                                                 selectedStatus === "rto in transit" ||
+//                                                 selectedStatus == "rto undelivered"
 //                                               ) {
 //                                                 setEditingStatusId(order.id);
 //                                                 return;
 //                                               }
-//                                               if (
-//                                                 order.tpc_awb_number !== null
-//                                               ) {
+//                                               if (order.tpc_awb_number !== null) {
 //                                                 return;
 //                                               }
-//                                               if (
-//                                                 order.rider_preference ===
-//                                                 "daakit"
-//                                               ) {
-//                                                 if (
-//                                                   order.mapped_with !== null
-//                                                 ) {
+//                                               if (order.rider_preference === "daakit") {
+//                                                 if (order.mapped_with !== null) {
 //                                                   return;
-//                                                 } else if (
-//                                                   order.status === "booked"
-//                                                 ) {
+//                                                 } else if (order.status === "booked") {
 //                                                   setEditingStatusId(order.id);
 //                                                 }
 //                                                 // setEditingStatusId(order.id)
@@ -11852,9 +11026,7 @@ export default OrderDetails;
 //                                           >
 //                                             {order.status === "rto in transit"
 //                                               ? `RTO In Transit`
-//                                               : toCapitalizeEachWord(
-//                                                   order.status,
-//                                                 )}
+//                                               : toCapitalizeEachWord(order.status)}
 //                                           </span>
 //                                         </>
 //                                       )}
@@ -11890,31 +11062,22 @@ export default OrderDetails;
 //                             {selectedStatus === "booked" && (
 //                               <td className="max-w-[220px] py-2">
 //                                 {order?.tpc_awb_number != null ? (
-//                                   <span className="block text-left text-gray-400">
-//                                     -
-//                                   </span>
+//                                   <span className="block text-left text-gray-400">-</span>
 //                                 ) : (
 //                                   (() => {
-//                                     const vendors = String(
-//                                       order?.eligible_vendors || "",
-//                                     )
+//                                     const vendors = String(order?.eligible_vendors || "")
 //                                       .split(",")
 //                                       .map((v) => v.trim())
 //                                       .filter(Boolean);
 
 //                                     if (!vendors.length) {
 //                                       return (
-//                                         <span className="block text-center text-gray-400">
-//                                           -
-//                                         </span>
+//                                         <span className="block text-center text-gray-400">-</span>
 //                                       );
 //                                     }
 
 //                                     return (
-//                                       <HoverCard
-//                                         openDelay={150}
-//                                         closeDelay={150}
-//                                       >
+//                                       <HoverCard openDelay={150} closeDelay={150}>
 //                                         <HoverCardTrigger asChild>
 //                                           <div className="max-w-[200px] cursor-pointer">
 //                                             <div className="flex items-center gap-2 rounded-md border border-orange-200 bg-orange-50 px-3 py-2 text-orange-700 transition-all duration-200 hover:border-orange-400 hover:bg-orange-100 hover:shadow-sm dark:border-orange-900 dark:bg-orange-950/40 dark:text-orange-300">
@@ -11985,10 +11148,7 @@ export default OrderDetails;
 //                                           <div className="border-t border-gray-100 px-4 py-2.5 dark:border-gray-800">
 //                                             <p className="text-center text-xs text-gray-400">
 //                                               {vendors.length} eligible vendor
-//                                               {vendors.length !== 1
-//                                                 ? "s"
-//                                                 : ""}{" "}
-//                                               found
+//                                               {vendors.length !== 1 ? "s" : ""} found
 //                                             </p>
 //                                           </div>
 //                                         </HoverCardContent>
@@ -12024,9 +11184,7 @@ export default OrderDetails;
 //                     <Button
 //                       variant="outline"
 //                       size="sm"
-//                       onClick={() =>
-//                         setPage((prev) => Math.min(prev + 1, totalPages))
-//                       }
+//                       onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
 //                       disabled={page === totalPages}
 //                     >
 //                       Next

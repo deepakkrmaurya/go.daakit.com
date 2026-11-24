@@ -1,1545 +1,895 @@
 
-
-import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { useNavigate } from "react-router-dom";
-
 import axios from "axios";
 import AxiosInstance from "@/Helper/axiosInstance";
-
-import { TbFileInfo } from "react-icons/tb";
-
 import { toast } from "react-toastify";
-
 import {
-
-  Table,
-
-  TableBody,
-
-  TableCell,
-
-  TableHead,
-
-  TableHeader,
-
-  TableRow,
-
-} from "@/components/ui/table";
-
-import { ExternalLink, Loader2 } from "lucide-react";
-const frontendURL = import.meta.env.VITE_FRONTEND_URL;
-const baseURL = import.meta.env.VITE_BASE_URL;
-
-
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  ExternalLink,
+  Eye,
+  FileText,
+  Filter,
+  Loader2,
+  Pencil,
+  RefreshCcw,
+  Search,
+  ShieldCheck,
+  UserRound,
+  X,
+} from "lucide-react";
 
 type Vendor = {
   id: number;
-  vendor_name?: string;
+  vendor_name?: string | null;
   company_name?: string | null;
-  email?: string;
+  company_gst_number?: string | null;
+  company_address?: string | null;
+  company_type?: string | null;
+  company_pancard_name?: string | null;
+  company_pancard_image?: string | null;
+  supporting_document_type?: string | null;
+  supporting_document_id?: string | null;
+  supporting_document_image?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  document_type?: string | null;
+  document_id?: string | null;
+  document_image?: string | null;
+  bank_name?: string | null;
+  bank_branch?: string | null;
+  bank_ifsc_code?: string | null;
+  bank_account_number?: string | null;
+  cheque_image?: string | null;
+  vendor_code?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
   is_active?: number | boolean;
   kyc_verified?: number | boolean;
-  [key: string]: any;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
 
-type VendorForm = Vendor & Record<string, any>;
-
-
-function VendorList() {
-  const navigate = useNavigate();
-  const [permissions, setPermissions] = useState<string[]>([]);
-  const [permLoading, setPermLoading] = useState(true);
-  const can = (permission: string) => permissions.includes("ADMIN_FULL_ACCESS") || permissions.includes(permission);
-  const canView = can("VIEW_VENDOR");
-  const canUpdate = can("UPDATE_VENDOR");
-  const canVerifyKyc = can("VERIFY_VENDOR_KYC");
-  const canLogin = can("LOGIN_VENDOR");
- 
-
-  const getUserPermissions = useCallback(async () => {
-    try {
-      const res = await AxiosInstance.get("/api/user/getUserPermissions");
-      const list = res.data?.data?.data;
-      if (!Array.isArray(list)) throw new Error("Invalid permission response");
-      setPermissions(list);
-      if (!list.includes("VIEW_VENDOR") && !list.includes("ADMIN_FULL_ACCESS")) navigate("/unauthorized", { replace: true });
-    } catch (err) {
-      toast.error(axios.isAxiosError(err) ? err.response?.data?.message || err.message : "Failed to load permissions");
-      navigate("/unauthorized", { replace: true });
-    } finally { setPermLoading(false); }
-  }, [navigate]);
-
-
-  const [vendorsData, setVendorsData] = useState<Vendor[]>([]);
-
-  // UI-only client-side pagination; vendor API and business actions remain unchanged.
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
-  const totalPages = Math.max(1, Math.ceil(vendorsData.length / rowsPerPage));
-  const paginatedVendors = vendorsData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-
-  useEffect(() => {
-    setCurrentPage((page) => Math.min(page, totalPages));
-  }, [totalPages]);
-
-  const [loading, setLoading] = useState(false);
-
-  const [popup, setPopup] = useState<Vendor | null>(null);
-
-  const [isEditing, setIsEditing] = useState(false);
-
-  const [formData, setFormData] = useState<VendorForm | null>(null);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-
-    const { name, value, files } = e.target;
-
-    if (e.target.type === "file") {
-
-      setFormData({ ...formData, [name]: files?.[0] ?? null });
-
-    } else {
-
-      setFormData({ ...formData, [name]: value });
-
-    }
-
-  };
-
-  const getError = (err: unknown) => axios.isAxiosError(err)
-    ? err.response?.data?.message || err.message
-    : err instanceof Error ? err.message : "Something went wrong";
-
-  const fetchVendors = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await AxiosInstance.get("/api/user/getIndependentVendors");
-      if (res.data?.success === false) throw new Error(res.data?.message || "Failed to fetch vendors");
-      const rows = res.data?.data;
-      setVendorsData(Array.isArray(rows) ? rows : []);
-    } catch (err) {
-      setVendorsData([]);
-      toast.error(getError(err));
-    } finally { setLoading(false); }
-  }, []);
-
-
-
-
-  
-
-
- 
-
-  const handleSave = async () => {
-    if (!canUpdate || !formData?.id || !isEditing) return;
-    setLoading(true);
-    try {
-      const data = new FormData();
-      const allowedFields = ["vendor_name", "company_name", "email", "phone", "gst_no", "company_address", "bank_name", "bank_branch", "bank_ifsc_code", "bank_account_number"];
-      for (const key of allowedFields) {
-        const value = key === "gst_no" ? formData.gst_no ?? formData.company_gst_number : formData[key];
-        if (value !== undefined && value !== null && String(value).trim() !== "") data.append(key, String(value));
-      }
-      if (formData.cheque_image instanceof File) data.append("cheque_image", formData.cheque_image);
-      const res = await AxiosInstance.post(`/api/user/updateVendor/${formData.id}`, data);
-      if (res.data?.success === false) throw new Error(res.data?.message || "Update failed");
-      toast.success(res.data?.message || "Vendor updated successfully");
-      setIsEditing(false);
-      setPopup(null);
-      await fetchVendors();
-    } catch (err) { toast.error(getError(err)); }
-    finally { setLoading(false); }
-  };
-
-
-  
-
-
-
-  useEffect(() => { void getUserPermissions(); }, [getUserPermissions]);
-  useEffect(() => { if (!permLoading && canView) void fetchVendors(); }, [permLoading, canView, fetchVendors]);
-
-  useEffect(() => {
-
-    if (popup) {
-
-      setFormData({ ...popup });
-
-    }
-
-  }, [popup]);
-
-  const VerifyKyc = async (vendor_id: number | undefined) => {
-    if (!canVerifyKyc || !vendor_id) return;
-    try {
-      const res = await AxiosInstance.post("/api/user/verifyKycVendor", { vendor_id });
-      if (res.data?.success === false) throw new Error(res.data?.message || "KYC verification failed");
-      toast.success(res.data?.message || "KYC verified");
-      setPopup(null);
-      await fetchVendors();
-    } catch (err) { toast.error(getError(err)); }
-  };
-
-  const [loadingPage, setLoadingPage] = useState(true);
-
-useEffect(() => {
-
-  const timer = setTimeout(() => {
-
-    setLoadingPage(false);
-
-  }, 2000);
-
-  return () => clearTimeout(timer);
-
-}, []);
-
-  return (
-
-    <>
-
-    {
-
-      (loadingPage || permLoading) ?(
-
-         <div className=" w-full h-[90vh] flex justify-center items-center">
-
-                  <div>
-
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-
-                    <p className="mt-2"> Loading Vendor Details...</p>
-
-                  </div>
-
-                </div>
-
-      ):(!canView ? null : (
-
-      <div className="flex h-[88dvh] min-h-0 w-full flex-col overflow-hidden bg-gray-100 dark:bg-gray-900">
-
-        {/* Heading Strip */}
-
-        <div className="sticky top-0 z-30 shrink-0 bg-gray-100 px-6 py-3 dark:bg-gray-900">
-
-          <div className="flex flex-wrap items-center justify-between">
-
-            {/* Heading */}
-
-            <h1 className="text-2xl font-bold dark:text-white">Vendor Details</h1>
-
-          </div>
-
-        </div>
-
-        {/* Main Content */}
-
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-
-          <div className="relative flex min-h-0 flex-1 flex-col">
-
-            {/* Table Container */}
-
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden border border-gray-200 bg-white dark:bg-gray-900">
-
-              {/* Table Wrapper */}
-
-              <div className="min-h-0 flex-1 overflow-auto overscroll-contain [&>div]:!overflow-visible">
-
-                <Table className="min-w-max border-separate border-spacing-0">
-
-                  <TableHeader className="[&_th]:!sticky [&_th]:!top-0 [&_th]:!z-20 [&_th]:!bg-white dark:[&_th]:!bg-gray-900 [&_th]:shadow-[0_1px_0_0_#e5e7eb]">
-
-                    <TableRow>
-
-                      {[
-
-                        { label: "VENDOR ID", width: "w-24" },
-
-                        { label: "VENDOR NAME", width: "w-48" },
-
-                        { label: "COMPANY NAME", width: "w-56" },
-
-                        // { label: "VERIFICATION STATUS", width: "w-36" },
-
-                        { label: "ACCOUNT STATUS", width: "w-28" },
-
-                        { label: "DOCUMENT", width: "w-20" },
-
-                        
-
-                        { label: "INCOGNITO LOGIN", width: "w-48" }
-
-                      ].map((header) => (
-
-                        <TableHead
-
-                          key={header.label}
-
-                        >
-
-                          {header.label}
-
-                        </TableHead>
-
-                      ))}
-
-                    </TableRow>
-
-                  </TableHeader>
-
-                  <TableBody >
-
-                    {loading ? (
-
-                      <TableRow>
-
-                        <TableCell colSpan={10} className="text-center py-10">
-
-                          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-
-                          <p className="mt-2">Loading orders...</p>
-
-                        </TableCell>
-
-                      </TableRow>
-
-                    ) : vendorsData.length === 0 ? (
-
-                      <TableRow>
-
-                        <TableCell colSpan={10} className="text-center py-10">
-
-                          No orders found
-
-                        </TableCell>
-
-                      </TableRow>
-
-                    ) : (
-
-                      paginatedVendors.map((vendor) => (
-
-                        <TableRow
-
-                          key={vendor.id}
-
-                          className="hover:bg-gray-50/80 dark:hover:bg-gray-800 transition-all duration-200 group"
-
-                        >
-
-                          {/* Vendor ID */}
-
-                          <TableCell className="px-4 py-4">
-
-                            <div className="flex items-center">
-
-                              <span className="font-mono dark:text-white text-sm font-semibold text-gray-900">
-
-                                FP_{vendor.id}
-
-                              </span>
-
-                            </div>
-
-                          </TableCell>
-
-                          {/* Vendor Name */}
-
-                          <TableCell className="px-4 py-4">
-
-                            <div className="flex items-left">
-
-                              <span className="text-sm dark:text-white whitespace-nowrap font-medium text-gray-900">
-
-                                {vendor.vendor_name}
-
-                              </span>
-
-                            </div>
-
-                          </TableCell>
-
-                          {/* Company Name */}
-
-                          <TableCell className="px-4 py-4 dark:text-white">
-
-                            <span className={`text-sm dark:text-white whitespace-nowrap ${vendor.company_name && vendor.company_name !== "null" ? 'text-gray-900' : 'text-gray-400 italic'}`}>
-
-                              {vendor.company_name && vendor.company_name !== "null" ? vendor.company_name : "Not provided"}
-
-                            </span>
-
-                          </TableCell>
-
-                          {/* Status Toggle */}
-
-                          <TableCell className=" py-4">
-
-                            <div className="flex items-left">
-
-                              <span aria-label="Account status (read-only)" className={`relative inline-flex h-6 w-11 items-center rounded-full ${vendor.is_active ? "bg-green-500" : "bg-gray-300"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ${vendor.is_active ? "translate-x-6" : "translate-x-1"}`} /></span>
-
-                              <p className=" whitespace-nowrap ml-1 text-sm text-gray-700">{Number(vendor.is_active) === 1 ? "Active" : 'Inactive'}</p>
-
-                            </div>
-
-                          </TableCell>
-
-                          {/* Document Info */}
-
-                          <TableCell className="px-4 py-4">
-
-                            <button
-
-                              onClick={() => setPopup(vendor)}
-
-                              title="View Vendor Documents"
-
-                              className="inline-flex cursor-pointer items-center px-3 py-2 bg-blue-50 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-100 transition-all duration-200 border border-blue-200 hover:border-blue-300 hover:shadow-sm"
-
-                            >
-
-                              <TbFileInfo className="text-xl" />
-
-                              View
-
-                            </button>
-
-                           
-
-                          </TableCell>
-
-                        
-
-                          {/* Vendor Login — uses the approved POST /vendorLogin endpoint */}
-                          <TableCell className="px-4 py-4">
-                            {canLogin ? (
-                               <a
-
-                                href={`${frontendURL}/incognitoLogin/${localStorage.getItem(
-
-                                  "token",
-
-                                )}/${vendor?.email}/user_vendor`}
-
-                                target="_blank"
-
-                                rel="noopener noreferrer"
-
-                                className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#0446DB] px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-[#0338b5]"
-
-                              >
-
-                                Login
-
-                                <ExternalLink className="h-3.5 w-3.5" />
-
-                              </a>
-                            ) : <span className="text-xs text-gray-400">No access</span>}
-                          </TableCell>
-
-                        </TableRow>
-
-                      ))
-
-                    )
-
-                    }
-
-                  </TableBody>
-
-                </Table>
-
-              </div>
-
-              {/* Sticky pagination footer: presentation only, no API pagination changes */}
-              <div className="sticky bottom-0 z-20 flex shrink-0 flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-4 py-3 sm:flex-row dark:border-gray-700 dark:bg-gray-900">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Showing {vendorsData.length === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1} to{" "}
-                  {Math.min(currentPage * rowsPerPage, vendorsData.length)} of {vendorsData.length} vendors
-                </div>
-                <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="rounded-sm border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
-                    Previous
-                  </button>
-                  <span className="min-w-16 text-center text-xs font-medium text-gray-600 dark:text-gray-300">
-                    {currentPage} / {totalPages}
-                  </span>
-                  <button type="button" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="rounded-sm border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
-                    Next
-                  </button>
-                </div>
-              </div>
-
-              {/* Empty State */}
-
-              {vendorsData.length === 0 && (
-
-                <div className="text-center py-12">
-
-                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-
-                    <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-
-                    </svg>
-
-                  </div>
-
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No vendors found</h3>
-
-                  <p className="text-gray-500 max-w-sm mx-auto">
-
-                    There are currently no vendors in the system. Vendors will appear here once they register.
-
-                  </p>
-
-                </div>
-
-              )}
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {popup && (
-
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden m-4 border border-gray-200">
-
-              {/* Header */}
-
-              <div className="bg-[#0446DB] p-6">
-
-                <div className="flex items-center justify-between">
-
-                  <div className="flex items-center space-x-3">
-
-                    <div className="p-2 bg-white/20 rounded-xl">
-
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-
-                      </svg>
-
-                    </div>
-
-                    <div>
-
-                      <h2 className="text-2xl font-bold text-white">Vendor Details</h2>
-
-                      <p className="text-indigo-100 text-sm mt-1">ID: FP{popup.id}</p>
-
-                    </div>
-
-                  </div>
-
-                  <button
-
-                    onClick={() => {
-
-                      setPopup(null);
-
-                      setFormData(null);
-
-                      setIsEditing(false);
-
-                    }}
-
-                    className="text-white hover:text-indigo-200 text-2xl transition-colors"
-
-                  >
-
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-
-                    </svg>
-
-                  </button>
-
-                </div>
-
-                {/* Status Badge */}
-
-                {/* <div className="mt-4 flex items-center">*
-
-                    <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${popup.is_verified
-                      ? 'bg-green-100 text-green-800 border border-green-300'
-                      : 'bg-red-100 text-red-800 border border-red-300'
-                      }`}>
-                      {popup.is_verified ? '✓ Verified Vendor' : '✗ Not Verified'}
-                    </span>
-*                  </div> */}
-
-              </div>
-
-              {/* Content */}
-
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
-
-                <form
-
-                  onSubmit={(e) => {
-
-                    e.preventDefault();
-
-                    handleSave();
-
-                  }}
-
-                  className="space-y-8"
-
-                >
-
-                  {/* Basic Information Section */}
-
-                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-
-                    <div className="flex items-center justify-between mb-4">
-
-                      <h3 className="text-lg font-semibold text-gray-800">
-
-                        <span className="flex items-center">
-
-                          <svg className="w-5 h-5 mr-2 text-[#0446DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-
-                          </svg>
-
-                          Basic Information
-
-                        </span>
-
-                      </h3>
-
-                      {!isEditing && canUpdate && (
-
-                        <button
-
-                          type="button"
-
-                          onClick={() => {
-
-                            setIsEditing(true);
-
-                            setFormData(popup);
-
-                          }}
-
-                          className="flex items-center text-sm bg-[#0446DB] text-white px-4 py-2 rounded-lg hover:bg-[rgb(75,67,182)] transition-colors"
-
-                        >
-
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-
-                          </svg>
-
-                          Edit Details
-
-                        </button>
-
-                      )}
-
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                      {/* Vendor Name */}
-
-                      <div className="space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700 flex items-center">
-
-                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-
-                          </svg>
-
-                          Vendor Name
-
-                        </label>
-
-                        <input
-
-                          name="vendor_name"
-
-                          value={formData?.vendor_name || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter vendor name"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                      {/* Company Name */}
-
-                      <div className="space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700 flex items-center">
-
-                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-
-                          </svg>
-
-                          Company Name
-
-                        </label>
-
-                        <input
-
-                          name="company_name"
-
-                          value={formData?.company_name || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter company name"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                      {/* GST Number */}
-
-                      <div className="space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700 flex items-center">
-
-                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-
-                          </svg>
-
-                          GST Number
-
-                        </label>
-
-                        <input
-
-                          name="gst_no"
-
-                          value={formData?.gst_no || formData?.company_gst_number || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter GST number"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                      {/* Phone Number */}
-
-                      <div className="space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700 flex items-center">
-
-                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-
-                          </svg>
-
-                          Phone Number
-
-                        </label>
-
-                        <input
-
-                          name="phone"
-
-                          value={formData?.phone || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter phone number"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                      {/* Email */}
-
-                      <div className="space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700 flex items-center">
-
-                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-
-                          </svg>
-
-                          Email Address
-
-                        </label>
-
-                        <input
-
-                          name="email"
-
-                          value={formData?.email || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter email address"
-
-                          type="email"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                      {/* Company Address */}
-
-                      <div className="md:col-span-2 space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700 flex items-center">
-
-                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-
-                          </svg>
-
-                          Company Address
-
-                        </label>
-
-                        <input
-
-                          name="company_address"
-
-                          value={formData?.company_address || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter company address"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  {/* KYC Details Section */}
-
-                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-
-                      <svg className="w-5 h-5 mr-2 text-[#0446DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-
-                      </svg>
-
-                      KYC Details
-
-                    </h3>
-
-                    <div className="space-y-6">
-
-                      {
-
-                        (popup?.document_type || popup?.document_id) && (
-
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-
-                            <h4 className="font-medium text-gray-700 mb-3 flex items-center">
-
-                              <span className="w-2 h-2 bg-[#0446DB] rounded-full mr-2"></span>
-
-                              Primary Document
-
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                              <div>
-
-                                <div className="text-sm text-gray-500 mb-1">Company Type</div>
-
-                                <div className="font-medium">{popup?.company_type || "N/A"}</div>
-
-                              </div>
-
-                              <div>
-
-                                <div className="text-sm text-gray-500 mb-1">Document Type</div>
-
-                                <div className="font-medium">{popup?.document_type || "N/A"}</div>
-
-                              </div>
-
-                              <div>
-
-                                <div className="text-sm text-gray-500 mb-1">Document ID</div>
-
-                                <div className="font-medium">{popup?.document_id || "N/A"}</div>
-
-                              </div>
-
-                              <div>
-
-                                <div className="text-sm text-gray-500 mb-1">Document File</div>
-
-                                {popup?.document_image ? (
-
-                                  <>
-
-                                    <a
-
-                                      href={`${baseURL}/${popup?.document_image}`}
-
-                                      target="_blank"
-
-                                      rel="noopener noreferrer"
-
-                                      className="inline-flex items-center text-[#0446DB] hover:text-[rgb(75,67,182)] transition-colors"
-
-                                    >
-
-                                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-
-                                      </svg>
-
-                                      View Document
-
-                                    </a>
-
-                                  </>
-
-                                ) : (
-
-                                  <span className="text-gray-400">No document uploaded</span>
-
-                                )}
-
-                              </div>
-
-                              <div className=" flex mt-3">
-
-                                {
-
-                                  Number(popup?.kyc_verified) === 0 && canVerifyKyc ? (
-
-                                    <div
-
-                                      onClick={() => { VerifyKyc(popup?.id) }}
-
-                                      className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-blue-700 transition-colors">
-
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-
-                                      </svg>
-
-                                      Verify KYC
-
-                                    </div>
-
-                                  ) : (
-
-                                    <div
-
-                                      className="flex justify-center whitespace-nowrap  items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg  transition-colors">
-
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-
-                                      </svg>
-
-                                      KYC completed Successfully.
-
-                                    </div>
-
-                                  )
-
-                                }
-
-                              </div>
-
-                            </div>
-
-                          </div>
-
-                        )
-
-                      }
-
-                      {/* Supporting Document */}
-
-                      {
-
-                        popup.supporting_document_id && (
-
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                              <div>
-
-                                <div className="text-sm text-gray-500 mb-1">Company Type</div>
-
-                                <div className="font-medium">{popup.company_type || "N/A"}</div>
-
-                              </div>
-
-                              <div>
-
-                                <div className="text-sm text-gray-500 mb-1">Document Type</div>
-
-                                <div className="font-medium">{popup.supporting_document_type || "N/A"}</div>
-
-                              </div>
-
-                              <div>
-
-                                <div className="text-sm text-gray-500 mb-1">Document ID</div>
-
-                                <div className="font-medium">{popup.supporting_document_id || "N/A"}</div>
-
-                              </div>
-
-                              <div>
-
-                                <div className="text-sm text-gray-500 mb-1">Document File</div>
-
-                                {popup.supporting_document_image ? (
-
-                                  <div>
-
-                                    <a
-
-                                      href={`${baseURL}/${popup.supporting_document_image}`}
-
-                                      target="_blank"
-
-                                      rel="noopener noreferrer"
-
-                                      className="inline-flex items-center text-[#0446DB] hover:text-[rgb(75,67,182)] transition-colors"
-
-                                    >
-
-                                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-
-                                      </svg>
-
-                                      View Document
-
-                                    </a>
-
-                                    <div className=" flex mt-3">
-
-                                      {
-
-                                        Number(popup?.kyc_verified) === 0 && canVerifyKyc ? (
-
-                                          <div
-
-                                            onClick={() => { VerifyKyc(popup?.id) }}
-
-                                            className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-blue-700 transition-colors">
-
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-
-                                            </svg>
-
-                                            Verify KYC
-
-                                          </div>
-
-                                        ) : (
-
-                                          <div
-
-                                            className="flex justify-center  whitespace-nowrap items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg  transition-colors">
-
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-
-                                            </svg>
-
-                                            KYC completed Successfully.
-
-                                          </div>
-
-                                        )
-
-                                      }
-
-                                    </div>
-
-                                  </div>
-
-                                ) : (
-
-                                  <span className="text-gray-400">No document uploaded</span>
-
-                                )}
-
-                              </div>
-
-                            </div>
-
-                          </div>
-
-                        )
-
-                      }
-
-                    </div>
-
-                  </div>
-
-                  {/* Bank Details Section */}
-
-                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-
-                      <svg className="w-5 h-5 mr-2 text-[#0446DB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-
-                      </svg>
-
-                      Bank Details
-
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                      {/* Bank Name */}
-
-                      <div className="space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700">Bank Name</label>
-
-                        <input
-
-                          name="bank_name"
-
-                          value={formData?.bank_name || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter bank name"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                      {/* Account Number */}
-
-                      <div className="space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700">Account Number</label>
-
-                        <input
-
-                          name="bank_account_number"
-
-                          value={formData?.bank_account_number || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter account number"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                      {/* Branch */}
-
-                      <div className="space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700">Branch</label>
-
-                        <input
-
-                          name="bank_branch"
-
-                          value={formData?.bank_branch || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter branch name"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                      {/* IFSC Code */}
-
-                      <div className="space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700">IFSC Code</label>
-
-                        <input
-
-                          name="bank_ifsc_code"
-
-                          value={formData?.bank_ifsc_code || ""}
-
-                          onChange={handleChange}
-
-                          disabled={!isEditing}
-
-                          placeholder="Enter IFSC code"
-
-                          className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none transition-colors ${isEditing
-
-                            ? 'border-gray-300 bg-white hover:border-gray-400'
-
-                            : 'border-gray-200 bg-gray-50 text-gray-700'
-
-                            }`}
-
-                        />
-
-                      </div>
-
-                      {/* Cheque Image */}
-
-                      <div className="md:col-span-2 space-y-2">
-
-                        <label className="text-sm font-medium text-gray-700">Cheque Image</label>
-
-                        {!isEditing ? (
-
-                          <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200">
-
-                            <div className="flex items-center">
-
-                              {popup.cheque_image ? (
-
-                                <>
-
-                                  <svg className="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-
-                                  </svg>
-
-                                  <span className="text-gray-700">Cheque image uploaded</span>
-
-                                </>
-
-                              ) : (
-
-                                <>
-
-                                  <svg className="w-6 h-6 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-
-                                  </svg>
-
-                                  <span className="text-gray-400">No cheque image available</span>
-
-                                </>
-
-                              )}
-
-                            </div>
-
-                            {popup.cheque_image && (
-
-                              <a
-
-                                href={`${baseURL}/${popup.cheque_image}`}
-
-                                target="_blank"
-
-                                rel="noopener noreferrer"
-
-                                className="flex items-center text-[#0446DB] hover:text-[rgb(75,67,182)] transition-colors"
-
-                              >
-
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-
-                                </svg>
-
-                                View Image
-
-                              </a>
-
-                            )}
-
-                          </div>
-
-                        ) : (
-
-                          <div className="space-y-3">
-
-                            {popup.cheque_image && (
-
-                              <div className="flex items-center p-3 bg-blue-50 rounded-lg">
-
-                                <svg className="w-5 h-5 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-
-                                </svg>
-
-                                <span className="text-sm text-blue-700">Current file will be replaced with new upload</span>
-
-                              </div>
-
-                            )}
-
-                            <input
-
-                              type="file"
-
-                              name="cheque_image"
-
-                              onChange={handleChange}
-
-                              accept="image/\\,application/pdf"
-
-                              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-[#0446DB] focus:border-[#0446DB] outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#0446DB] file:text-white hover:file:bg-[rgb(75,67,182)]"
-
-                            />
-
-                            <p className="text-sm text-gray-500">Upload cheque image or PDF (max 5MB)</p>
-
-                          </div>
-
-                        )}
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  {/* Action Buttons */}
-
-                  <div className="pt-4 border-t border-gray-200">
-
-                    <div className="flex justify-end space-x-3">
-
-                      {isEditing && canUpdate ? (
-
-                        <>
-
-                          <button
-
-                            type="button"
-
-                            onClick={() => {
-
-                              setFormData(popup);
-
-                              setIsEditing(false);
-
-                            }}
-
-                            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-
-                          >
-
-                            Cancel
-
-                          </button>
-
-                          <button
-
-                            type="submit"
-
-                            className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all font-medium shadow-sm"
-
-                          >
-
-                            Save Changes
-
-                          </button>
-
-                        </>
-
-                      ) : (
-
-                        <button
-
-                          type="button"
-
-                          onClick={() => setPopup(null)}
-
-                          className="px-6 py-  bg-[#0446DB] text-white rounded-sm transition-all font-medium shadow-sm"
-
-                        >
-
-                          Close
-
-                        </button>
-
-                      )}
-
-                    </div>
-
-                  </div>
-
-                </form>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        )}
-
-
-
-      </div>
-
-      ))
-
-    }
-
-    </>
-
-  );
-
+type VendorForm = {
+  vendor_name: string;
+  company_name: string;
+  email: string;
+  phone: string;
+  company_gst_number: string;
+  company_address: string;
+  bank_name: string;
+  bank_branch: string;
+  bank_ifsc_code: string;
+  bank_account_number: string;
+  vendor_code: string;
+  is_active: "0" | "1";
+  password: string;
+  confirm_password: string;
+  cheque_image: File | null;
+};
+
+type Pagination = { page: number; limit: number; total: number; totalPages: number };
+const PAGE_SIZE = 20;
+const fileBase = String(import.meta.env.VITE_BASE_URL ?? "").replace(/\/$/, "");
+const isEnabled = (value: number | boolean | undefined) => value === 1 || value === true;
+const safeText = (value: unknown) =>
+  value === null || value === undefined || value === "" ? "—" : String(value);
+const initialForm = (v: Vendor): VendorForm => ({
+  vendor_name: v.vendor_name ?? "",
+  company_name: v.company_name ?? "",
+  email: v.email ?? "",
+  phone: v.phone ?? "",
+  company_gst_number: v.company_gst_number ?? "",
+  company_address: v.company_address ?? "",
+  bank_name: v.bank_name ?? "",
+  bank_branch: v.bank_branch ?? "",
+  bank_ifsc_code: v.bank_ifsc_code ?? "",
+  bank_account_number: v.bank_account_number ?? "",
+  vendor_code: v.vendor_code ?? "",
+  is_active: isEnabled(v.is_active) ? "1" : "0",
+  password: "",
+  confirm_password: "",
+  cheque_image: null,
+});
+const inputClass =
+  "w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-[#0446DB] focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500";
+const buttonClass =
+  "inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50";
+
+async function apiError(error: unknown) {
+  if (axios.isAxiosError(error)) return error.response?.data?.message || error.message;
+  return error instanceof Error ? error.message : "Something went wrong";
+}
+function documentUrl(path?: string | null) {
+  if (!path) return "";
+  // Never allow javascript/data URLs in document links.
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${fileBase}/${String(path).replace(/^\/+/, "")}`;
 }
 
-export default VendorList;
+export default function VendorList() {
+  const navigate = useNavigate();
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [permissionLoading, setPermissionLoading] = useState(true);
+  const can = (p: string) => permissions.includes("ADMIN_FULL_ACCESS") || permissions.includes(p);
+  const canView = can("VIEW_VENDOR");
+  const canUpdate = can("UPDATE_VENDOR");
+  const canVerify = can("VERIFY_VENDOR_KYC");
+  const canLogin = can("LOGIN_VENDOR");
+
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [cityInput, setCityInput] = useState("");
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [cityFilter, setCityFilter] = useState("");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const fetchSequence = useRef(0);
+  const requestPage = debouncedSearch ? 1 : page;
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    limit: PAGE_SIZE,
+    total: 0,
+    totalPages: 1,
+  });
+  const [selected, setSelected] = useState<Vendor | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<VendorForm | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [loggingInId, setLoggingInId] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await AxiosInstance.get("/api/user/getUserPermissions");
+        const result = res.data?.data?.data;
+        if (!Array.isArray(result)) throw new Error("Invalid permission response");
+        if (!active) return;
+        setPermissions(result);
+        if (!result.includes("VIEW_VENDOR") && !result.includes("ADMIN_FULL_ACCESS"))
+          navigate("/unauthorized", { replace: true });
+      } catch (error) {
+        if (!active) return;
+        toast.error(await apiError(error));
+        navigate("/unauthorized", { replace: true });
+      } finally {
+        if (active) setPermissionLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [navigate]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 250);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  // The documented API supports page, limit and city only (no server-side search).
+  // While searching, retrieve all city-authorized pages and filter them locally.
+  const fetchVendors = useCallback(async () => {
+    const sequence = ++fetchSequence.current;
+    setLoading(true);
+    try {
+      if (debouncedSearch) {
+        const all: Vendor[] = [];
+        let apiPage = 1;
+        let totalPages = 1;
+        do {
+          const response = await AxiosInstance.get("/api/user/getAllVendors", {
+            params: { page: apiPage, limit: 100, ...(cityFilter ? { city: cityFilter } : {}) },
+          });
+          if (response.data?.success === false)
+            throw new Error(response.data.message || "Could not fetch vendors");
+          if (sequence !== fetchSequence.current) return;
+          const rows: Vendor[] = Array.isArray(response.data?.data) ? response.data.data : [];
+          all.push(...rows);
+          totalPages = Math.max(1, Number(response.data?.pagination?.totalPages) || 1);
+          apiPage += 1;
+          if (!rows.length) break;
+        } while (apiPage <= totalPages);
+        if (sequence !== fetchSequence.current) return;
+        setVendors(all);
+        setPagination({
+          page: 1,
+          limit: PAGE_SIZE,
+          total: all.length,
+          totalPages: Math.max(1, Math.ceil(all.length / PAGE_SIZE)),
+        });
+      } else {
+        const response = await AxiosInstance.get("/api/user/getAllVendors", {
+          params: {
+            page: requestPage,
+            limit: PAGE_SIZE,
+            ...(cityFilter ? { city: cityFilter } : {}),
+          },
+        });
+        if (response.data?.success === false)
+          throw new Error(response.data.message || "Could not fetch vendors");
+        if (sequence !== fetchSequence.current) return;
+        const rows = response.data?.data;
+        const meta = response.data?.pagination;
+        setVendors(Array.isArray(rows) ? rows : []);
+        setPagination({
+          page: Number(meta?.page) || requestPage,
+          limit: Number(meta?.limit) || PAGE_SIZE,
+          total: Number(meta?.total) || 0,
+          totalPages: Math.max(1, Number(meta?.totalPages) || 1),
+        });
+      }
+    } catch (error) {
+      if (sequence !== fetchSequence.current) return;
+      setVendors([]);
+      toast.error(await apiError(error));
+    } finally {
+      if (sequence === fetchSequence.current) setLoading(false);
+    }
+  }, [requestPage, cityFilter, debouncedSearch]);
+
+  useEffect(() => {
+    if (!permissionLoading && canView) void fetchVendors();
+  }, [permissionLoading, canView, fetchVendors]);
+
+  const filteredVendors = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (query !== debouncedSearch.toLowerCase()) return [];
+    if (!query) return vendors;
+    // Exact numeric/FP vendor ID takes priority over incidental phone-number matches.
+    if (/^(?:fp)?\d+$/i.test(query)) {
+      const normalizedId = query.replace(/^fp/i, "");
+      const exactIds = vendors.filter((v) => String(v.id) === normalizedId);
+      if (exactIds.length) return exactIds;
+    }
+    return vendors.filter((v) =>
+      [
+        v.id,
+        `FP${v.id}`,
+        v.vendor_name,
+        v.company_name,
+        v.email,
+        v.phone,
+        v.vendor_code,
+        v.city,
+      ].some((val) =>
+        String(val ?? "")
+          .toLowerCase()
+          .includes(query),
+      ),
+    );
+  }, [vendors, search, debouncedSearch]);
+
+  const isSearching = Boolean(search.trim());
+  const searchPending = search.trim() !== debouncedSearch;
+  const effectiveTotal = isSearching ? filteredVendors.length : pagination.total;
+  const effectiveTotalPages = isSearching
+    ? Math.max(1, Math.ceil(filteredVendors.length / PAGE_SIZE))
+    : pagination.totalPages;
+  const displayedVendors = isSearching
+    ? filteredVendors.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+    : filteredVendors;
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+  useEffect(() => {
+    setPage((current) => Math.min(current, effectiveTotalPages));
+  }, [effectiveTotalPages]);
+
+  const openDetails = (v: Vendor) => {
+    setSelected(v);
+    setForm(initialForm(v));
+    setEditing(false);
+  };
+  const closeDetails = () => {
+    if (saving || verifying) return;
+    setSelected(null);
+    setForm(null);
+    setEditing(false);
+  };
+  const updateField = (name: keyof VendorForm, value: string | File | null) => {
+    setForm((prev) => (prev ? ({ ...prev, [name]: value } as VendorForm) : prev));
+  };
+  const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
+    updateField("cheque_image", event.target.files?.[0] ?? null);
+  };
+
+  const handleSave = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!selected || !form || !canUpdate || !editing || saving) return;
+    if (form.password && form.password !== form.confirm_password) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    const initial = initialForm(selected);
+    const fields: (keyof VendorForm)[] = [
+      "vendor_name",
+      "company_name",
+      "email",
+      "phone",
+      "company_gst_number",
+      "company_address",
+      "bank_name",
+      "bank_branch",
+      "bank_ifsc_code",
+      "bank_account_number",
+      "vendor_code",
+      "is_active",
+    ];
+    const data = new FormData();
+    fields.forEach((key) => {
+      if (form[key] !== initial[key]) data.append(key, String(form[key]));
+    });
+    if (form.password) {
+      data.append("password", form.password);
+      data.append("confirm_password", form.confirm_password);
+    }
+    if (form.cheque_image) data.append("cheque_image", form.cheque_image);
+    if (Array.from(data.keys()).length === 0) {
+      toast.info("No changes to save");
+      return;
+    }
+    if (
+      initial.is_active === "1" &&
+      form.is_active === "0" &&
+      !window.confirm("Deactivate this vendor? Active vendor sessions will be revoked.")
+    )
+      return;
+    setSaving(true);
+    try {
+      const res = await AxiosInstance.post(`/api/user/updateVendor/${selected.id}`, data);
+      if (res.data?.success === false) throw new Error(res.data.message || "Update failed");
+      const terminated = res.data?.terminated_sessions;
+      toast.success(
+        `${res.data?.message || "Vendor updated"}${typeof terminated === "number" ? ` (${terminated} sessions revoked)` : ""}`,
+      );
+      closeAfterSuccess();
+      await fetchVendors();
+    } catch (error) {
+      toast.error(await apiError(error));
+    } finally {
+      setSaving(false);
+    }
+  };
+  const closeAfterSuccess = () => {
+    setSelected(null);
+    setForm(null);
+    setEditing(false);
+  };
+
+  const verifyKyc = async () => {
+    if (!selected || !canVerify || verifying || isEnabled(selected.kyc_verified)) return;
+    if (
+      !window.confirm(`Mark KYC verified for ${selected.vendor_name || `vendor #${selected.id}`}?`)
+    )
+      return;
+    setVerifying(true);
+
+
+  
+    try {
+      const res = await AxiosInstance.post("/api/user/verifyKycVendor", { vendor_id: selected.id });
+      if (res.data?.success === false)
+        throw new Error(res.data.message || "KYC verification failed");
+      toast.success(res.data?.message || "KYC verified");
+      closeAfterSuccess();
+      await fetchVendors();
+    } catch (error) {
+      toast.error(await apiError(error));
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+
+
+  if (permissionLoading)
+    return (
+      <div className="flex h-[90dvh] items-center justify-center gap-2 text-sm text-slate-500">
+        <Loader2 className="animate-spin" size={20} /> Loading vendor permissions...
+      </div>
+    );
+  if (!canView) return null;
+
+  const fields: {
+    key: keyof VendorForm;
+    label: string;
+    type?: string;
+    section: "basic" | "bank" | "security";
+  }[] = [
+    { key: "vendor_name", label: "Vendor name", section: "basic" },
+    { key: "vendor_code", label: "Vendor code", section: "basic" },
+    { key: "company_name", label: "Company name", section: "basic" },
+    { key: "company_gst_number", label: "GST number", section: "basic" },
+    { key: "phone", label: "Phone", section: "basic" },
+    { key: "email", label: "Email", type: "email", section: "basic" },
+    { key: "company_address", label: "Company address", section: "basic" },
+    { key: "bank_name", label: "Bank name", section: "bank" },
+    { key: "bank_branch", label: "Bank branch", section: "bank" },
+    { key: "bank_ifsc_code", label: "IFSC", section: "bank" },
+    { key: "bank_account_number", label: "Account number", section: "bank" },
+    { key: "password", label: "New password (optional)", type: "password", section: "security" },
+    { key: "confirm_password", label: "Confirm password", type: "password", section: "security" },
+  ];
+  const docLinks = selected
+    ? ([
+        ["Primary document", selected.document_image],
+        ["Company PAN", selected.company_pancard_image],
+        ["Supporting document", selected.supporting_document_image],
+        ["Cheque image", selected.cheque_image],
+      ] as const)
+    : [];
+
+  return (
+    <div className="flex h-[87dvh] min-h-0 w-full flex-col overflow-hidden bg-slate-50 text-slate-900 dark:bg-neutral-950 dark:text-white">
+      <div className="shrink-0  dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-lg font-bold">Vendors</h1>
+            <p className="text-xs text-slate-500">Manage vendors in your assigned cities</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void fetchVendors()}
+            disabled={loading || searchPending}
+            className={`${buttonClass} border border-slate-200 bg-white text-slate-700 dark:bg-neutral-800 dark:text-white`}
+          >
+            <RefreshCcw size={15} className={loading ? "animate-spin" : ""} /> Refresh
+          </button>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="relative min-w-[170px] flex-1 sm:max-w-xs">
+            <Search size={15} className="absolute left-3 top-3 text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search all vendors (ID, name, phone...)"
+              className={`${inputClass} pl-9`}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setCityInput(cityFilter);
+              setFilterDrawerOpen(true);
+            }}
+            className={`${buttonClass} border border-slate-200 bg-white text-slate-700 dark:bg-neutral-800 dark:text-white`}
+          >
+            <Filter size={15} /> Filters{" "}
+            {cityFilter && <span className="rounded bg-blue-50 px-1.5 text-[#0446DB]">1</span>}
+          </button>
+          {cityFilter && (
+            <span className="rounded-md bg-blue-50 px-2.5 py-1.5 text-xs font-medium text-[#0446DB]">
+              City: {cityFilter}
+            </span>
+          )}
+        </div>
+        <Drawer open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen} direction="right">
+          <DrawerContent className="h-full w-full max-w-full rounded-none sm:max-w-md">
+            <DrawerHeader className="shrink-0 border-b border-slate-200 text-left dark:border-neutral-800">
+              <DrawerTitle className="flex items-center gap-2 text-base">
+                <Filter size={17} className="text-[#0446DB]" /> Filter Vendors
+              </DrawerTitle>
+            </DrawerHeader>
+            <form
+              className="flex min-h-0 flex-1 flex-col"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setPage(1);
+                setCityFilter(cityInput.trim());
+                setFilterDrawerOpen(false);
+              }}
+            >
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
+                <label
+                  htmlFor="vendor-city-filter"
+                  className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-300"
+                >
+                  Company City
+                </label>
+                <input
+                  id="vendor-city-filter"
+                  autoFocus
+                  value={cityInput}
+                  onChange={(e) => setCityInput(e.target.value)}
+                  placeholder="e.g. Gurugram, Lucknow"
+                  className={inputClass}
+                />
+                <p className="mt-2 text-xs text-slate-500">
+                  The city filter is applied by the backend. Press Enter to apply and close this
+                  drawer.
+                </p>
+              </div>
+              <DrawerFooter className="shrink-0 border-t border-slate-200 dark:border-neutral-800">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCityInput("");
+                      setCityFilter("");
+                      setPage(1);
+                      setFilterDrawerOpen(false);
+                    }}
+                    className={`${buttonClass} border border-slate-200 bg-white text-slate-700`}
+                  >
+                    Clear Filter
+                  </button>
+                  <button type="submit" className={`${buttonClass} bg-[#0446DB] text-white`}>
+                    Apply Filter
+                  </button>
+                </div>
+                <DrawerClose asChild>
+                  <button type="button" className={`${buttonClass} w-full border border-slate-200`}>
+                    Cancel
+                  </button>
+                </DrawerClose>
+              </DrawerFooter>
+            </form>
+          </DrawerContent>
+        </Drawer>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-auto bg-white dark:bg-neutral-900">
+        <table className="min-w-[950px] w-full border-collapse text-left text-sm">
+          <thead className="sticky top-0 z-10 bg-slate-100 text-xs uppercase text-slate-600 dark:bg-neutral-800 dark:text-slate-300">
+            <tr>
+              {[
+                "Vendor ID",
+                "Vendor / Company",
+                "City",
+                "Contact",
+                "Account",
+                "KYC",
+                "Documents",
+                "Vendor Login",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="whitespace-nowrap border-b border-slate-200 px-4 py-3 font-semibold"
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-neutral-800">
+            {loading || searchPending ? (
+              <tr>
+                <td colSpan={8} className="py-16 text-center text-slate-500">
+                  <Loader2 size={24} className="mx-auto mb-2 animate-spin" />
+                  Loading vendors...
+                </td>
+              </tr>
+            ) : displayedVendors.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="py-16 text-center text-slate-500">
+                  No independent vendors found
+                </td>
+              </tr>
+            ) : (
+              displayedVendors.map((v) => (
+                <tr key={v.id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50">
+                  <td className="px-4 py-3 font-mono font-semibold">FP{v.id}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-semibold">{safeText(v.vendor_name)}</div>
+                    <div className="text-xs text-slate-500">
+                      {safeText(v.company_name)} · {safeText(v.vendor_code)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">{safeText(v.city)}</td>
+                  <td className="px-4 py-3">
+                    <div>{safeText(v.phone)}</div>
+                    <div className="text-xs text-slate-500">{safeText(v.email)}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${isEnabled(v.is_active) ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-500"}`}
+                    >
+                      {isEnabled(v.is_active) ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${isEnabled(v.kyc_verified) ? "bg-blue-50 text-[#0446DB]" : "bg-orange-50 text-orange-700"}`}
+                    >
+                      {isEnabled(v.kyc_verified) ? "Verified" : "Pending"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => openDetails(v)}
+                      className={`${buttonClass} border border-blue-200 bg-blue-50 text-[#0446DB]`}
+                    >
+                      <Eye size={14} /> View / Edit
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    {canLogin ? (
+                    <a
+                      href={`${import.meta.env.VITE_FRONTEND_URL}/incognitoLogin/${localStorage.getItem("token")}/${v?.email}/user_vendor`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${buttonClass} bg-[#0446DB] text-white inline-flex items-center justify-center gap-2`}
+                    >
+                      <ExternalLink size={14} />
+                      Login
+                    </a>
+                    ) : (
+                      <span className="text-xs text-slate-400">No access</span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3 text-xs dark:border-neutral-800 dark:bg-neutral-900">
+        <span className="text-slate-500">
+          Showing {effectiveTotal ? (page - 1) * PAGE_SIZE + 1 : 0}–
+          {Math.min(page * PAGE_SIZE, effectiveTotal)} of {effectiveTotal} vendors
+          {isSearching ? " (all permitted vendor pages searched)" : ""}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={page <= 1 || loading || searchPending}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className={`${buttonClass} border border-slate-200`}
+          >
+            <ChevronLeft size={14} /> Previous
+          </button>
+          <span>
+            Page {page} / {effectiveTotalPages}
+          </span>
+          <button
+            type="button"
+            disabled={page >= effectiveTotalPages || loading || searchPending}
+            onClick={() => setPage((p) => p + 1)}
+            className={`${buttonClass} border border-slate-200`}
+          >
+            Next <ChevronRight size={14} />
+          </button>
+        </div>
+      </div>
+
+      {selected && form && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-5">
+          <div className="flex max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-neutral-900">
+            <div className="flex shrink-0 items-center justify-between gap-3 bg-[#0446DB] px-5 py-4 text-white">
+              <div>
+                <h2 className="text-lg font-bold">Vendor Details · FP{selected.id}</h2>
+                <p className="text-xs text-blue-100">
+                  {safeText(selected.vendor_name)} · {safeText(selected.city)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeDetails}
+                aria-label="Close"
+                className="rounded-md p-2 hover:bg-white/20"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleSave} className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <span
+                    className={isEnabled(selected.is_active) ? "text-green-700" : "text-red-600"}
+                  >
+                    {isEnabled(selected.is_active) ? "Active account" : "Inactive account"}
+                  </span>
+                  <span>·</span>
+                  <span
+                    className={
+                      isEnabled(selected.kyc_verified) ? "text-green-700" : "text-orange-600"
+                    }
+                  >
+                    {isEnabled(selected.kyc_verified) ? "KYC verified" : "KYC pending"}
+                  </span>
+                </div>
+                {!editing && canUpdate && (
+                  <button
+                    type="button"
+                    onClick={() => setEditing(true)}
+                    className={`${buttonClass} bg-[#0446DB] text-white`}
+                  >
+                    <Pencil size={14} /> Edit details
+                  </button>
+                )}
+              </div>
+              {(["basic", "bank", "security"] as const).map((section) =>
+                section === "security" && !editing ? null : (
+                  <section
+                    key={section}
+                    className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/50"
+                  >
+                    <h3 className="mb-3 font-semibold">
+                      {section === "basic"
+                        ? "Basic / Company Information"
+                        : section === "bank"
+                          ? "Bank Details"
+                          : "Password & Account Status"}
+                    </h3>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {fields
+                        .filter((f) => f.section === section)
+                        .map((f) => (
+                          <label key={f.key} className="block">
+                            <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                              {f.label}
+                            </span>
+                            <input
+                              type={f.type || "text"}
+                              name={f.key}
+                              value={String(form[f.key] ?? "")}
+                              onChange={(e) => updateField(f.key, e.target.value)}
+                              disabled={!editing}
+                              autoComplete={f.type === "password" ? "new-password" : undefined}
+                              className={inputClass}
+                            />
+                          </label>
+                        ))}
+                      {section === "security" && (
+                        <label className="block">
+                          <span className="mb-1 block text-xs font-medium">Account status</span>
+                          <select
+                            className={inputClass}
+                            value={form.is_active}
+                            onChange={(e) => updateField("is_active", e.target.value)}
+                          >
+                            <option value="1">Active</option>
+                            <option value="0">Inactive (revokes sessions)</option>
+                          </select>
+                        </label>
+                      )}
+                    </div>
+                  </section>
+                ),
+              )}
+              <section className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/50">
+                <h3 className="mb-3 flex items-center gap-2 font-semibold">
+                  <ShieldCheck size={17} /> KYC & Documents
+                </h3>
+                <div className="grid gap-2 text-sm sm:grid-cols-2">
+                  <p>
+                    Document type: <b>{safeText(selected.document_type)}</b>
+                  </p>
+                  <p>
+                    Document ID: <b>{safeText(selected.document_id)}</b>
+                  </p>
+                  <p>
+                    Company type: <b>{safeText(selected.company_type)}</b>
+                  </p>
+                  <p>
+                    Supporting document: <b>{safeText(selected.supporting_document_type)}</b>
+                  </p>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {docLinks.map(
+                    ([label, path]) =>
+                      path && (
+                        <a
+                          key={label}
+                          href={documentUrl(path)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${buttonClass} border border-blue-200 bg-white text-[#0446DB]`}
+                        >
+                          <FileText size={14} /> {label} <ExternalLink size={12} />
+                        </a>
+                      ),
+                  )}
+                </div>
+                <div className="mt-3">
+                  {isEnabled(selected.kyc_verified) ? (
+                    <span className="inline-flex items-center gap-2 text-sm font-medium text-green-700">
+                      <CheckCircle2 size={16} /> KYC verified
+                    </span>
+                  ) : canVerify ? (
+                    <button
+                      type="button"
+                      disabled={verifying}
+                      onClick={() => void verifyKyc()}
+                      className={`${buttonClass} bg-[#EB8300] text-white`}
+                    >
+                      {verifying ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <ShieldCheck size={14} />
+                      )}{" "}
+                      Verify KYC
+                    </button>
+                  ) : (
+                    <span className="text-xs text-slate-500">
+                      KYC pending — no verification permission
+                    </span>
+                  )}
+                </div>
+              </section>
+              <section className="mb-2 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/50">
+                <h3 className="mb-2 font-semibold">Cheque Image</h3>
+                {selected.cheque_image && (
+                  <a
+                    href={documentUrl(selected.cheque_image)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-2 inline-flex items-center gap-2 text-sm text-[#0446DB]"
+                  >
+                    <Download size={14} /> View current file
+                  </a>
+                )}
+                {editing && (
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={handleFile}
+                    className="block w-full text-xs"
+                  />
+                )}
+                {form.cheque_image && (
+                  <p className="mt-1 text-xs">Selected: {form.cheque_image.name}</p>
+                )}
+              </section>
+              <div className="sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white py-3 dark:bg-neutral-900">
+                {editing && canUpdate ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditing(false);
+                        setForm(initialForm(selected));
+                      }}
+                      className={`${buttonClass} border border-slate-200`}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className={`${buttonClass} bg-[#0446DB] text-white`}
+                    >
+                      {saving && <Loader2 size={14} className="animate-spin" />} Save changes
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={closeDetails}
+                    className={`${buttonClass} bg-[#0446DB] text-white`}
+                  >
+                    Close
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

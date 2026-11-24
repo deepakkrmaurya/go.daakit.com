@@ -51,6 +51,8 @@ import {
   MdPersonAddAlt1,
   MdOutlineAppRegistration,
   MdOutlineAssessment,
+  MdOutlineTwoWheeler,
+  MdOutlineStorefront,
 } from "react-icons/md";
 
 import { DropdownMenuDemo } from "../UiComponents/NavDropdown";
@@ -112,7 +114,7 @@ import DaakitLogo from "@/assets/logo-daakit.png";
 import AxiosInstance from "@/Helper/axiosInstance";
 
 import GlassSurface from "../UiComponents/GlassSurface";
-import { FiAlertTriangle, FiSettings } from "react-icons/fi";
+import { FiAlertTriangle, FiMonitor, FiSettings } from "react-icons/fi";
 import OrderSearch from "../common/InputGroupDropdown";
 import {
   DashboardIcon,
@@ -355,7 +357,7 @@ function Navbar({ allowedRoles, children }) {
             <MdOutlineAppRegistration className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
           ),
           subItems: [
-            { label: "DC List", href: "/admin/dc/list", icon: <FaWarehouse className="h-4 w-4" /> },
+            { label: "DC", href: "/admin/dc/list", icon: <FaWarehouse className="h-4 w-4" /> },
             {
               label: "Merchant",
               href: "/admin/merchant-details",
@@ -443,6 +445,11 @@ function Navbar({ allowedRoles, children }) {
                 <FaMapMarkedAlt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
               ),
             },
+            {
+              label: "Session Management",
+              href: "/admin/session-management",
+              icon: <FiMonitor className="h-4 w-4" />,
+            },
           ],
         },
       ],
@@ -508,7 +515,6 @@ function Navbar({ allowedRoles, children }) {
                         },
                       ]
                     : []),
-                  
                 ],
               },
             ]
@@ -518,6 +524,7 @@ function Navbar({ allowedRoles, children }) {
         ...(
           permissions.includes("VIEW_DC") || 
           permissions.includes("VIEW_RIDER") || 
+          permissions.includes("VIEW_VENDOR") || 
           permissions.includes("ADMIN_FULL_ACCESS")
           ? [
               {
@@ -529,7 +536,7 @@ function Navbar({ allowedRoles, children }) {
                   ...(permissions.includes("VIEW_DC") || permissions.includes("ADMIN_FULL_ACCESS")
                     ? [
                         {
-                          label: "DC List",
+                          label: "DC",
                           href: "/user/dc/list",
                           icon: (
                             <FaWarehouse className="h-4 w-4" />
@@ -540,10 +547,10 @@ function Navbar({ allowedRoles, children }) {
                   ...(permissions.includes("VIEW_RIDER") || permissions.includes("ADMIN_FULL_ACCESS")
                     ? [
                         {
-                          label: "Vendor Riders",
+                          label: "Riders",
                           href: "/user/rider/details",
                           icon: (
-                            <MdOutlineBusinessCenter className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                            <MdOutlineTwoWheeler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
                           ),
                         },
                       ]
@@ -555,7 +562,7 @@ function Navbar({ allowedRoles, children }) {
                           label: "Vendors",
                           href: "/user/vendor/details",
                           icon: (
-                            <MdOutlineAssignment className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                            <MdOutlineStorefront className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
                           ),
                         },
                       ]
@@ -592,17 +599,17 @@ function Navbar({ allowedRoles, children }) {
                         },
                       ]
                     : []),
-                  ...(permissions.includes("REMITTANCE_MERCHANT_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
-                    ? [
-                        {
-                          label: "Merchant Remittance",
-                          href: "/user/merchant-remittances",
-                          icon: (
-                            <FaUserTie className="h-4 w-4" />
-                          ),
-                        },
-                      ]
-                    : []),
+                  // ...(permissions.includes("REMITTANCE_MERCHANT_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
+                  //   ? [
+                  //       {
+                  //         label: "Merchant Remittance",
+                  //         href: "/user/merchant-remittances",
+                  //         icon: (
+                  //           <FaUserTie className="h-4 w-4" />
+                  //         ),
+                  //       },
+                  //     ]
+                  //   : []),
                   
                 ],
               },

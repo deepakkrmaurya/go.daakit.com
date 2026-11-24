@@ -1,1383 +1,840 @@
 
-import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import AxiosInstance from "@/Helper/axiosInstance";
+import { toast } from "react-toastify";
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-import { FaFilter, FaRegCopy } from "react-icons/fa";
-
-import { CiCircleCheck } from "react-icons/ci";
-
-import { toast } from "react-toastify";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
 import {
   Drawer,
   DrawerContent,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
+  DrawerFooter,
 } from "@/components/ui/drawer";
-
-import { Button } from "@/components/ui/button";
-
 import {
   ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  Clock3,
+  Copy,
   Download,
   Eye,
   EyeOff,
+  FileDown,
+  FileSpreadsheet,
   Filter,
   Landmark,
   Loader2,
   LockKeyhole,
+  RotateCcw,
+  Search,
+  ShieldCheck,
   Upload,
+  Wallet,
+  X,
+  ExternalLink,
 } from "lucide-react";
-
-import { Link, useNavigate } from "react-router-dom";
-import AxiosInstance from "@/Helper/axiosInstance";
-
-const baseURL = import.meta.env.VITE_BASE_URL;
 
 const frontEndURL = import.meta.env.VITE_FRONTEND_URL;
 
-const PAGE_PASSWORD = "DaakitFinance\@30092026#0212";
-
 const PAGE_UNLOCK_KEY = "cod_remittance_unlocked_at";
-
 const PAGE_UNLOCK_TIME = 5 * 60 * 1000;
+const statuses = ["All", "Pending", "Initiated", "Adjusted", "Received"];
+const initialFilters = () => {
+  const today = new Date();
+  const past = new Date();
+  past.setMonth(past.getMonth() - 1);
+  return {
+    startDate: past.toISOString().split("T")[0],
+    endDate: today.toISOString().split("T")[0],
+    order_id: "",
+    awbNumber: "",
+    vendor_id: "",
+    rider_id: "",
+    dc_id: "",
+  };
+};
+const currency = (n) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(Number(n || 0));
+const dateIST = (v) => {
+  if (!v) return "—";
+  const date = new Date(v);
+  return Number.isNaN(date.getTime())
+    ? "—"
+    : date.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+};
+const classes = {
+  input:
+    "h-10 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-[#0446DB] focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white",
+  lightButton:
+    "inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-[#0446DB] disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200",
+  primaryButton:
+    "inline-flex h-9 items-center justify-center gap-2 rounded-sm bg-[#0446DB] px-4 text-xs font-semibold text-white transition hover:bg-[#0338b5] disabled:opacity-50",
+};
+const statusClass = {
+  pending: "bg-amber-50 text-amber-700 ring-amber-200",
+  initiated: "bg-blue-50 text-blue-700 ring-blue-200",
+  adjusted: "bg-violet-50 text-violet-700 ring-violet-200",
+  received: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+};
 
-function UserCODRemittances() {
+function StatusPill({ item }) {
+  const status = String(item.status || "unknown").toLowerCase();
+  return (
+    <span
+      className={`inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${statusClass[status=='received'?'received': "pending"] || "bg-slate-100 text-slate-600 ring-slate-200"}`}
+    >
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
+      <span>
+        {Number(item.pending_reconciliation) === 1 ? "Pending Reconciliation" : status=='received' ? 'Received' : "Pending"}
+      </span>
+      {Number(item.pending_reconciliation) === 1 && item.aging != null && (
+        <span className="rounded bg-white/80 px-1.5 py-0.5 text-[10px]">{item.aging}d</span>
+      )}
+    </span>
+  );
+}
+
+export default function UserCODRemittances() {
   const navigate = useNavigate();
-
+  const uploadRef = useRef(null);
   const [loading, setLoading] = useState(false);
-
-  const [data, setData] = useState([]);
-
+  const [busyAction, setBusyAction] = useState("");
+  const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
-
   const [limit, setLimit] = useState(20);
-
   const [totalPages, setTotalPages] = useState(1);
-
-  const [copySuccess, setCopySuccess] = useState(null);
-
-  const filters = ["All", "Pending", "Initiated", "Adjusted", "Received"];
-
-  const [pendingAmount, setPendingAmount] = useState(0);
-
-  const [initiatedAmount, setInitiatedAmount] = useState(0);
-
-  const [adjustedAmount, setAdjustedAmount] = useState(0);
-
-  const [receivedAmount, setReceivedAmount] = useState(0);
-
-  const [totalAmount, setTotalAmount] = useState(0);
-
   const [selectedFilter, setSelectedFilter] = useState("All");
-
+  const [summary, setSummary] = useState({ pending: 0, initiated: 0, adjusted: 0, received: 0 });
+  const [permissions, setPermissions] = useState([]);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [draftFilters, setDraftFilters] = useState(initialFilters);
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
+  const [refreshTick, setRefreshTick] = useState(0);
   const [editItem, setEditItem] = useState(null);
-
-  const [formData, setFormData] = useState({
-    orderId: "",
-
-    remarks: "",
-  });
-
-  // lock
-
+  const [remarks, setRemarks] = useState("");
+  const [copySuccess, setCopySuccess] = useState("");
   const [isPageUnlocked, setIsPageUnlocked] = useState(false);
-
   const [pagePassword, setPagePassword] = useState("");
-
   const [passwordError, setPasswordError] = useState("");
-
   const [showPagePassword, setShowPagePassword] = useState(false);
 
+  const can = useCallback(
+    (p) => permissions.includes(p) || permissions.includes("ADMIN_FULL_ACCESS"),
+    [permissions],
+  );
+  const canView = can("REMITTANCE_VIEW");
+  const totalAmount = useMemo(
+    () => Object.values(summary).reduce((sum, x) => sum + Number(x || 0), 0),
+    [summary],
+  );
+  const activeFilterCount = useMemo(
+    () =>
+      Object.entries(appliedFilters).filter(([key, value]) => {
+        const defaults = initialFilters();
+        return String(value || "") !== String(defaults[key] || "");
+      }).length,
+    [appliedFilters],
+  );
+
+
+
   useEffect(() => {
-    const checkPageLock = () => {
-      const unlockedAt = Number(sessionStorage.getItem(PAGE_UNLOCK_KEY) || 0);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await AxiosInstance.get("/api/user/getUserPermissions");
+        const list = res.data?.data?.data;
+        if (!Array.isArray(list)) throw new Error("Invalid permission response");
+        if (cancelled) return;
+        setPermissions(list);
 
-      const isValid = unlockedAt > 0 && Date.now() - unlockedAt < PAGE_UNLOCK_TIME;
-
-      if (isValid) {
-        setIsPageUnlocked(true);
-      } else {
-        sessionStorage.removeItem(PAGE_UNLOCK_KEY);
-
-        setIsPageUnlocked(false);
+        console.log('bsah')
+        if (!list.includes("REMITTANCE_VIEW") && !list.includes("ADMIN_FULL_ACCESS")) {
+          navigate("/unauthorized", { replace: true });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          toast.error(err.response?.data?.message || "Unable to load permissions");
+          navigate("/unauthorized", { replace: true });
+        }
+      } finally {
+        if (!cancelled) setPermissionsLoading(false);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-
-    checkPageLock();
-
-    const interval = setInterval(checkPageLock, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handlePageUnlock = (e) => {
-    e.preventDefault();
-
-    if (pagePassword !== PAGE_PASSWORD) {
-      setPasswordError("Incorrect password. Please try again.");
-
-      return;
-    }
-
-    sessionStorage.setItem(
-      PAGE_UNLOCK_KEY,
-
-      String(Date.now()),
-    );
-
-    setIsPageUnlocked(true);
-
-    setPagePassword("");
-
-    setPasswordError("");
-  };
-
-  // lock
-
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  const [advanceFilters, setAdvanceFilters] = useState({
-    startDate: "",
-
-    endDate: "",
-
-    order_id: "",
-
-    awbNumber: "",
-
-    vendor_id: "",
-
-    rider_id: "",
-  });
-
-  const [filterUpdate, setFilterUpdate] = useState(false);
-
-  //Set Default Date Range of one month from today
-
-  const resetAdvanceFilters = async () => {
-    const today = new Date();
-
-    const oneMonthAgo = new Date();
-
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-    setAdvanceFilters({
-      endDate: today.toISOString().split("T")[0],
-
-      startDate: oneMonthAgo.toISOString().split("T")[0],
-
-      order_id: "",
-
-      awbNumber: "",
-
-      vendor_id: "",
-
-      rider_id: "",
-    });
-  };
-
-  useEffect(() => {
-    resetAdvanceFilters();
-  }, []);
-
-  const openDatePicker = (event) => {
-    try {
-      event.currentTarget.showPicker?.();
-    } catch {
-      // Some browsers block programmatic picker opening; normal focus still works.
-    }
-  };
-
-  const updateAdvanceFilter = (name, value) => {
-    setAdvanceFilters((prev) => {
-      if (name === "startDate") {
-        return {
-          ...prev,
-
-          startDate: value,
-
-          endDate: prev.endDate && value && prev.endDate < value ? value : prev.endDate,
-        };
-      }
-
-      if (name === "endDate") {
-        return {
-          ...prev,
-
-          startDate: prev.startDate && value && prev.startDate > value ? value : prev.startDate,
-
-          endDate: value,
-        };
-      }
-
-      return { ...prev, [name]: value };
-    });
-  };
-
-  const applyFilters = () => {
-    if (
-      advanceFilters.startDate &&
-      advanceFilters.endDate &&
-      advanceFilters.startDate > advanceFilters.endDate
-    ) {
-      toast.error("Start date cannot be after end date.");
-
-      return;
-    }
-
-    setPage(1);
-
-    setFilterUpdate((prev) => !prev);
-
-    setIsFilterOpen(false);
-  };
-
-  const resetFilters = () => {
-    resetAdvanceFilters();
-
-    setPage(1);
-
-    setFilterUpdate((prev) => !prev);
-
-    setIsFilterOpen(false);
-  };
-
-  const indianFormat = (num) => {
-    const temp = num.toLocaleString("en-IN", {
-      style: "currency",
-
-      currency: "INR",
-    });
-
-    return temp;
-  };
-
-  
-  const [permissions, setPermissions] = useState([]);
-   
-  const getUserPermissions = useCallback(async () => {
-    try {
-      const res = await AxiosInstance.get("/api/user/getUserPermissions");
-      const list = res.data?.data?.data;
-      if (!Array.isArray(list)) throw new Error("Invalid permission response");
-      setPermissions(list);
-      if (!list.includes("REMITTANCE_VIEW") && !list.includes("ADMIN_FULL_ACCESS")) navigate("/unauthorized", { replace: true });
-    } catch (err) {
-      navigate("/unauthorized", { replace: true });
-    }
   }, [navigate]);
 
-  useEffect(()=>{
-    getUserPermissions()
-  },[])
-  
-  
-  // Fetch data from API
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    if (!canView) return;
     setLoading(true);
-
     try {
-      const res = await AxiosInstance.get(`/api/user/cod-remittance`, {
+      const res = await AxiosInstance.get("/api/user/cod-remittance", {
         params: {
           page,
-
           limit,
-
-          start_date: advanceFilters.startDate,
-
-          end_date: advanceFilters.endDate,
-
-          order_id: advanceFilters.order_id,
-
-          awb_number: advanceFilters.awbNumber,
-
-          rider_id: advanceFilters.rider_id,
-
-          vendor_id: advanceFilters.vendor_id,
-
+          start_date: appliedFilters.startDate,
+          end_date: appliedFilters.endDate,
+          order_id: appliedFilters.order_id,
+          awb_number: appliedFilters.awbNumber,
+          rider_id: appliedFilters.rider_id,
+          vendor_id: appliedFilters.vendor_id,
+          dc_id: appliedFilters.dc_id,
           status: selectedFilter === "All" ? "" : selectedFilter,
         },
       });
-
-      setData(res.data?.data || []);
-
-      setTotalPages(Math.max(1, res.data.pagination?.totalPages));
-
-      setPendingAmount(indianFormat(Number(res.data?.overallStatusSummary?.pending)));
-
-      setInitiatedAmount(indianFormat(Number(res.data?.overallStatusSummary?.initiated)));
-
-      setAdjustedAmount(indianFormat(Number(res.data?.overallStatusSummary?.adjusted)));
-
-      setReceivedAmount(indianFormat(Number(res.data?.overallStatusSummary?.received)));
-
-      setTotalAmount(
-        indianFormat(
-          Number(res.data?.overallStatusSummary?.received) +
-            Number(res.data?.overallStatusSummary?.initiated) +
-            Number(res.data?.overallStatusSummary?.pending) +
-            Number(res.data?.overallStatusSummary?.adjusted),
-        ),
-      );
+      setRows(Array.isArray(res.data?.data) ? res.data.data : []);
+      setTotalPages(Math.max(1, Number(res.data?.pagination?.totalPages) || 1));
+      const s = res.data?.overallStatusSummary || {};
+      setSummary({
+        pending: s.pending || 0,
+        initiated: s.initiated || 0,
+        adjusted: s.adjusted || 0,
+        received: s.received || 0,
+      });
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Failed to fetch data:");
+      toast.error(err.response?.data?.message || err.message || "Unable to fetch remittances");
+      setRows([]);
     } finally {
       setLoading(false);
     }
-  };
-
+  }, [canView, page, limit, appliedFilters, selectedFilter, refreshTick]);
   useEffect(() => {
-    fetchData();
-  }, [selectedFilter, filterUpdate, page]);
+    void fetchData();
+  }, [fetchData]);
 
-  const handleEditClick = (item) => {
-    setEditItem(item);
+ 
 
-    setFormData({
-      orderId: item.order_id,
-
-      remarks:
-        selectedFilter === "Pending"
-          ? "Remittance is received  by Admin"
-          : selectedFilter === "Adjusted"
-            ? "Remittance is received by Admin"
-            : "Remittance is received by Admin",
-
-      receivedBy: item.receivedBy || "",
-    });
+  const applyFilters = (e) => {
+    e?.preventDefault();
+    if (
+      draftFilters.startDate &&
+      draftFilters.endDate &&
+      draftFilters.startDate > draftFilters.endDate
+    ) {
+      toast.error("Start date cannot be after end date.");
+      return;
+    }
+    setPage(1);
+    setAppliedFilters({ ...draftFilters });
+    setIsFilterOpen(false);
   };
-
-  //Update Status and Remarks
+  const resetFilters = () => {
+    const next = initialFilters();
+    setDraftFilters(next);
+    setAppliedFilters(next);
+    setPage(1);
+    setIsFilterOpen(false);
+  };
+  const updateDraft = (name, value) =>
+    setDraftFilters((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "startDate" && prev.endDate && value > prev.endDate ? { endDate: value } : {}),
+      ...(name === "endDate" && prev.startDate && value < prev.startDate
+        ? { startDate: value }
+        : {}),
+    }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    setLoading(true);
-
+    if (!editItem || !can("REMITTANCE_UPDATE")) return;
+    setBusyAction("update");
     try {
-      const res = await AxiosInstance.post(
-        `/api/user/updateCODRemittance/${formData.orderId}`,
-
-        {
-          remarks: formData.remarks,
-
-          status: "received",
-        },
-
-        
-      );
-
-      fetchData();
-
+      await AxiosInstance.post(`/api/user/updateCODRemittance/${editItem.order_id}`, {
+        remarks,
+        status: "received",
+      });
+      toast.success("Remittance updated successfully");
       setEditItem(null);
-
-      setFormData({ orderId: "", remarks: "", receivedBy: "" });
+      setRemarks("");
+      setRefreshTick((x) => x + 1);
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Error while updating remittance");
+      toast.error(err.response?.data?.message || err.message || "Unable to update remittance");
     } finally {
-      setLoading(false);
+      setBusyAction("");
     }
   };
 
-  const handleChange = async (e) => {
-    setLoading(true);
-
-    const file = e.target.files[0];
-
-    const formData = new FormData();
-
-    formData.append("file", file);
-
+  const uploadCSV = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusyAction("upload");
     try {
-      const res = await AxiosInstance.post(
-        `/api/user/uploadCODRemittance`,
-
-        formData,
-
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-
-     
-
+      const form = new FormData();
+      form.append("file", file);
+      await AxiosInstance.post("/api/user/uploadCODRemittance", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       toast.success("File uploaded successfully");
-
-      fetchData();
+      setRefreshTick((x) => x + 1);
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || "Failed to upload file");
     } finally {
-      setLoading(false);
+      setBusyAction("");
+      e.target.value = "";
     }
   };
 
+  const downloadBlob = (blob, filename) => {
+    const url = window.URL.createObjectURL(new Blob([blob]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+  };
   const exportCSV = async () => {
-    setLoading(true);
-
+    setBusyAction("export");
     try {
-      const res = await AxiosInstance.get(`/api/user/exportCodRemittance`, {
+      const res = await AxiosInstance.get("/api/user/exportCodRemittance", {
         params: {
           status: selectedFilter === "All" ? "" : selectedFilter,
-
-          order_id: advanceFilters.order_id,
-
-          awb_number: advanceFilters.awbNumber,
-
-          rider_id: advanceFilters.rider_id,
-
-          vendor_id: advanceFilters.vendor_id,
-
-          start_date: advanceFilters.startDate,
-
-          end_date: advanceFilters.endDate,
+          order_id: appliedFilters.order_id,
+          awb_number: appliedFilters.awbNumber,
+          rider_id: appliedFilters.rider_id,
+          vendor_id: appliedFilters.vendor_id,
+          start_date: appliedFilters.startDate,
+          end_date: appliedFilters.endDate,
         },
-
         responseType: "blob",
       });
-
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-
-      const link = document.createElement("a");
-
-      link.href = url;
-
-      link.setAttribute("download", "cod_remittances.csv");
-
-      document.body.appendChild(link);
-
-      link.click();
-
-      link.remove();
+      downloadBlob(res.data, "cod_remittances.csv");
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Error in exporting CSV file");
+      toast.error(err.response?.data?.message || "Error exporting CSV");
     } finally {
-      setLoading(false);
+      setBusyAction("");
     }
   };
-
-  const SampleCSV = async () => {
-    setLoading(true);
-
+  const sampleCSV = async () => {
+    setBusyAction("sample");
     try {
-      const res = await AxiosInstance.get(
-        `/api/user/downloadCODRemittanceSample`,
-
-        {
-          responseType: "blob",
-        },
-      );
-
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-
-      const link = document.createElement("a");
-
-      link.href = url;
-
-      link.setAttribute("download", "Cod_Sample.csv");
-
-      document.body.appendChild(link);
-
-      link.click();
-
-      link.remove();
+      const res = await AxiosInstance.get("/api/user/downloadCODRemittanceSample", {
+        responseType: "blob",
+      });
+      downloadBlob(res.data, "Cod_Sample.csv");
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Error in exporting CSV file");
+      toast.error(err.response?.data?.message || "Error downloading sample");
     } finally {
-      setLoading(false);
+      setBusyAction("");
     }
   };
-
-  const [loadingPage, setLoadingPage] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoadingPage(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const copyText = async (value) => {
+    if (value == null || value === "") return;
+    try {
+      await navigator.clipboard.writeText(String(value));
+      setCopySuccess(String(value));
+      window.setTimeout(() => setCopySuccess((v) => (v === String(value) ? "" : v)), 1700);
+    } catch {
+      toast.error("Could not copy to clipboard");
+    }
+  };
 
   return (
     <>
-      <AlertDialog open={!isPageUnlocked}>
-        <AlertDialogContent
-          onEscapeKeyDown={(e) => e.preventDefault()}
-          className="w-[calc(100%-32px)] max-w-[400px] rounded-sm border border-gray-200 bg-white p-0 shadow-xl dark:border-gray-700 dark:bg-gray-900"
-        >
-          <div className="p-6">
-            <AlertDialogHeader className="flex flex-col items-center text-center">
-              <div className="relative mb-4 flex w-full items-center justify-center">
-                {/* Lock Icon - Center */}
+      
 
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-                  <LockKeyhole className="h-5 w-5" />
-                </div>
-
-                {/* Back Button - Right */}
-
-                <button
-                  type="button"
-                  onClick={() => navigate(-1)}
-                  className="absolute right-0 flex items-center gap-1.5
-
-      rounded-sm px-2 py-1.5 text-sm font-medium
-
-      text-gray-600 transition-colors
-
-      hover:bg-blue-50 hover:text-[#0446DB]
-
-      dark:text-gray-300 dark:hover:bg-gray-800"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </button>
-              </div>
-
-              <AlertDialogTitle className="text-center text-xl font-semibold text-gray-900 dark:text-white">
-                Verify Access
-              </AlertDialogTitle>
-
-              <AlertDialogDescription className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
-                Enter your password to access COD Remittances
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-
-            <form onSubmit={handlePageUnlock} className="mt-6">
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Password
-              </label>
-
-              <div className="relative">
-                <input
-                  type={showPagePassword ? "text" : "password"}
-                  value={pagePassword}
-                  onChange={(e) => {
-                    setPagePassword(e.target.value);
-
-                    setPasswordError("");
-                  }}
-                  autoFocus
-                  autoComplete="off"
-                  placeholder="Enter access password"
-                  className={`h-11 w-full rounded-sm border bg-white px-3 pr-11 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 dark:bg-gray-800 dark:text-white ${
-                    passwordError
-                      ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
-                      : "border-gray-300 focus:border-[#0446DB] focus:ring-2 focus:ring-blue-500/10 dark:border-gray-700"
-                  }`}
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPagePassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-700 dark:hover:text-gray-200"
-                >
-                  {showPagePassword ? (
-                    <EyeOff className="h-[18px] w-[18px]" />
-                  ) : (
-                    <Eye className="h-[18px] w-[18px]" />
-                  )}
-                </button>
-              </div>
-
-              {passwordError && (
-                <p className="mt-2 text-xs font-medium text-red-500">{passwordError}</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={!pagePassword.trim()}
-                className="mt-5 h-11 w-full rounded-sm bg-[#0446DB] text-sm font-medium text-white transition-colors hover:bg-[#0339b5] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Continue
-              </button>
-
-              <p className="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
-                Access expires automatically after 5 minutes
-              </p>
-            </form>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {loadingPage ? (
-        <>
-          <div className=" w-full h-[90vh] flex justify-center items-center">
+      <div className="flex h-[calc(100dvh-80px)] min-h-0 w-full flex-col overflow-hidden bg-[#f6f8fc] dark:bg-slate-950">
+        <header className="shrink-0 border-b  dark:border-slate-800 dark:bg-slate-900 ">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-
-              <p className="mt-2"> Loading COD Remittances Details...</p>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className=" dark:bg-gray-900 flex h-[calc(100dvh-80px)] min-h-0 w-full flex-col overflow-hidden">
-          {/* Right Sidebar for filters */}
-
-          {/* Heading */}
-
-          <div className="mb-0 shrink-0 dark:bg-gray-900 py-2 md:h-20 px-[24px]">
-            <div className="flex flex-wrap items-center justify-between">
-              {/* Heading */}
-
-              <h1 className="text-2xl font-bold dark:text-white">COD Remittances</h1>
-
-              <div className="flex flex-wrap items-end gap-4 text-white">
-
-                {
-                  permissions.includes('REMITTANCE_VENDOR_SUBMISSIONS_VIEW') && (
-
-                <Button
-                  asChild
-                  className="
-
-                    flex h-10 cursor-pointer items-center gap-2
-
-                    rounded-md border border-blue-100
-
-                    bg-white px-4 text-sm font-medium
-
-                    text-[#0446DB] shadow-sm
-
-                    transition-all
-
-                    hover:bg-blue-50 hover:shadow-md
-
-                    dark:border-gray-700 dark:bg-gray-800
-
-                    dark:text-blue-400 dark:hover:bg-gray-700
-
-                  "
-                >
-                  <Link to="/user/vendor-remittances" className="flex items-center gap-2">
-                    <Landmark size={17} />
-                    Vendor Remittances
-                  </Link>
-                  
-                </Button>
-                  )
-                }
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  COD Remittances
+                </h1>
                 
-                {
-                    permissions.includes('REMITTANCE_COD_UPLOAD') && (
-                       <>
-                       
-                <label
-                  className="
-
-      flex h-10 cursor-pointer items-center gap-2
-
-      rounded-md border border-blue-100
-
-      bg-white px-4 text-sm font-medium
-
-      text-[#0446DB] shadow-sm
-
-      transition-all
-
-      hover:bg-blue-50 hover:shadow-md
-
-      dark:border-gray-700 dark:bg-gray-800
-
-      dark:text-blue-400 dark:hover:bg-gray-700
-
-    "
+              </div>
+              <p className="mt-1 text-xs text-slate-500">
+                Monitor remittance settlements and reconciliation
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {can("REMITTANCE_VENDOR_SUBMISSIONS_VIEW") && (
+                <Link to="/user/vendor-remittances" className={classes.lightButton}>
+                  <Landmark size={15} /> Vendor Remittances
+                </Link>
+              )}
+              {can("REMITTANCE_SAMPLE_DOWNLOAD") && (
+                <button
+                  type="button"
+                  onClick={sampleCSV}
+                  disabled={!!busyAction}
+                  className={classes.lightButton}
                 >
-                  <Upload size={17} />
-
-                  <span>Upload CSV</span>
-
+                  <FileDown size={15} /> Sample CSV
+                </button>
+              )}
+              {can("REMITTANCE_COD_UPLOAD") && (
+                <>
                   <input
+                    ref={uploadRef}
                     type="file"
-                    name="bulk_remittance"
-                    onChange={handleChange}
                     accept=".csv"
                     className="hidden"
+                    onChange={uploadCSV}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => uploadRef.current?.click()}
+                    disabled={!!busyAction}
+                    className={classes.lightButton}
+                  >
+                    {busyAction === "upload" ? (
+                      <Loader2 size={15} className="animate-spin" />
+                    ) : (
+                      <Upload size={15} />
+                    )}{" "}
+                    Upload CSV
+                  </button>
+                </>
+              )}
+              {can("REMITTANCE_EXPORT") && (
+                <button
+                  type="button"
+                  onClick={exportCSV}
+                  disabled={!!busyAction}
+                  className={classes.lightButton}
+                >
+                  {busyAction === "export" ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <Download size={15} />
+                  )}{" "}
+                  Export
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setRefreshTick((x) => x + 1)}
+                className={classes.lightButton}
+              >
+                <RotateCcw size={15} /> Refresh
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDraftFilters({ ...appliedFilters });
+                  setIsFilterOpen(true);
+                }}
+                className={classes.primaryButton}
+              >
+                <Filter size={15} /> Filters{" "}
+                {activeFilterCount ? (
+                  <span className="rounded bg-white/20 px-1.5">{activeFilterCount}</span>
+                ) : null}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-3 py-2 dark:border-slate-800 sm:px-4">
+              <div className="flex min-w-0 gap-1 overflow-x-auto py-1">
+                {statuses.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => {
+                      setSelectedFilter(status);
+                      setPage(1);
+                    }}
+                    className={`shrink-0 rounded-md border px-3 py-2 text-xs font-semibold transition ${selectedFilter === status ? "border-[#0446DB] bg-[#0446DB] text-white shadow-sm" : "border-slate-200 bg-white text-slate-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"}`}
+                  >
+                    {status} (
+                    {currency(
+                      status === "All" ? totalAmount : (summary[status.toLowerCase()] ?? 0),
+                    )}
+                    )
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="text-xs font-semibold text-[#0446DB] hover:underline"
+                  >
+                    Clear filters
+                  </button>
+                )}
+                
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
+              <table className="w-full min-w-[1100px] border-separate border-spacing-0 text-left text-sm">
+                <thead className="sticky top-0 z-20 bg-[#f2f5fa] text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                  <tr>
+                    {[
+                      "Rider / Vendor",
+                      "AWB / Order",
+                      "Amount",
+                      "Received By",
+                      "Remarks",
+                      "Current Holder",
+                      "Status",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="border-b border-slate-200 px-4 py-3 font-semibold dark:border-slate-700"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {loading || permissionsLoading ? (
+                    <tr>
+                      <td colSpan={7} className="py-16 text-center">
+                        <Loader2 className="mx-auto animate-spin text-[#0446DB]" size={25} />
+                        <p className="mt-2 text-xs text-slate-500">Loading remittances...</p>
+                      </td>
+                    </tr>
+                  ) : !rows.length ? (
+                    <tr>
+                      <td colSpan={7} className="py-16 text-center">
+                        <FileSpreadsheet size={32} className="mx-auto text-slate-300" />
+                        <p className="mt-3 font-medium text-slate-700">No remittances found</p>
+                        <p className="mt-1 text-xs text-slate-400">
+                          Try a different status or filter.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    rows.map((d, i) => (
+                      <tr
+                        key={`${d.order_id || d.awb_number}-${i}`}
+                        className="hover:bg-blue-50/40  dark:hover:bg-slate-800/40"
+                      >
+                        <td className="whitespace-nowrap px-4 py-3 align-top">
+                          <div className="font-mono text-xs font-semibold text-slate-800 dark:text-slate-100">
+                            {d.vendor_id ? `FP_${d.vendor_id}_${d.rider_id}` : `DKT_${d.rider_id}`}
+                          </div>
+                          <div className="mt-1 text-[11px] text-slate-400">
+                            Rider ID: {d.rider_id || "—"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          <div className="flex items-center gap-1.5">
+                            <a
+                              href={`${frontEndURL}/track-order?awb_number=${encodeURIComponent(d.awb_number || "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-semibold text-[#0446DB] hover:underline"
+                            >
+                              {d.awb_number || "—"}
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => copyText(d.awb_number)}
+                              aria-label="Copy AWB"
+                              className="text-slate-400 hover:text-[#0446DB]"
+                            >
+                              {copySuccess === String(d.awb_number) ? (
+                                <Check size={13} />
+                              ) : (
+                                <Copy size={13} />
+                              )}
+                            </button>
+                          </div>
+                          <div className="mt-1 text-[11px] text-slate-500">
+                            {dateIST(d.submitted_at)}
+                          </div>
+                          <div className="mt-1 text-[11px] text-slate-400">
+                            Merchant: {d.merchant_id || "—"}
+                          </div>
+                          <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-400">
+                            <span
+                              className="max-w-[200px] truncate"
+                              title={String(d.merchant_order_id || "")}
+                            >
+                              Order: {d.merchant_order_id || "—"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => copyText(d.merchant_order_id)}
+                              aria-label="Copy order ID"
+                            >
+                              {copySuccess === String(d.merchant_order_id) ? (
+                                <Check size={12} />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 align-top font-bold tabular-nums text-slate-900 dark:text-white">
+                          {currency(d.amount)}
+                        </td>
+                        <td className="max-w-[180px] px-4 py-3 align-top text-xs text-slate-600 dark:text-slate-300">
+                          {d.received_by || "—"}
+                        </td>
+                        <td className="max-w-[250px] px-4 py-3 align-top text-xs text-slate-600 dark:text-slate-300">
+                          <span className="block max-w-[240px] truncate" title={d.remarks || ""}>
+                            {d.remarks || "—"}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 align-top text-xs font-medium capitalize text-slate-700 dark:text-slate-200">
+                          {d.current_holder || "—"}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 align-top">
+                          {can("REMITTANCE_UPDATE") && d.status !== "received" ? (
+                            <button
+                              type="button"
+                              title="Click to mark received"
+                              onClick={() => {
+                                setEditItem(d);
+                                setRemarks("Remittance is received by Admin");
+                              }}
+                              className="text-left"
+                            >
+                              <StatusPill item={d} />
+                              
+                            </button>
+                          ) : (
+                            <StatusPill item={d} />
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <span>Rows per page</span>
+                <select
+                  value={limit}
+                  onChange={(e) => {
+                    setLimit(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="rounded border border-slate-200 bg-white px-2 py-1.5 dark:bg-slate-800"
+                >
+                  {[10, 20, 50, 100].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-500">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Previous page"
+                  disabled={page === 1 || loading}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className={classes.lightButton}
+                >
+                  <ChevronLeft size={15} /> Previous
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next page"
+                  disabled={page === totalPages || loading}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className={classes.lightButton}
+                >
+                  Next <ChevronRight size={15} />
+                </button>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <Drawer direction="right" open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+        <DrawerContent className="!inset-y-0 !right-0 !left-auto !mt-0 !h-full !w-full !max-w-[430px] rounded-none border-l bg-white dark:bg-slate-900">
+          <DrawerHeader className="border-b border-slate-200 px-5 py-4 text-left dark:border-slate-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <DrawerTitle className="flex items-center gap-2 text-lg">
+                  <Filter size={18} className="text-[#0446DB]" /> Advanced Filters
+                </DrawerTitle>
+                <p className="mt-1 text-xs text-slate-500">Filters are applied by the backend</p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close filters"
+                onClick={() => setIsFilterOpen(false)}
+                className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100"
+              >
+                <X size={19} />
+              </button>
+            </div>
+          </DrawerHeader>
+          <form
+            id="cod-remittance-filters"
+            onSubmit={applyFilters}
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: "Start Date", key: "startDate" },
+                { label: "End Date", key: "endDate" },
+              ].map((f) => (
+                <label key={f.key} className="space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-600">{f.label}</span>
+                  <input
+                    type="date"
+                    value={draftFilters[f.key]}
+                    min={f.key === "endDate" ? draftFilters.startDate || undefined : undefined}
+                    max={f.key === "startDate" ? draftFilters.endDate || undefined : undefined}
+                    onChange={(e) => updateDraft(f.key, e.target.value)}
+                    className={classes.input}
                   />
                 </label>
-                       </>
-                    )
-                  }
-
-                {
-                  permissions.includes('REMITTANCE_SAMPLE_DOWNLOAD') && (
-
-                <Button
-                  onClick={SampleCSV}
-                  className="
-
-      flex h-10 items-center gap-2 rounded-md
-
-      border border-blue-100 bg-white px-4
-
-      font-medium text-[#0446DB] shadow-sm
-
-      transition-all
-
-      hover:bg-blue-50 hover:text-[#0446DB]
-
-      hover:shadow-md
-
-      dark:border-gray-700 dark:bg-gray-800
-
-      dark:text-blue-400 dark:hover:bg-gray-700
-
-    "
-                >
-                  <Download size={17} />
-                  Sample CSV
-                </Button>
-                  )
-                }
-
-
-
-                {
-                  permissions.includes('REMITTANCE_EXPORT')  && (
-
-                <Button
-                  onClick={exportCSV}
-                  className="
-
-                  flex h-10 items-center gap-2 rounded-md
-
-                  border border-blue-100 bg-white px-4
-
-                  font-medium text-[#0446DB] shadow-sm
-
-                  transition-all
-
-                  hover:bg-blue-50 hover:text-[#0446DB]
-
-                  hover:shadow-md
-
-                  dark:border-gray-700 dark:bg-gray-800
-
-                  dark:text-blue-400 dark:hover:bg-gray-700
-
-                "
-                >
-                  
-                  <Download size={17} />
-                  Export
-                </Button>
-
-                  )
-                }
-
-
-                <Drawer direction="right" open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                  <DrawerTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="
-
-          flex h-10 items-center gap-2 rounded-md
-
-          border border-blue-100 bg-white px-4
-
-          font-medium text-[#0446DB] shadow-sm
-
-          transition-all
-
-          hover:bg-blue-50 hover:text-[#0446DB]
-
-          hover:shadow-md
-
-          dark:border-gray-700 dark:bg-gray-800
-
-          dark:text-blue-400 dark:hover:bg-gray-700
-
-        "
-                    >
-                      <Filter size={17} />
-
-                      <span>Filter</span>
-                    </Button>
-                  </DrawerTrigger>
-
-                  <DrawerContent>
-                    <DrawerHeader>
-                      <DrawerTitle>Filter</DrawerTitle>
-                    </DrawerHeader>
-
-                    <div className="p-4">
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-
-                          applyFilters();
-
-                          setIsFilterOpen(false);
-                        }}
-                        className="flex-col  w-full  items-end gap-4"
-                      >
-                        <div className="p-4">
-                          <div className="flex flex-wrap items-end gap-4">
-                            {/* Start Date */}
-
-                            <div className=" w-full">
-                              <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-
-                              <input
-                                type="date"
-                                value={advanceFilters.startDate}
-                                max={advanceFilters.endDate || undefined}
-                                onChange={(e) =>
-                                  updateAdvanceFilter(
-                                    "startDate",
-
-                                    e.target.value,
-                                  )
-                                }
-                                onClick={openDatePicker}
-                                onFocus={openDatePicker}
-                                className="border flex w-full  px-3 py-2 rounded-md text-sm cursor-pointer bg-white text-gray-900 dark:bg-gray-900 dark:text-white"
-                              />
-                            </div>
-
-                            {/* End Date */}
-
-                            <div className=" w-full">
-                              <label className="block text-xs text-gray-600 mb-1">End Date</label>
-
-                              <input
-                                type="date"
-                                value={advanceFilters.endDate}
-                                min={advanceFilters.startDate || undefined}
-                                onChange={(e) => updateAdvanceFilter("endDate", e.target.value)}
-                                onClick={openDatePicker}
-                                onFocus={openDatePicker}
-                                className="border flex w-full px-3 py-2 rounded-md text-sm cursor-pointer bg-white text-gray-900 dark:bg-gray-900 dark:text-white"
-                              />
-                            </div>
-
-                            {/* Order ID */}
-
-                            <div className=" w-full">
-                              <label className="block text-xs text-gray-600 mb-1">Order ID</label>
-
-                              <input
-                                type="text"
-                                value={advanceFilters.order_id}
-                                onChange={(e) =>
-                                  updateAdvanceFilter(
-                                    "order_id",
-
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="Enter Id(s)"
-                                className="border w-full px-3 py-2 rounded-md text-sm"
-                              />
-                            </div>
-
-                            {/* AWB Number */}
-
-                            <div className=" w-full">
-                              <label className="block text-xs text-gray-600 mb-1">AWB Number</label>
-
-                              <input
-                                type="text"
-                                value={advanceFilters.awbNumber}
-                                onChange={(e) =>
-                                  updateAdvanceFilter(
-                                    "awbNumber",
-
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="Enter AWB Number(s)"
-                                className="border px-3 w-full py-2 rounded-md text-sm"
-                              />
-                            </div>
-
-                            {/* Rider ID */}
-
-                            <div className=" w-full">
-                              <label className="block text-xs text-gray-600 mb-1">Rider ID</label>
-
-                              <input
-                                type="number"
-                                value={advanceFilters.rider_id}
-                                onChange={(e) =>
-                                  updateAdvanceFilter(
-                                    "rider_id",
-
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="Integer Only"
-                                className="border px-3 w-full py-2 rounded-md text-sm"
-                              />
-                            </div>
-
-                            {/* Vendor ID */}
-
-                            <div className=" w-full">
-                              <label className="block text-xs text-gray-600 mb-1">Vendor ID</label>
-
-                              <input
-                                type="number"
-                                value={advanceFilters.vendor_id}
-                                onChange={(e) =>
-                                  updateAdvanceFilter(
-                                    "vendor_id",
-
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="Integer Only"
-                                className="border px-3 w-full py-2 rounded-md text-sm"
-                              />
-                            </div>
-
-                            {/* Update Button */}
-
-                            <div className=" w-full flex">
-                              <button
-                                type="submit"
-                                onClick={applyFilters}
-                                className="bg-[#0446DB] w-1/2 text-white px-4 py-2 rounded-md hover:bg-indigo-800 transition text-sm mx-2"
-                              >
-                                Filter
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={resetFilters}
-                                className="bg-[#0446DB] w-1/2 text-white px-4 py-2 rounded-md hover:bg-indigo-800 transition text-sm mx-2"
-                              >
-                                Reset
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
-
-                    <DrawerFooter>
-                      <Button onClick={() => setIsFilterOpen(false)} variant="outline">
-                        Cancel
-                      </Button>
-                    </DrawerFooter>
-                  </DrawerContent>
-                </Drawer>
-              </div>
+              ))}
             </div>
-          </div>
+            {[
+              { label: "Order ID", key: "order_id", hint: "Enter order ID(s)" },
+              { label: "AWB Number", key: "awbNumber", hint: "Enter AWB number(s)" },
+              { label: "Rider ID", key: "rider_id", hint: "Enter rider ID", type: "number" },
+              { label: "Vendor ID", key: "vendor_id", hint: "Enter vendor ID", type: "number" },
+              { label: "DC ID", key: "dc_id", hint: "Enter DC ID", type: "number" },
+            ].map((f) => (
+              <label key={f.key} className="block space-y-1.5">
+                <span className="text-xs font-semibold text-slate-600">{f.label}</span>
+                <input
+                  type={f.type || "text"}
+                  value={draftFilters[f.key]}
+                  onChange={(e) => updateDraft(f.key, e.target.value)}
+                  placeholder={f.hint}
+                  className={classes.input}
+                />
+              </label>
+            ))}
+          </form>
+          <DrawerFooter className="flex-row gap-2 border-t border-slate-200 px-5 py-4 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={resetFilters}
+              className={`${classes.lightButton} h-10 flex-1`}
+            >
+              <RotateCcw size={15} /> Reset
+            </button>
+            <button
+              type="submit"
+              form="cod-remittance-filters"
+              className={`${classes.primaryButton} h-10 flex-[2]`}
+            >
+              <Filter size={15} /> Apply Filters
+            </button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
-          <div className="z-10 flex min-h-0 flex-1 flex-col overflow-hidden dark:bg-gray-900 rounded-md">
-            <div className="w-full shrink-0 justify-center  rounded shadow-2xl dark:bg-gray-900 left-0 z-40">
-              <div className="relative ">
-                <div className=" flex justify-left  overflow-x-auto  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2">
-                  <div className="flex gap-1 min-w-max">
-                    {filters.map((filter) => (
-                      <Button
-                        key={filter}
-                        onClick={() => {
-                          setSelectedFilter(filter);
-
-                          setPage(1);
-                        }}
-                        className={`px-2 py-2 rounded-sm border transition font-medium mt-0 ${
-                          selectedFilter === filter
-                            ? "bg-[#0446DB] text-white"
-                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                        }`}
-                      >
-                        {filter}(
-                        {filter === "All"
-                          ? `${totalAmount}`
-                          : filter === "Pending"
-                            ? `${pendingAmount}`
-                            : filter === "Initiated"
-                              ? `${initiatedAmount}`
-                              : filter === "Adjusted"
-                                ? `${adjustedAmount}`
-                                : filter === "Received"
-                                  ? `${receivedAmount}`
-                                  : filter}
-                        )
-                      </Button>
-                    ))}
-                  </div>
+      {editItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget && !busyAction) setEditItem(null);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Update Remittance"
+            className="w-full max-w-md overflow-hidden rounded-sm bg-white shadow-2xl dark:bg-slate-900"
+          >
+            <div className="flex items-center justify-between bg-[#0446DB] px-5 py-4 text-white">
+              <h2 className="text-base font-semibold">Update Remittance</h2>
+              <button type="button" onClick={() => setEditItem(null)} aria-label="Close modal">
+                <X size={19} />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4 p-5">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Order ID</label>
+                <input
+                  readOnly
+                  value={editItem.order_id || ""}
+                  className={`${classes.input} bg-slate-50`}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Remarks</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  className={`${classes.input} h-auto py-2`}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  New Status
+                </label>
+                <div className="rounded-sm border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700">
+                  <CheckCircle2 size={15} className="mr-2 inline" /> Received
                 </div>
               </div>
-            </div>
-
-            {/* Table */}
-
-            <div className="min-h-0 flex-1 overflow-auto bg-white dark:bg-gray-900">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="px-6 py-3 text-left">RIDER ID</TableHead>
-
-                    <TableHead className="px-6 py-3 text-left">ORDER ID</TableHead>
-
-                    <TableHead className="px-6 py-3 text-left">AMOUNT</TableHead>
-
-                    <TableHead className="px-6 py-3 text-left">RECEIVED BY</TableHead>
-
-                    <TableHead className="px-6 py-3 text-left">REMARKS</TableHead>
-                    <TableHead className="px-6 py-3 text-left uppercase">Current Holder</TableHead>
-
-                    <TableHead className="px-6 py-3 text-left">STATUS</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {loading ? (
-                    <>
-                      <TableRow>
-                        <TableCell colSpan={10} className="text-center py-10">
-                          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-
-                          <p className="mt-2">Loading Remittances...</p>
-                        </TableCell>
-                      </TableRow>
-                    </>
-                  ) : data.length == 0 ? (
-                    <>
-                      <TableRow>
-                        <TableCell colSpan={10} className="text-center py-10">
-                          No found
-                        </TableCell>
-                      </TableRow>
-                    </>
+              <p className="flex gap-2 rounded-sm bg-amber-50 p-3 text-xs text-amber-800">
+                <CircleAlert size={16} className="shrink-0" /> This action updates the remittance
+                status to received.
+              </p>
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  disabled={!!busyAction}
+                  onClick={() => setEditItem(null)}
+                  className={classes.lightButton}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!!busyAction || !remarks.trim()}
+                  className={classes.primaryButton}
+                >
+                  {busyAction === "update" ? (
+                    <Loader2 size={15} className="animate-spin" />
                   ) : (
-                    data.map((d, index) => {
-                      return (
-                        <TableRow key={index}>
-                          <TableCell className="px-6 py-4 dark:text-white">
-                            {d.vendor_id ? `FP_${d.vendor_id}_${d.rider_id}` : `DKT_${d.rider_id}`}
-
-                            {}
-                          </TableCell>
-
-                          <TableCell className="px-6 py-4">
-                            <p className="text-l text-gray-800 flex items-center">
-                              <a
-                                href={`${frontEndURL}/track-order?awb_number=${d.awb_number}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline text-blue-700 hover:text-blue-500"
-                              >
-                                {d.awb_number}
-                              </a>
-
-                              <button
-                                className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(d.awb_number);
-
-                                  setCopySuccess(d.awb_number);
-
-                                  setTimeout(() => {
-                                    setCopySuccess(null);
-                                  }, 2000);
-                                }}
-                              >
-                                {copySuccess === d.awb_number ? <CiCircleCheck /> : <FaRegCopy />}
-                              </button>
-                            </p>
-
-                            <p className="text-s text-gray-500 dark:text-white">
-                              {new Date(d.submitted_at).toLocaleString(
-                                "en-IN",
-
-                                {
-                                  timeZone: "Asia/Kolkata",
-
-                                  day: "2-digit",
-
-                                  month: "2-digit",
-
-                                  year: "numeric",
-
-                                  hour: "2-digit",
-
-                                  minute: "2-digit",
-
-                                  hour12: true,
-                                },
-                              )}
-                            </p>
-
-                            <p className="text-s text-gray-400 dark:text-white">
-                              Merchant ID: {d.merchant_id}
-                            </p>
-
-                            <p className="text-s text-gray-400 whitespace-nowrap">
-                              Order ID:{" "}
-                              {d.merchant_order_id?.length <= 20
-                                ? d.merchant_order_id
-                                : d.merchant_order_id?.slice(0, 20) + "..."}
-                              <button
-                                className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(d.merchant_order_id);
-
-                                  setCopySuccess(d.merchant_order_id);
-
-                                  setTimeout(() => {
-                                    setCopySuccess(null);
-                                  }, 2000);
-                                }}
-                              >
-                                {copySuccess === d.merchant_order_id ? (
-                                  <CiCircleCheck />
-                                ) : (
-                                  <FaRegCopy />
-                                )}
-                              </button>
-                            </p>
-                          </TableCell>
-
-                          <TableCell className="px-6 py-4 dark:text-white">{d.amount}</TableCell>
-
-                          <TableCell className="px-6 py-4 dark:text-white">
-                            {d.received_by || "-"}
-                          </TableCell>
-
-                          <TableCell className="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {d.remarks || "NA"}
-                          </TableCell>
-                         <TableCell className="px-6 py-4 whitespace-nowrap dark:text-white">
-                          {d.current_holder
-                            ? d.current_holder.charAt(0).toUpperCase() + d.current_holder.slice(1)
-                            : "NA"}
-                        </TableCell>
-
-                          <TableCell className="px-6 py-4">
-                            {
-                              permissions.includes('REMITTANCE_UPDATE') ? (
-
-                                d.status === "received" ? (
-                                  <span className="text-green-800 bg-green-100 hover:bg-green-200 font-medium px-3 py-1 rounded-full">
-                                    Received
-                                  </span>
-                                ) : (
-    
-                                  
-                                  <button onClick={() => handleEditClick(d)}>
-                                    <>
-                                      {d.status === "pending" ? (
-                                       
-                                        <span
-                                          className="
-                                            inline-flex items-center gap-2
-                                            rounded-lg border border-red-200
-                                            bg-red-50 px-3 py-1.5
-                                            text-xs font-semibold text-red-700
-                                            transition-colors hover:bg-red-100
-                                            dark:border-red-500/20
-                                            dark:bg-red-500/10
-                                            dark:text-red-400
-                                          "
-                                        >
-                                          
-    
-                                          {Number(d?.pending_reconciliation) === 1 ? (
-                                            <>
-                                              <span className="whitespace-nowrap">
-                                                Pending Reconciliation
-                                              </span>
-    
-                                              <span
-                                                className="
-                                                  rounded-md border border-red-200
-                                                  bg-white px-2 py-0.5
-                                                  text-[10px] font-bold text-red-700
-                                                  dark:border-red-500/20
-                                                  dark:bg-red-500/10
-                                                  dark:text-red-300
-                                                "
-                                              >
-                                                {` ${d?.aging ?? "—"} Day`}
-                                              </span>
-                                            </>
-                                          ) : (
-                                            <span>Pending</span>
-                                          )}
-                                        </span>
-    
-                                      ) : d.status === "initiated" ? (
-                                        <span className="text-yellow-800 bg-yellow-100 hover:bg-yellow-200 font-medium px-3 py-1 rounded-full">
-                                          Initiated
-                                        </span>
-                                      ) : d.status === "received" ? (
-                                        <span className="text-green-800 bg-green-100 hover:bg-green-200 font-medium px-3 py-1 rounded-full">
-                                          Received
-                                        </span>
-                                      ) : d.status === "adjusted" ? (
-                                        <span className="text-blue-800 bg-blue-100 hover:bg-blue-200 font-medium px-3 py-1 rounded-full hover:cursor-pointer">
-                                          Adjusted
-                                        </span>
-                                      ) : (
-                                        <span className="text-blue-800 bg-blue-100 hover:bg-blue-200 font-medium px-3 py-1 rounded-full">
-                                          {d.status}
-                                        </span>
-                                      )}
-                                    </>
-                                  </button>
-                                )
-                              ):(
-                                 <TableCell className="px-6 py-4">
-                                  -
-                                  </TableCell>
-                              )
-                            }
-
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Pagination */}
-
-            <div className="shrink-0 flex justify-center items-center gap-4 border-t border-gray-200 bg-white py-3 dark:border-gray-700 dark:bg-gray-900">
-              <Button
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                disabled={page === 1}
-                className={`px-4 py-2 rounded-sm text-sm font-medium ${
-                  page === 1
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-[#0446DB] text-white hover:bg-indigo-800"
-                }`}
-              >
-                Previous
-              </Button>
-
-              <span className="text-gray-700">
-                Page {page} of {totalPages}
-              </span>
-
-              <Button
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={page === totalPages}
-                className={`px-4 py-2 rounded-sm text-sm font-medium ${
-                  page === totalPages
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-[#0446DB] text-white hover:bg-indigo-800"
-                }`}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-
-          {/* Modal */}
-
-          {editItem && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(46,46,46,0.5)]">
-              <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
-                {/* Modal Header */}
-
-                <div className="bg-[#0446DB] px-6 py-4">
-                  <h2 className="text-xl font-semibold text-white">Update Remittance</h2>
-                </div>
-
-                {/* Modal Form */}
-
-                <form onSubmit={handleSubmit} className="px-6 py-6 space-y-5">
-                  {/* Order ID */}
-
-                  <div>
-                    <label className="block text-sm text-gray-700 font-medium mb-1">Order ID</label>
-
-                    <input
-                      type="text"
-                      value={formData.orderId}
-                      readOnly
-                      className="w-full px-4 py-2 border border-gray-300 bg-gray-100 rounded-sm"
-                    />
-                  </div>
-
-                  {/* Remarks */}
-
-                  <div>
-                    <label className="block text-sm text-gray-700 font-medium mb-1">Remarks</label>
-
-                    <textarea
-                      className="w-full px-4 py-2 border border-gray-300 rounded-sm"
-                      value={formData.remarks}
-                      onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  {/* New Status */}
-
-                  <div>
-                    <label className="block text-sm text-gray-700 font-medium mb-1">
-                      New Status
-                    </label>
-
-                    <input
-                      type="text"
-                      value="Received"
-                      readOnly
-                      className="w-full px-4 py-2 border border-gray-300 bg-green-100 text-green-500 rounded-sm"
-                    />
-                  </div>
-
-                  {/* Buttons */}
-
-                  <div className="flex justify-end space-x-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditItem(null)}
-                      className="px-5 py-2 rounded-sm bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
-                    >
-                      Cancel
-                    </button>
-
-                    <button
-                      type="submit"
-                      className="px-5 py-2 rounded-sm bg-[#0446DB] text-white hover:bg-indigo-800 transition"
-                    >
-                      Submit
-                    </button>
-                  </div>
-                </form>
+                    <Check size={15} />
+                  )}{" "}
+                  Confirm Received
+                </button>
               </div>
-            </div>
-          )}
+            </form>
+          </div>
         </div>
       )}
     </>
   );
 }
-
-export default UserCODRemittances;

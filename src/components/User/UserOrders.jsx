@@ -813,6 +813,8 @@ useEffect(() => {
 
   return () => clearTimeout(timer);
 }, []);
+
+
   return (
     <>
 
@@ -3736,14 +3738,24 @@ useEffect(() => {
                               {/* Order ID */}
                               <td className=" py-4 whitespace-pre-line">
                                 <p className="text-l text-gray-800 flex items-center">
-                                  <a
+                                  {/* <a
                                     href={`${frontEndURL}/track-order?awb_number=${order.awb_number}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="underline text-blue-700 hover:text-blue-500"
                                   >
                                     {order.awb_number}
-                                  </a>
+                                  </a> */}
+
+                                  <Link
+                                target="_blank"
+                                  to={`/user/order-history?awb_number=${encodeURIComponent(order.awb_number)}`}
+
+                                  rel="noopener noreferrer"
+                                  className="underline text-[#0446DB] hover:text-blue-500"
+                                >
+                                  {order.awb_number}
+                                </Link>
                                   <button
                                     className="pl-2 text-lg text-gray-600 hover:text-[#0446DB] transition"
                                     onClick={() => {

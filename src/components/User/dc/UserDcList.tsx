@@ -1,1728 +1,1054 @@
+// import { useCallback, useEffect, useMemo, useState } from "react";
+// import type { FormEvent } from "react";
+// import axios from "axios";
+// import { toast } from "react-toastify";
+// import { Link, useNavigate } from "react-router-dom";
+// import {
+//   Building2, Search, Filter, RefreshCw, Plus, Eye, X, ChevronLeft,
+//   ChevronRight, Mail, Phone, MapPin, UserRound, ExternalLink,
+//   Loader2, CheckCircle2, AlertCircle, Pencil, Save, LockKeyhole,
+// } from "lucide-react";
+// import AxiosInstance from "@/Helper/axiosInstance";
 
+// const baseURL = String(import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+// const frontendURL = String(import.meta.env.VITE_FRONTEND_URL || "").replace(/\/$/, "");
+// const headers = () => ({ Authorization: `Bearer ${localStorage.getItem("token") || ""}` });
 
-import {
+// type DC = {
+//   id?: number | string;
+//   dc_id?: number | string;
+//   dc_name?: string | null;
+//   dc_code?: string | null;
+//   username?: string | null;
+//   email?: string | null;
+//   phone?: string | number | null;
+//   address?: string | null;
+//   city?: string | null;
+//   state?: string | null;
+//   pincode?: string | number | null;
+//   is_active?: number | string | boolean | null;
+//   status?: number | string | boolean | null;
+// };
+// type Status = "all" | "active" | "inactive";
+// type EditField = "dc_name" | "dc_code" | "phone" | "email" | "address" | "city" | "state" | "pincode" | "password";
+// type EditForm = Record<EditField, string>;
+// const emptyEdit: EditForm = { dc_name: "", dc_code: "", phone: "", email: "", address: "", city: "", state: "", pincode: "", password: "" };
+// const fields: { key: EditField; label: string }[] = [
+//   { key: "dc_name", label: "DC Name" }, { key: "dc_code", label: "DC Code" },
+//   { key: "email", label: "Email Address" }, { key: "phone", label: "Phone Number" },
+//   { key: "city", label: "City" }, { key: "state", label: "State" },
+//   { key: "pincode", label: "Pincode" }, { key: "address", label: "Complete Address" },
+//   { key: "password", label: "New Password (optional)" },
+// ];
+// const dcId = (dc: DC) => dc.dc_id ?? dc.id;
+// const isActive = (dc: DC) => Number(dc.is_active ?? dc.status) === 1;
+// const display = (v: unknown) => v === null || v === undefined || v === "" ? "—" : String(v);
+// const fieldClass = "mt-1.5 h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-[#0446DB] focus:ring-2 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100";
+// const errorText = (err: unknown) => axios.isAxiosError(err) ? err.response?.data?.message || err.message : err instanceof Error ? err.message : "Something went wrong";
 
-  useEffect,
+// export default function UserDistributionCenterListing() {
+//   const navigate = useNavigate();
+//   const [permissions, setPermissions] = useState<string[]>([]);
+//   const [permissionLoading, setPermissionLoading] = useState(true);
+//   const [permissionError, setPermissionError] = useState("");
+//   const [list, setList] = useState<DC[]>([]);
+//   const [loading, setLoading] = useState(false);
+//   const [search, setSearch] = useState("");
+//   const [status, setStatus] = useState<Status>("all");
+//   const [drawerOpen, setDrawerOpen] = useState(false);
+//   const [draftStatus, setDraftStatus] = useState<Status>("all");
+//   const [draftCity, setDraftCity] = useState("");
+//   const [city, setCity] = useState("");
+//   const [page, setPage] = useState(1);
+//   const [limit, setLimit] = useState(20);
+//   const [selected, setSelected] = useState<DC | null>(null);
+//   const [editing, setEditing] = useState(false);
+//   const [editForm, setEditForm] = useState<EditForm>({ ...emptyEdit });
+//   const [saving, setSaving] = useState(false);
 
-  useMemo,
+//   const can = (code: string) => permissions.includes(code) || permissions.includes("ADMIN_FULL_ACCESS");
 
-  useState,
+//   const fetchPermissions = useCallback(async () => {
+//     setPermissionLoading(true);
+//     setPermissionError("");
+//     try {
+//       const result = await axios.get(`${baseURL}/api/user/getUserPermissions`, { headers: headers() });
+//       const codes = result.data?.data?.data;
+//       if (!Array.isArray(codes)) throw new Error("Invalid permissions response");
+//       setPermissions(codes);
+//       if (!codes.includes("VIEW_DC") && !codes.includes("ADMIN_FULL_ACCESS")) {
+//         navigate("/unauthorized", { replace: true });
+//       }
+//     } catch (error) {
+//       setPermissionError(errorText(error));
+//     } finally {
+//       setPermissionLoading(false);
+//     }
+//   }, [navigate]);
 
-  type ReactNode,
+//   const fetchDCs = useCallback(async () => {
+//     setLoading(true);
+//     try {
+//       const token = localStorage.getItem("merchantToken") || localStorage.getItem("token");
+//       const resultRows: DC[] = [];
+//       let apiPage = 1;
+//       let more = true;
+//       while (more && apiPage <= 1000) {
+//         const response = await axios.get(`${baseURL}/api/user/getDcs`, {
+//           headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}`, "x-auth-token": token } : {}) },
+//           params: { page: apiPage, limit: 100 },
+//         });
+//         if (response.data?.success === false) throw new Error(response.data?.message || "Unable to load distribution centers");
+//         const body = response.data?.data;
+//         const rows: DC[] = Array.isArray(body) ? body : Array.isArray(body?.dcs) ? body.dcs : Array.isArray(response.data?.dcs) ? response.data.dcs : [];
+//         resultRows.push(...rows);
+//         const pagination = response.data?.pagination ?? body?.pagination;
+//         const totalPages = Number(pagination?.totalPages ?? pagination?.total_pages) || (Number(pagination?.total) ? Math.ceil(Number(pagination.total) / (Number(pagination.limit) || 100)) : 0);
+//         // If API does not return pagination, treat the response as a complete list.
+//         more = totalPages > 0 && apiPage < totalPages && rows.length > 0;
+//         apiPage++;
+//       }
+//       setList(resultRows);
+//     } catch (error) {
+//       toast.error(errorText(error));
+//       setList([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
 
-  type ChangeEvent,
+//   useEffect(() => { void fetchPermissions(); }, [fetchPermissions]);
+//   useEffect(() => { if (!permissionLoading && can("VIEW_DC")) void fetchDCs(); }, [permissionLoading, permissions, fetchDCs]);
 
-  type MouseEvent,
+//   const cities = useMemo(() => [...new Set(list.map((d) => String(d.city || "").trim()).filter(Boolean))].sort(), [list]);
+//   const filtered = useMemo(() => list.filter((dc) => {
+//     const q = search.trim().toLowerCase();
+//     const searchable = [dc.dc_name, dc.dc_code, dc.username, dc.email, dc.phone, dc.address, dc.city, dc.state, dc.pincode]
+//       .some((value) => String(value ?? "").toLowerCase().includes(q));
+//     const statusMatch = status === "all" || (status === "active" ? isActive(dc) : !isActive(dc));
+//     return searchable && statusMatch && (!city || String(dc.city || "").toLowerCase() === city.toLowerCase());
+//   }), [list, search, status, city]);
+//   const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
+//   const visible = useMemo(() => filtered.slice((page - 1) * limit, page * limit), [filtered, page, limit]);
+//   useEffect(() => { setPage(1); }, [search, status, city, limit]);
+//   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
 
-} from "react";
+//   const openDC = (dc: DC) => {
+//     setSelected(dc);
+//     setEditing(false);
+//     setEditForm({
+//       ...emptyEdit,
+//       dc_name: String(dc.dc_name ?? ""), dc_code: String(dc.dc_code ?? ""),
+//       email: String(dc.email ?? ""), phone: String(dc.phone ?? ""),
+//       city: String(dc.city ?? ""), state: String(dc.state ?? ""),
+//       pincode: String(dc.pincode ?? ""), address: String(dc.address ?? ""),
+//     });
+//   };
+//   const closeDC = () => { if (!saving) { setSelected(null); setEditing(false); } };
 
-import axios, { type AxiosError } from "axios";
+//   const updateDC = async (patch: Record<string, string | number>) => {
+//     if (!selected || !can("UPDATE_DC") || saving) return;
+//     const id = dcId(selected);
+//     if (id === null || id === undefined) return toast.error("DC ID is missing");
+//     setSaving(true);
+//     try {
+//       const res = await AxiosInstance.patch(`/api/user/updateDc/${id}`, patch);
+//       if (res.data?.success === false) throw new Error(res.data?.message || "Update failed");
+//       const updated = res.data?.data?.dc as DC | undefined;
+//       if (updated) {
+//         setList((prev) => prev.map((d) => String(dcId(d)) === String(id) ? { ...d, ...updated } : d));
+//         setSelected((prev) => prev ? { ...prev, ...updated } : prev);
+//       } else {
+//         await fetchDCs();
+//         setSelected((prev) => prev ? { ...prev, ...patch } as DC : prev);
+//       }
+//       setEditing(false);
+//       setEditForm((prev) => ({ ...prev, password: "" }));
+//       toast.success(res.data?.message || "Distribution center updated");
+//     } catch (error) {
+//       toast.error(errorText(error));
+//     } finally {
+//       setSaving(false);
+//     }
+//   };
 
-import Select, { type StylesConfig } from "react-select";
+//   const saveDetails = (event: FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+//     if (!["dc_name", "dc_code", "email"].every((key) => editForm[key as EditField].trim())) return toast.error("DC name, code and email are required");
+//     if (editForm.password && (editForm.password.length < 8 || new TextEncoder().encode(editForm.password).length > 72)) return toast.error("Password must be between 8 and 72 bytes");
+//     const { password, ...values } = editForm;
+//     void updateDC({ ...values, ...(password ? { password } : {}) });
+//   };
 
+//   if (permissionLoading) return <div className="flex h-[80vh] items-center justify-center gap-2 text-sm"><Loader2 className="h-5 w-5 animate-spin text-[#0446DB]" /> Checking permissions...</div>;
+//   if (permissionError) return (
+//     <div className="flex h-[70vh] flex-col items-center justify-center gap-3 text-sm">
+//       <AlertCircle className="h-7 w-7 text-red-500" />
+//       <p>Could not verify permissions: {permissionError}</p>
+//       <button onClick={() => void fetchPermissions()} className="rounded-md bg-[#0446DB] px-4 py-2 font-medium text-white">Retry</button>
+//     </div>
+//   );
+//   if (!can("VIEW_DC")) return null;
+
+//   return (
+//     <div className="flex h-[calc(100dvh-80px)] min-h-0 w-full flex-col overflow-hidden bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+//       <div className="shrink-0 space-y-3 border-b border-gray-200 bg-white px-4 py-4 dark:border-gray-800 dark:bg-gray-900">
+//         <div className="flex flex-wrap items-center justify-between gap-3">
+//           <div><h1 className="text-2xl font-semibold">Distribution Centers</h1><p className="mt-1 text-xs text-gray-500 dark:text-gray-400">View and manage delivery center accounts and locations</p></div>
+//           <div className="flex flex-wrap items-center gap-2">
+//             <button type="button" disabled={loading} onClick={() => void fetchDCs()} className="inline-flex h-9 items-center gap-2 rounded-md border border-gray-200 px-3 text-sm hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh</button>
+//             {
+//               (permissions.includes('CREATE_DC') || permissions.includes('ADMIN_FULL_ACCESS') )&& (
+
+//                 <Link to="/user/onboarding/distribution-center" className="inline-flex h-9 items-center gap-2 rounded-md bg-[#0446DB] px-3 text-sm font-medium text-white hover:bg-blue-800"><Plus className="h-4 w-4" /> Add DC</Link>
+//               )
+//             }
+//           </div>
+//         </div>
+//         <div className="flex flex-wrap items-center gap-2">
+//           <div className="relative min-w-[220px] flex-1 sm:max-w-lg">
+//             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+//             <input aria-label="Search distribution centers" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, code, city, email..." className="h-10 w-full rounded-md border border-gray-300 bg-white pl-10 pr-8 text-sm outline-none focus:border-[#0446DB] dark:border-gray-700 dark:bg-gray-800" />
+//             {!!search && <button type="button" aria-label="Clear search" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"><X className="h-4 w-4" /></button>}
+//           </div>
+//           <button type="button" onClick={() => { setDraftStatus(status); setDraftCity(city); setDrawerOpen(true); }} className="inline-flex h-10 items-center gap-2 rounded-md border border-gray-300 bg-white px-3 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800"><Filter className="h-4 w-4" /> Filters {city && <span className="rounded bg-blue-50 px-1.5 text-[#0446DB]">1</span>}</button>
+//         </div>
+//         <div className="flex gap-2 overflow-x-auto pb-1">
+//           {([ { value: "all", label: "All" }, { value: "active", label: "Active" }, { value: "inactive", label: "Inactive" } ] as const).map((tab) => (
+//             <button key={tab.value} type="button" onClick={() => setStatus(tab.value)} className={`shrink-0 rounded-md border px-4 py-2 text-sm font-medium transition ${status === tab.value ? "border-[#0446DB] bg-[#0446DB] text-white" : "border-gray-200 bg-white text-gray-600 hover:border-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}>{tab.label}</button>
+//           ))}
+//         </div>
+//       </div>
+
+//       <div className="min-h-0 flex-1 overflow-auto bg-white dark:bg-gray-900">
+//         <table className="w-full min-w-[1080px] border-separate border-spacing-0 text-sm">
+//           <thead className="sticky top-0 z-20 bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+//             <tr>{["Distribution Center", "Code / Username", "Contact", "Location", "Status", "Actions"].map((heading) => <th key={heading} className="whitespace-nowrap border-b border-gray-200 px-4 py-3 dark:border-gray-700">{heading}</th>)}</tr>
+//           </thead>
+//           <tbody>
+//             {loading ? <tr><td colSpan={6} className="py-20 text-center text-gray-500"><Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-[#0446DB]" />Loading Distribution Centers...</td></tr>
+//             : visible.length === 0 ? <tr><td colSpan={6} className="py-20 text-center text-gray-500"><Building2 className="mx-auto mb-3 h-8 w-8 text-gray-300" />No distribution centers found</td></tr>
+//             : visible.map((dc, index) => (
+//               <tr key={String(dcId(dc) ?? index)} className="hover:bg-blue-50/40 dark:hover:bg-gray-800/50">
+//                 <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800"><div className="flex items-center gap-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#0446DB] dark:bg-blue-950/40"><Building2 className="h-4 w-4" /></div><div className="min-w-0"><div className="max-w-[250px] truncate font-semibold">{display(dc.dc_name)}</div><div className="mt-0.5 text-xs text-gray-400">ID: {display(dcId(dc))}</div></div></div></td>
+//                 <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800"><div className="font-mono text-xs font-semibold">{display(dc.dc_code)}</div><div className="mt-1 flex items-center gap-1.5 text-xs text-gray-500"><UserRound className="h-3.5 w-3.5" /> {display(dc.username)}</div></td>
+//                 <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800"><div className="flex items-center gap-1.5 text-xs"><Mail className="h-3.5 w-3.5 text-gray-400" /><span className="max-w-[215px] truncate">{display(dc.email)}</span></div><div className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500"><Phone className="h-3.5 w-3.5" /> {display(dc.phone)}</div></td>
+//                 <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800"><div className="flex items-start gap-1.5"><MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gray-400" /><div><div className="text-sm font-medium">{display(dc.city)}</div><div className="mt-0.5 text-xs text-gray-500">{display(dc.state)}{dc.pincode ? ` · ${dc.pincode}` : ""}</div></div></div></td>
+//                 <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">{isActive(dc) ? <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-950/30 dark:text-green-400"><span className="h-1.5 w-1.5 rounded-full bg-green-500" />Active</span> : <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 dark:bg-red-950/30 dark:text-red-400"><span className="h-1.5 w-1.5 rounded-full bg-red-500" />Inactive</span>}</td>
+//                 <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800"><div className="flex items-center gap-2"><button type="button" onClick={() => openDC(dc)} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-gray-200 px-2.5 text-xs font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-[#0446DB] dark:border-gray-700 dark:text-gray-200"><Eye className="h-3.5 w-3.5" />View / Edit</button>{can("LOGIN_DC") && isActive(dc) && <a href={`${frontendURL}/incognitoLogin/${encodeURIComponent(localStorage.getItem("token") || "")}/${encodeURIComponent(String(dcId(dc) ?? ""))}/dc`} target="_blank" rel="noopener noreferrer" className="inline-flex h-8 items-center gap-1 rounded-md bg-[#0446DB] px-2.5 text-xs font-medium text-white hover:bg-blue-800">Login<ExternalLink className="h-3.5 w-3.5" /></a>}</div></td>
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+//       </div>
+//       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-white px-4 py-3 text-xs dark:border-gray-800 dark:bg-gray-900">
+//         <span className="text-gray-600 dark:text-gray-300">{filtered.length ? `${(page - 1) * limit + 1}–${Math.min(page * limit, filtered.length)} of ${filtered.length}` : "0"} distribution centers</span>
+//         <div className="flex items-center gap-2"><span>Rows</span><select value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="rounded border border-gray-200 px-2 py-1 dark:border-gray-700 dark:bg-gray-800">{[10, 20, 50, 100].map((n) => <option key={n} value={n}>{n}</option>)}</select><button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="rounded border border-gray-200 p-1.5 disabled:opacity-30 dark:border-gray-700"><ChevronLeft className="h-4 w-4" /></button><span>Page {page} of {totalPages}</span><button type="button" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="rounded border border-gray-200 p-1.5 disabled:opacity-30 dark:border-gray-700"><ChevronRight className="h-4 w-4" /></button></div>
+//       </div>
+
+//       {drawerOpen && <div className="fixed inset-0 z-[100] flex justify-end bg-black/40" onMouseDown={(e) => { if (e.target === e.currentTarget) setDrawerOpen(false); }}><div className="flex h-full w-full max-w-md flex-col bg-white shadow-xl dark:bg-gray-900"><div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800"><div><h2 className="text-lg font-semibold">Advanced Filters</h2><p className="mt-1 text-xs text-gray-500">Filter distribution centers by city and status</p></div><button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close filters"><X className="h-5 w-5" /></button></div><form onSubmit={(e) => { e.preventDefault(); setStatus(draftStatus); setCity(draftCity); setDrawerOpen(false); }} className="flex min-h-0 flex-1 flex-col"><div className="flex-1 space-y-5 overflow-y-auto px-5 py-5"><label className="block text-sm font-medium">Status<select value={draftStatus} onChange={(e) => setDraftStatus(e.target.value as Status)} className={fieldClass}><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label><label className="block text-sm font-medium">City<select value={draftCity} onChange={(e) => setDraftCity(e.target.value)} className={fieldClass}><option value="">All cities</option>{cities.map((name) => <option key={name} value={name}>{name}</option>)}</select></label></div><div className="flex gap-3 border-t border-gray-200 p-5 dark:border-gray-800"><button type="button" onClick={() => { setDraftCity(""); setDraftStatus("all"); setCity(""); setStatus("all"); setDrawerOpen(false); }} className="h-10 flex-1 rounded-md border border-gray-200 text-sm font-medium dark:border-gray-700">Reset</button><button type="submit" className="h-10 flex-1 rounded-md bg-[#0446DB] text-sm font-medium text-white hover:bg-blue-800">Apply Filters</button></div></form></div></div>}
+
+//       {selected && <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-3 sm:p-5" onMouseDown={(e) => { if (e.target === e.currentTarget) closeDC(); }}><div role="dialog" aria-modal="true" aria-label="Distribution center details" className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-900"><div className="flex shrink-0 items-start justify-between bg-[#0446DB] px-5 py-4 text-white"><div className="flex items-center gap-3"><Building2 className="h-6 w-6" /><div><h2 className="text-lg font-semibold">{display(selected.dc_name)}</h2><p className="text-xs text-blue-100">{display(selected.dc_code)} · ID {display(dcId(selected))}</p></div></div><button type="button" disabled={saving} onClick={closeDC} aria-label="Close details"><X className="h-5 w-5" /></button></div><div className="min-h-0 flex-1 overflow-y-auto p-5"><div className="mb-5 flex items-center justify-between rounded-md border border-gray-200 px-4 py-3 dark:border-gray-700"><span className="text-sm font-medium">Account Status</span><span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${isActive(selected) ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400" : "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"}`}>{isActive(selected) ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}{isActive(selected) ? "Active" : "Inactive"}</span></div>{!editing ? <><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{[ ["DC ID", dcId(selected)], ["DC Code", selected.dc_code], ["Username", selected.username], ["Email", selected.email], ["Phone", selected.phone], ["City", selected.city], ["State", selected.state], ["Pincode", selected.pincode] ].map(([label, value]) => <div key={String(label)} className="rounded-md border border-gray-200 p-3.5 dark:border-gray-700"><p className="text-xs text-gray-500">{label}</p><p className="mt-1 break-words text-sm font-semibold">{display(value)}</p></div>)}</div><div className="mt-3 rounded-md border border-gray-200 p-3.5 dark:border-gray-700"><p className="text-xs text-gray-500">Complete Address</p><p className="mt-1 text-sm">{display(selected.address)}</p></div></> : <form id="dc-edit-form" onSubmit={saveDetails} className="grid grid-cols-1 gap-4 sm:grid-cols-2">{fields.map(({ key, label }) => <label key={key} className={`block text-sm font-medium ${key === "address" ? "sm:col-span-2" : ""}`}>{label}{key === "address" ? <textarea rows={3} value={editForm[key]} onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))} className={`${fieldClass} h-auto py-2`} /> : <input type={key === "password" ? "password" : key === "email" ? "email" : "text"} autoComplete={key === "password" ? "new-password" : "off"} value={editForm[key]} onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))} className={fieldClass} />}</label>)}<div className="sm:col-span-2 flex items-center gap-2 text-xs text-gray-500"><LockKeyhole className="h-4 w-4" /> Changing a DC password revokes its existing sessions.</div></form>}</div><div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/40">{can("UPDATE_DC") && (!editing ? <><button type="button" onClick={() => setEditing(true)} className="inline-flex h-9 items-center gap-2 rounded-md border border-gray-200 px-3 text-sm font-medium dark:border-gray-700"><Pencil className="h-4 w-4" /> Edit DC</button><button type="button" disabled={saving} onClick={() => void updateDC({ is_active: isActive(selected) ? 0 : 1 })} className="h-9 rounded-md border border-gray-200 px-3 text-sm font-medium disabled:opacity-50 dark:border-gray-700">{saving ? "Updating..." : isActive(selected) ? "Deactivate" : "Activate"}</button></> : <><button type="button" disabled={saving} onClick={() => setEditing(false)} className="h-9 rounded-md border border-gray-200 px-3 text-sm font-medium dark:border-gray-700">Cancel Edit</button><button form="dc-edit-form" type="submit" disabled={saving} className="inline-flex h-9 items-center gap-2 rounded-md bg-[#0446DB] px-3 text-sm font-medium text-white disabled:opacity-50"><Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Changes"}</button></>)}<button type="button" disabled={saving} onClick={closeDC} className="h-9 rounded-md bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50">Close</button></div></div></div>}
+//     </div>
+//   );
+// }
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import axios from "axios";
 import { toast } from "react-toastify";
-
-import { Link, useNavigate} from "react-router-dom";
-
+import { Link } from "react-router-dom";
 import {
-
   Building2,
-
   Search,
-
-  MapPin,
-
-  Mail,
-
-  Phone,
-
-  User,
-
-  Eye,
-
-  X,
-
-  Hash,
-
-  ChevronLeft,
-
-  ChevronRight,
-
+  Filter,
   RefreshCw,
-
   Plus,
-
-  CircleCheck,
-
-  CircleX,
-
-  MapPinned,
-
-  type LucideIcon,
-
+  Eye,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  Phone,
+  MapPin,
+  UserRound,
   ExternalLink,
-
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Pencil,
+  Save,
+  LockKeyhole,
 } from "lucide-react";
-
 import AxiosInstance from "@/Helper/axiosInstance";
 
-const frontendURL = import.meta.env.VITE_FRONTEND_URL;
+const baseURL = String(import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
+const frontendURL = String(import.meta.env.VITE_FRONTEND_URL || "").replace(/\/$/, "");
 
-type DcStatus = 0 | 1 | "0" | "1" | number | string | null;
-
-type StatusValue = "all" | "active" | "inactive";
-
-interface StatusOption {
-
-  value: StatusValue;
-
-  label: string;
-
-}
-
-interface DistributionCenter {
-
-  dc_id?: number | string | null;
-
-  id?: number | string | null;
-
+type DC = {
+  id?: number | string;
+  dc_id?: number | string;
   dc_name?: string | null;
-
   dc_code?: string | null;
-
   username?: string | null;
-
   email?: string | null;
-
   phone?: string | number | null;
-
   address?: string | null;
-
   city?: string | null;
-
   state?: string | null;
-
   pincode?: string | number | null;
-
-  status?: DcStatus;
-  is_active?: DcStatus;
-
-}
-
-interface DcListResponse {
-
-  success?: boolean;
-
-  message?: string;
-
-  data?:
-
-    | DistributionCenter[]
-
-    | {
-
-        dcs?: DistributionCenter[];
-
-      };
-
-  dcs?: DistributionCenter[];
-
-}
-
-interface ApiErrorResponse {
-
-  message?: string;
-
-  error?: string;
-
-}
-
-interface TableHeadingProps {
-
-  children: ReactNode;
-
-  center?: boolean;
-
-}
-
-interface DetailCardProps {
-
-  icon: LucideIcon;
-
-  label: string;
-
-  value: ReactNode;
-
-}
-
-/* API */
-
-const baseURL = import.meta.env.VITE_BASE_URL;
-
-const DC_LIST_API = `${String(baseURL || "").replace(/\/$/, "")}/api/user/getDcs`;
-
-/* STATUS OPTIONS */
-
-const statusOptions: StatusOption[] = [
-
-  {
-
-    value: "all",
-
-    label: "All Status",
-
-  },
-
-  {
-
-    value: "active",
-
-    label: "Active",
-
-  },
-
-  {
-
-    value: "inactive",
-
-    label: "Inactive",
-
-  },
-
+  is_active?: number | string | boolean | null;
+  status?: number | string | boolean | null;
+};
+type Status = "all" | "active" | "inactive";
+type EditField =
+  | "dc_name"
+  | "dc_code"
+  | "phone"
+  | "email"
+  | "address"
+  | "city"
+  | "state"
+  | "pincode"
+  | "password";
+type EditForm = Record<EditField, string>;
+const emptyEdit: EditForm = {
+  dc_name: "",
+  dc_code: "",
+  phone: "",
+  email: "",
+  address: "",
+  city: "",
+  state: "",
+  pincode: "",
+  password: "",
+};
+const fields: { key: EditField; label: string }[] = [
+  { key: "dc_name", label: "DC Name" },
+  { key: "dc_code", label: "DC Code" },
+  { key: "email", label: "Email Address" },
+  { key: "phone", label: "Phone Number" },
+  { key: "city", label: "City" },
+  { key: "state", label: "State" },
+  { key: "pincode", label: "Pincode" },
+  { key: "address", label: "Complete Address" },
+  { key: "password", label: "New Password (optional)" },
 ];
+const dcId = (dc: DC) => dc.dc_id ?? dc.id;
+const isActive = (dc: DC) => Number(dc.is_active ?? dc.status) === 1;
+const display = (v: unknown) => (v === null || v === undefined || v === "" ? "—" : String(v));
+const fieldClass =
+  "mt-1.5 h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-[#0446DB] focus:ring-2 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100";
+const errorText = (err: unknown) =>
+  axios.isAxiosError(err)
+    ? err.response?.data?.message || err.message
+    : err instanceof Error
+      ? err.message
+      : "Something went wrong";
 
-/* COMPONENT */
-
-function UserDistributionCenterListing() {
-
-  const navigate = useNavigate();
-
-  const [dcList, setDcList] = useState<DistributionCenter[]>([]);
-
-  const [loading, setLoading] = useState(true);
-
-  const [search, setSearch] = useState("");
-
-  const [statusFilter, setStatusFilter] = useState<StatusOption>(statusOptions[0]);
-
-  const [selectedDC, setSelectedDC] = useState<DistributionCenter | null>(null);
-
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [updateLoading, setUpdateLoading] = useState(false);
-  const [editForm, setEditForm] = useState<Record<string, string>>({});
-
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const [pageSize] = useState(10);
-
-  const [isDarkMode] = useState(() =>
-
-    document.documentElement.classList.contains("dark"),
-
-  );
-
-
-
-   const [permissions, setPermissions] = useState<string[]>(() =>JSON.parse(localStorage.getItem("permission") || "[]"));
-
-    const getUserPermissions = async () => {
-
-      try {
-
-        const res = await axios.get(`${baseURL}/api/user/getUserPermissions`, {
-
-          headers: {
-
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-
-          },
-
-        });
-
-        const permission = res?.data?.data?.data || [];
-
-        localStorage.setItem("permission", JSON.stringify(permission));
-
-        console.log("User Permissions:", permission);
-
-        if (
-
-          !permission.includes("VIEW_DC") &&
-
-          !permission.includes("ADMIN_FULL_ACCESS")
-
-        ) {
-
-          navigate("/unauthorized");
-
-          return;
-
-        }
-
-        setPermissions(res?.data?.data?.data)
-
-
-
-
-
-      } catch (error) {
-
-        toast.error('')
-
-      }
-
-    }
-
-
-
-
-
-  const fetchDCs = async () => {
-
+export default function UserDistributionCenterListing() {
+  const [permissions] = useState<string[]>(() => {
     try {
-
-      setLoading(true);
-
-      const token = localStorage.getItem("merchantToken") || localStorage.getItem("token");
-
-      const response = await axios.get<DcListResponse>(DC_LIST_API, {
-
-        headers: {
-
-          "Content-Type": "application/json",
-
-          ...(token
-
-            ? {
-
-                Authorization: `Bearer ${token}`,
-
-                "x-auth-token": token,
-
-              }
-
-            : {}),
-
-        },
-
-      });
-
-      if (response?.data?.success === false) {
-
-        setDcList([]);
-
-        toast.error(response?.data?.message || "Failed to fetch Distribution Centers");
-
-        return;
-
-      }
-
-      /* Different common response structures handle kar raha hai: success: true data: success: true data: dc */
-
-      let list: DistributionCenter[] = [];
-
-      const responseData = response?.data?.data;
-
-      if (Array.isArray(responseData)) {
-
-        list = responseData;
-
-      } else if (responseData && Array.isArray(responseData.dcs)) {
-
-        list = responseData.dcs;
-
-      } else if (Array.isArray(response?.data?.dcs)) {
-
-        list = response.data.dcs;
-
-      }
-
-      setDcList(list);
-
-    } catch (error) {
-
-      const axiosError = error as AxiosError<ApiErrorResponse>;
-
-      console.error("DC List API Error:", axiosError?.response?.data || error);
-
-      setDcList([]);
-
-      toast.error(
-
-        axiosError?.response?.data?.message ||
-
-          axiosError?.response?.data?.error ||
-
-          axiosError?.message ||
-
-          "Failed to fetch Distribution Centers",
-
-      );
-
-    } finally {
-
-      setLoading(false);
-
+      const stored = JSON.parse(localStorage.getItem("permission") || "[]");
+      return Array.isArray(stored) ? stored : [];
+    } catch {
+      return [];
     }
+  });
+  const [list, setList] = useState<DC[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<Status>("all");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [draftStatus, setDraftStatus] = useState<Status>("all");
+  const [draftCity, setDraftCity] = useState("");
+  const [city, setCity] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [selected, setSelected] = useState<DC | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState<EditForm>({ ...emptyEdit });
+  const [saving, setSaving] = useState(false);
 
-  };
+  const can = (code: string) =>
+    permissions.includes(code) || permissions.includes("ADMIN_FULL_ACCESS");
 
-
-
-  /* INITIAL FETCH */
-
-  useEffect(() => {
-
-    fetchDCs();
-
-    getUserPermissions()
-
+  const fetchDCs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("merchantToken") || localStorage.getItem("token");
+      const resultRows: DC[] = [];
+      let apiPage = 1;
+      let more = true;
+      while (more && apiPage <= 1000) {
+        const response = await axios.get(`${baseURL}/api/user/getDcs`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}`, "x-auth-token": token } : {}),
+          },
+          params: { page: apiPage, limit: 100 },
+        });
+        if (response.data?.success === false)
+          throw new Error(response.data?.message || "Unable to load distribution centers");
+        const body = response.data?.data;
+        const rows: DC[] = Array.isArray(body)
+          ? body
+          : Array.isArray(body?.dcs)
+            ? body.dcs
+            : Array.isArray(response.data?.dcs)
+              ? response.data.dcs
+              : [];
+        resultRows.push(...rows);
+        const pagination = response.data?.pagination ?? body?.pagination;
+        const totalPages =
+          Number(pagination?.totalPages ?? pagination?.total_pages) ||
+          (Number(pagination?.total)
+            ? Math.ceil(Number(pagination.total) / (Number(pagination.limit) || 100))
+            : 0);
+        // If API does not return pagination, treat the response as a complete list.
+        more = totalPages > 0 && apiPage < totalPages && rows.length > 0;
+        apiPage++;
+      }
+      setList(resultRows);
+    } catch (error) {
+      toast.error(errorText(error));
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  /* FILTER DATA */
+  useEffect(() => {
+    void fetchDCs();
+  }, [fetchDCs]);
 
-  const filteredDCs = useMemo(() => {
-
-    let data = [...dcList];
-
-    /* SEARCH */
-
-    const query = search.trim().toLowerCase();
-
-    if (query) {
-
-      data = data.filter((item:any) => {
-
-        const searchableValues = [
-
-          item.dc_name,
-
-          item.dc_code,
-
-          item.username,
-
-          item.email,
-
-          item.phone,
-
-          item.address,
-
-          item.city,
-
-          item.state,
-
-          item.pincode,
-
-        ];
-
-        return searchableValues.some((value) =>
-
-          String(value || "")
-
+  const cities = useMemo(
+    () => [...new Set(list.map((d) => String(d.city || "").trim()).filter(Boolean))].sort(),
+    [list],
+  );
+  const filtered = useMemo(
+    () =>
+      list.filter((dc) => {
+        const q = search.trim().toLowerCase();
+        const searchable = [
+          dc.dc_name,
+          dc.dc_code,
+          dc.username,
+          dc.email,
+          dc.phone,
+          dc.address,
+          dc.city,
+          dc.state,
+          dc.pincode,
+        ].some((value) =>
+          String(value ?? "")
             .toLowerCase()
-
-            .includes(query),
-
+            .includes(q),
         );
-
-      });
-
-    }
-
-    /* STATUS */
-
-    if (statusFilter?.value === "active") {
-
-      data = data.filter((item) => Number(item.is_active ?? item.status) === 1);
-
-    }
-
-    if (statusFilter?.value === "inactive") {
-
-      data = data.filter((item) => Number(item.is_active ?? item.status) === 0);
-
-    }
-
-    return data;
-
-  }, [dcList, search, statusFilter]);
-
-  /* RESET PAGE AFTER FILTER */
-
+        const statusMatch =
+          status === "all" || (status === "active" ? isActive(dc) : !isActive(dc));
+        return (
+          searchable &&
+          statusMatch &&
+          (!city || String(dc.city || "").toLowerCase() === city.toLowerCase())
+        );
+      }),
+    [list, search, status, city],
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
+  const visible = useMemo(
+    () => filtered.slice((page - 1) * limit, page * limit),
+    [filtered, page, limit],
+  );
   useEffect(() => {
-
-    setCurrentPage(1);
-
-  }, [search, statusFilter]);
-
-  /* PAGINATION */
-
-  const totalItems = filteredDCs.length;
-
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-
+    setPage(1);
+  }, [search, status, city, limit]);
   useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
-    if (currentPage > totalPages) {
-
-      setCurrentPage(totalPages);
-
+  const openDC = (dc: DC) => {
+    setSelected(dc);
+    setEditing(false);
+    setEditForm({
+      ...emptyEdit,
+      dc_name: String(dc.dc_name ?? ""),
+      dc_code: String(dc.dc_code ?? ""),
+      email: String(dc.email ?? ""),
+      phone: String(dc.phone ?? ""),
+      city: String(dc.city ?? ""),
+      state: String(dc.state ?? ""),
+      pincode: String(dc.pincode ?? ""),
+      address: String(dc.address ?? ""),
+    });
+  };
+  const closeDC = () => {
+    if (!saving) {
+      setSelected(null);
+      setEditing(false);
     }
-
-  }, [currentPage, totalPages]);
-
-  const paginatedDCs = useMemo(() => {
-
-    const start = (currentPage - 1) * pageSize;
-
-    const end = start + pageSize;
-
-    return filteredDCs.slice(start, end);
-
-  }, [filteredDCs, currentPage, pageSize]);
-
-  const showingFrom = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-
-  const showingTo = Math.min(currentPage * pageSize, totalItems);
-
-  /* VIEW DC */
-
-  const handleView = (item: DistributionCenter) => {
-
-    setSelectedDC(item);
-    setEditForm(Object.fromEntries(
-      ["dc_name", "dc_code", "phone", "email", "address", "city", "state", "pincode"]
-        .map((field) => [field, String(item[field as keyof DistributionCenter] ?? "")])
-    ));
-    setIsEditing(false);
-    setViewModalOpen(true);
-
   };
 
-  const closeViewModal = () => {
-
-    setViewModalOpen(false);
-
-    setSelectedDC(null);
-    setIsEditing(false);
-    setIsEditing(false);
-  };
-
-  const handleUpdateDc = async (patch: Record<string, string | number>) => {
-    const id = selectedDC?.dc_id ?? selectedDC?.id;
-    if (!id || (!permissions.includes("UPDATE_DC") && !permissions.includes("ADMIN_FULL_ACCESS"))) {
-      toast.error("You do not have permission to update this DC");
-      return;
-    }
+  const updateDC = async (patch: Record<string, string | number>) => {
+    if (!selected || !can("UPDATE_DC") || saving) return;
+    const id = dcId(selected);
+    if (id === null || id === undefined) return toast.error("DC ID is missing");
+    setSaving(true);
     try {
-      setUpdateLoading(true);
-      const response = await AxiosInstance.patch<{
-        success: boolean;
-        message?: string;
-        data?: { dc?: DistributionCenter };
-      }>(`/api/user/updateDc/${id}`, patch);
-      if (!response.data?.success) {
-        toast.error(response.data?.message || "Failed to update DC");
-        return;
-      }
-      const updated = response.data.data?.dc;
+      const res = await AxiosInstance.patch(`/api/user/updateDc/${id}`, patch);
+      if (res.data?.success === false) throw new Error(res.data?.message || "Update failed");
+      const updated = res.data?.data?.dc as DC | undefined;
       if (updated) {
-        setSelectedDC(updated);
-        setDcList((prev) => prev.map((item) =>
-          String(item.dc_id ?? item.id) === String(id) ? { ...item, ...updated } : item
-        ));
+        setList((prev) =>
+          prev.map((d) => (String(dcId(d)) === String(id) ? { ...d, ...updated } : d)),
+        );
+        setSelected((prev) => (prev ? { ...prev, ...updated } : prev));
       } else {
         await fetchDCs();
+        setSelected((prev) => (prev ? ({ ...prev, ...patch } as DC) : prev));
       }
-      setIsEditing(false);
-      toast.success(response.data?.message || "DC updated successfully");
+      setEditing(false);
+      setEditForm((prev) => ({ ...prev, password: "" }));
+      toast.success(res.data?.message || "Distribution center updated");
     } catch (error) {
-      const err = error as AxiosError<ApiErrorResponse>;
-      toast.error(err.response?.data?.message || "Failed to update DC");
+      toast.error(errorText(error));
     } finally {
-      setUpdateLoading(false);
+      setSaving(false);
     }
   };
 
-  const saveDcDetails = async () => {
-    if (!["dc_name", "dc_code", "email"].every((key) => editForm[key]?.trim())) {
-      toast.error("DC name, code and email are required");
-      return;
-    }
-    const { password, ...fields } = editForm;
-    const patch: Record<string, string> = { ...fields };
-    if (password?.trim()) patch.password = password;
-    await handleUpdateDc(patch);
+  const saveDetails = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!["dc_name", "dc_code", "email"].every((key) => editForm[key as EditField].trim()))
+      return toast.error("DC name, code and email are required");
+    if (
+      editForm.password &&
+      (editForm.password.length < 8 || new TextEncoder().encode(editForm.password).length > 72)
+    )
+      return toast.error("Password must be between 8 and 72 bytes");
+    const { password, ...values } = editForm;
+    void updateDC({ ...values, ...(password ? { password } : {}) });
   };
 
-  /* SELECT STYLES */
+      const [loadingPage, setLoadingPage] = useState(true);
 
-  const selectStyles: StylesConfig<StatusOption, false> = {
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoadingPage(false);
+  }, 2000);
 
-    control: (base, state) => ({
+  return () => clearTimeout(timer);
+}, []);
 
-      ...base,
-
-      minHeight: "42px",
-
-      borderRadius: "8px",
-
-      backgroundColor: isDarkMode ? "#171717" : "#ffffff",
-
-      borderColor: state.isFocused ? "#0446DB" : isDarkMode ? "#404040" : "#d1d5db",
-
-      boxShadow: state.isFocused ? "0 0 0 2px rgba(4,70,219,0.10)" : "none",
-
-      "&:hover": {
-
-        borderColor: state.isFocused ? "#0446DB" : isDarkMode ? "#525252" : "#9ca3af",
-
-      },
-
-    }),
-
-    singleValue: (base) => ({
-
-      ...base,
-
-      color: isDarkMode ? "#f5f5f5" : "#111827",
-
-    }),
-
-    input: (base) => ({
-
-      ...base,
-
-      color: isDarkMode ? "#f5f5f5" : "#111827",
-
-    }),
-
-    placeholder: (base) => ({
-
-      ...base,
-
-      color: isDarkMode ? "#737373" : "#9ca3af",
-
-    }),
-
-    dropdownIndicator: (base) => ({
-
-      ...base,
-
-      color: isDarkMode ? "#a3a3a3" : "#6b7280",
-
-    }),
-
-    indicatorSeparator: (base) => ({
-
-      ...base,
-
-      backgroundColor: isDarkMode ? "#404040" : "#e5e7eb",
-
-    }),
-
-    menu: (base) => ({
-
-      ...base,
-
-      zIndex: 999,
-
-      backgroundColor: isDarkMode ? "#171717" : "#ffffff",
-
-      border: `1px solid ${isDarkMode ? "#404040" : "#e5e7eb"}`,
-
-    }),
-
-    option: (base, state) => ({
-
-      ...base,
-
-      cursor: "pointer",
-
-      color: state.isSelected ? "#ffffff" : isDarkMode ? "#e5e5e5" : "#111827",
-
-      backgroundColor: state.isSelected
-
-        ? "#0446DB"
-
-        : state.isFocused
-
-          ? isDarkMode
-
-            ? "#262626"
-
-            : "#eff6ff"
-
-          : isDarkMode
-
-            ? "#171717"
-
-            : "#ffffff",
-
-    }),
-
-  };
-
-
-
-
-
-
-
-
-
-  /* UI */
+  if (!can("VIEW_DC")) return null;
 
   return (
 
-    <div className="flex h-[calc(100dvh-100px)] min-h-[420px] flex-col overflow-hidden bg-gray-50/40 text-gray-900 dark:bg-neutral-950 dark:text-neutral-100">
-
-      {/* HEADER */}
-
-
-
-      <div className="z-20 shrink-0 border-b border-gray-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-          <div className="flex items-center gap-3">
-
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0446DB] dark:bg-blue-950/30 dark:text-blue-400">
-
-              <Building2 className="h-5 w-5" />
-
-            </div>
-
-
-
-            <div>
-
-              <h1 className="text-xl font-bold text-gray-800 dark:text-white md:text-2xl">
-
-                Distribution Centers
-
-              </h1>
-
-
-
-              <p className="mt-0.5 text-sm text-gray-500 dark:text-neutral-400">
-
-                View and manage all Distribution Centers.
-
-              </p>
-
-            </div>
-
-          </div>
-
-
-
-          {/* ADD DC */}
-
-
-
-          <Link to={"/admin/onboarding/distribution-center"}>
-
-            <button
-
-              type="button"
-
-              className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#0446DB] px-4 text-sm font-semibold text-white transition hover:bg-[#0339b5]"
-
-            >
-
-              <Plus className="h-4 w-4" />
-
-              Add Distribution Center
-
-            </button>
-
-          </Link>
-
-        </div>
-
-      </div>
-
-
-
-      {/* CONTENT */}
-
-
-
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 md:p-4">
-
-        {/* TABLE CARD */}
-
-
-
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-
-          {/* FILTERS */}
-
-
-
-          <div className="z-10 flex shrink-0 flex-col gap-3 border-b border-gray-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900 lg:flex-row lg:items-center lg:justify-between">
-
-            {/* SEARCH */}
-
-
-
-            <div className="relative w-full lg:max-w-md">
-
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-
-
-
-              <input
-
-                type="text"
-
-                value={search}
-
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-
-                placeholder="Search name, code, city, email..."
-
-                className="h-[42px] w-full rounded-lg border border-gray-300 bg-white pl-10 pr-9 text-sm outline-none transition placeholder:text-gray-400 focus:border-[#0446DB] focus:ring-2 focus:ring-blue-500/10 dark:border-neutral-700 dark:bg-neutral-950 dark:text-white"
-
-              />
-
-
-
-              {search && (
-
-                <button
-
-                  type="button"
-
-                  onClick={() => setSearch("")}
-
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-white"
-
-                >
-
-                  <X className="h-4 w-4" />
-
-                </button>
-
-              )}
-
-            </div>
-
-
-
-            {/* FILTER RIGHT */}
-
-
-
-            <div className="flex items-center gap-3">
-
-              <div className="w-full z-50 min-w-[180px] sm:w-[180px]">
-
-                <Select
-
-                  options={statusOptions}
-
-                  value={statusFilter}
-
-                  onChange={(option) => setStatusFilter(option || statusOptions[0])}
-
-                  isSearchable={false}
-
-                  styles={selectStyles}
-
-                />
-
-              </div>
-
-
-
-              {/* REFRESH */}
-
-
-
-              <button
-
-                type="button"
-
-                onClick={fetchDCs}
-
-                disabled={loading}
-
-                className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800"
-
-                title="Refresh"
-
-              >
-
-                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-
-              </button>
-
-            </div>
-
-          </div>
-
-
-
-          {/* LOADING */}
-
-
-
-          {loading ? (
-
-            <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto">
-
-              <div className="flex flex-col items-center gap-3">
-
-                <RefreshCw className="h-7 w-7 animate-spin text-[#0446DB]" />
-
-
-
-                <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
-
-                  Loading Distribution Centers...
-
-                </p>
-
-              </div>
-
-            </div>
-
-          ) : (
-
-            <>
-
-              {/* TABLE */}
-
-
-
-              <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
-
-                <table className="w-full min-w-[1150px]">
-
-                  <thead className="sticky top-0  bg-gray-50 shadow-[0_1px_0_0\\_#e5e7eb] dark:bg-neutral-800">
-
-                    <tr className="border-b border-gray-200 dark:border-neutral-800">
-
-                      <TableHeading>Distribution Center</TableHeading>
-
-
-
-                      <TableHeading>Code</TableHeading>
-
-
-
-                      <TableHeading>Username</TableHeading>
-
-
-
-                      <TableHeading>Contact</TableHeading>
-
-
-
-                      <TableHeading>Location</TableHeading>
-
-
-
-                      <TableHeading>Status</TableHeading>
-
-
-
-                      <TableHeading center>Action</TableHeading>
-
-                    </tr>
-
-                  </thead>
-
-
-
-                  <tbody>
-
-                    {paginatedDCs.length > 0 ? (
-
-                      paginatedDCs.map((item:any, index:number) => {
-
-                        const id = item.dcid_ ?? item.id ?? index;
-
-                        return (
-
-                          <tr
-
-                            key={id}
-
-                            className="border-b border-gray-100 transition last:border-0 hover:bg-gray-50/70 dark:border-neutral-800 dark:hover:bg-neutral-800/40"
-
-                          >
-
-                            {/* DC */}
-
-
-
-                            <td className="px-4 py-4">
-
-                              <div className="flex items-center gap-3">
-
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400">
-
-                                  <Building2 className="h-4 w-4" />
-
-                                </div>
-
-
-
-                                <div className="min-w-0">
-
-                                  <p className="max-w-[230px] truncate text-sm font-semibold text-gray-900 dark:text-neutral-100">
-
-                                    {item.dc_name || "—"}
-
-                                  </p>
-
-
-
-                                  <p className="mt-0.5 text-xs text-gray-400">ID: {id}</p>
-
-                                </div>
-
-                              </div>
-
-                            </td>
-
-
-
-                            {/* CODE */}
-
-
-
-                            <td className="px-4 py-4">
-
-                              <span className="inline-flex rounded-md bg-gray-100 px-2.5 py-1 font-mono text-xs font-semibold text-gray-700 dark:bg-neutral-800 dark:text-neutral-300">
-
-                                {item.dc_code || "—"}
-
-                              </span>
-
-                            </td>
-
-
-
-                            {/* USERNAME */}
-
-
-
-                            <td className="px-4 py-4">
-
-                              <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-neutral-300">
-
-                                <User className="h-3.5 w-3.5 shrink-0 text-gray-400" />
-
-
-
-                                <span className="max-w-[150px] truncate">
-
-                                  {item.username || "—"}
-
-                                </span>
-
-                              </div>
-
-                            </td>
-
-
-
-                            {/* CONTACT */}
-
-
-
-                            <td className="px-4 py-4">
-
-                              <div className="space-y-1.5">
-
-                                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-neutral-300">
-
-                                  <Mail className="h-3.5 w-3.5 shrink-0 text-gray-400" />
-
-
-
-                                  <span className="max-w-[190px] truncate">
-
-                                    {item.email || "—"}
-
-                                  </span>
-
-                                </div>
-
-
-
-                                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-neutral-400">
-
-                                  <Phone className="h-3.5 w-3.5 shrink-0 text-gray-400" />
-
-
-
-                                  <span>{item.phone || "—"}</span>
-
-                                </div>
-
-                              </div>
-
-                            </td>
-
-
-
-                            {/* LOCATION */}
-
-
-
-                            <td className="px-4 py-4">
-
-                              <div className="flex items-start gap-2">
-
-                                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
-
-
-
-                                <div>
-
-                                  <p className="text-sm font-medium text-gray-700 dark:text-neutral-300">
-
-                                    {item.city || "—"}
-
-                                  </p>
-
-
-
-                                  <p className="mt-0.5 text-xs text-gray-400">
-
-                                    {item.state || "—"}
-
-
-
-                                    {item.pincode ? ` • ${item.pincode}` : ""}
-
-                                  </p>
-
-                                </div>
-
-                              </div>
-
-                            </td>
-
-
-
-                            {/* STATUS */}
-
-
-
-                            <td className="px-4 py-4">
-
-                              {Number(item.is_active ?? item.status) === 1 ? (
-
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700 dark:bg-green-950/30 dark:text-green-400">
-
-                                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-
-                                  Active
-
-                                </span>
-
-                              ) : (
-
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/30 dark:text-red-400">
-
-                                  <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-
-                                  Inactive
-
-                                </span>
-
-                              )}
-
-                            </td>
-
-
-
-                            {/* ACTION */}
-
-
-
-                            <td className="px-4 py-4 flex w-full gap-2">
-
-                              <div className="flex justify-center">
-
-                                <button
-
-                                  type="button"
-
-                                  onClick={() => handleView(item)}
-
-                                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-[#0446DB] dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-blue-900 dark:hover:bg-blue-950/30 dark:hover:text-blue-400"
-
-                                  title="View Distribution Center"
-
-                                >
-
-                                  <Eye className="h-4 w-4" />
-
-                                </button>
-
-                              </div>
-
-
-
-                              {
-
-                                (permissions.includes("LOGIN_DC") || permissions.includes("ADMIN_FULL_ACCESS")) && (
-
-
-
-                              <a
-
-                                href={`${frontendURL}/incognitoLogin/${localStorage.getItem(
-
-                                  "token",
-
-                                )}/${item.id}/dc`}
-
-                                target="_blank"
-
-                                rel="noopener noreferrer"
-
-                                className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#0446DB] px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-[#0338b5]"
-
-                              >
-
-                                Login
-
-                                <ExternalLink className="h-3.5 w-3.5" />
-
-                              </a>
-
-                               )
-
-                              }
-
-
-
-                            </td>
-
-                          </tr>
-
-                        );
-
-                      })
-
-                    ) : (
-
-                      <tr>
-
-                        <td colSpan={8} className="px-4 py-16 text-center">
-
-                          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-neutral-800">
-
-                            <Building2 className="h-5 w-5 text-gray-400" />
-
-                          </div>
-
-
-
-                          <p className="mt-3 text-sm font-semibold text-gray-700 dark:text-neutral-300">
-
-                            No Distribution Center found
-
-                          </p>
-
-
-
-                          <p className="mt-1 text-xs text-gray-400">
-
-                            Try changing your search or status filter.
-
-                          </p>
-
-                        </td>
-
-                      </tr>
-
-                    )}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-
-
-              {/* PAGINATION */}
-
-
-
-              <div className="z-10 flex shrink-0 flex-col gap-3 border-t border-gray-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 sm:flex-row sm:items-center sm:justify-between">
-
-                <p className="text-xs text-gray-500 dark:text-neutral-400">
-
-                  Showing <span className="font-semibold">{showingFrom}</span> to{" "}
-
-                  <span className="font-semibold">{showingTo}</span> of{" "}
-
-                  <span className="font-semibold">{totalItems}</span> Distribution Centers
-
-                </p>
-
-
-
-                <div className="flex items-center gap-2">
-
-                  {/* PREVIOUS */}
-
-
-
-                  <button
-
-                    type="button"
-
-                    disabled={currentPage === 1}
-
-                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-
-                    className="flex h-9 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-
-                  >
-
-                    <ChevronLeft className="h-4 w-4" />
-
-                    Previous
-
-                  </button>
-
-
-
-                  {/* PAGE */}
-
-
-
-                  <div className="flex h-9 min-w-[65px] items-center justify-center rounded-lg bg-[#0446DB] px-3 text-xs font-semibold text-white">
-
-                    {currentPage} / {totalPages}
-
-                  </div>
-
-
-
-                  {/* NEXT */}
-
-
-
-                  <button
-
-                    type="button"
-
-                    disabled={currentPage === totalPages}
-
-                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-
-                    className="flex h-9 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-
-                  >
-
-                    Next
-
-                    <ChevronRight className="h-4 w-4" />
-
-                  </button>
-
-                </div>
-
-              </div>
-
-            </>
-
-          )}
-
-        </div>
-
-      </div>
-
-
-
-      {/* VIEW DC MODAL */}
-
-
-
-      {viewModalOpen && selectedDC && (
-
-        <div
-
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]"
-
-          onMouseDown={(e: MouseEvent<HTMLDivElement>) => {
-
-            if (e.target === e.currentTarget) {
-
-              closeViewModal();
-
-            }
-
-          }}
-
-        >
-
-          <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900">
-
-            {/* MODAL HEADER */}
-
-
-
-            <div className="flex items-start justify-between border-b border-gray-200 px-5 py-4 dark:border-neutral-800">
-
-              <div className="flex items-center gap-3">
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#0446DB] dark:bg-blue-950/30 dark:text-blue-400">
-
-                  <Building2 className="h-5 w-5" />
-
-                </div>
-
-
-
-                <div>
-
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-
-                    {selectedDC.dc_name || "Distribution Center"}
-
-                  </h2>
-
-
-
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
-
-                    {selectedDC.dc_code || "—"}
-
-                  </p>
-
-                </div>
-
-              </div>
-
-
-
-              <button
-
-                type="button"
-
-                onClick={closeViewModal}
-
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-neutral-800 dark:hover:text-white"
-
-              >
-
-                <X className="h-5 w-5" />
-
-              </button>
-
-            </div>
-
-
-
-            {/* MODAL BODY */}
-
-
-
-            <div className="min-h-0 flex-1 overflow-y-auto p-5">
-
-              {/* STATUS */}
-
-
-
-              <div className="mb-5 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-neutral-800 dark:bg-neutral-950">
-
-                <div>
-
-                  <p className="text-xs text-gray-500 dark:text-neutral-400">Current Status</p>
-
-
-
-                  <p className="mt-1 text-sm font-semibold text-gray-800 dark:text-neutral-200">
-
-                    Distribution Center
-
-                  </p>
-
-                </div>
-
-
-
-                {Number(selectedDC.is_active ?? selectedDC.status) === 1 ? (
-
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-700 dark:bg-green-950/30 dark:text-green-400">
-
-                    <CircleCheck className="h-3.5 w-3.5" />
-
-                    Active
-
-                  </span>
-
-                ) : (
-
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 dark:bg-red-950/30 dark:text-red-400">
-
-                    <CircleX className="h-3.5 w-3.5" />
-
-                    Inactive
-
-                  </span>
-
-                )}
-
-              </div>
-
-
-
-              {/* DETAILS */}
-
-              {
-                !isEditing && (
-                  <>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-    
-                    <DetailCard
-    
-                      icon={Hash}
-    
-                      label="DC ID"
-    
-                      value={selectedDC.dc_id ?? selectedDC.id ?? "—"}
-    
-                    />
-    
-    
-    
-                    <DetailCard icon={Hash} label="DC Code" value={selectedDC.dc_code || "—"} />
-    
-    
-    
-                    <DetailCard icon={User} label="Username" value={selectedDC.username || "—"} />
-    
-    
-    
-                    <DetailCard icon={Mail} label="Email Address" value={selectedDC.email || "—"} />
-    
-    
-    
-                    <DetailCard icon={Phone} label="Phone Number" value={selectedDC.phone || "—"} />
-    
-    
-    
-                    <DetailCard icon={MapPinned} label="City / Town" value={selectedDC.city || "—"} />
-    
-    
-    
-                    <DetailCard icon={MapPin} label="State" value={selectedDC.state || "—"} />
-    
-    
-    
-                    <DetailCard icon={Hash} label="Pincode" value={selectedDC.pincode || "—"} />
-    
-                  </div>
-                  
-              {/* ADDRESS */}
-
-
-
-              <div className="mt-4 rounded-xl border border-gray-200 p-4 dark:border-neutral-800">
-
-                <div className="flex items-start gap-3">
-
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-800 dark:text-neutral-400">
-
-                    <MapPin className="h-4 w-4" />
-
-                  </div>
-
-
-
+    <>
+    {
+      loadingPage ? (
+        <>
+                <div className=" w-full h-[90vh] flex justify-center items-center">
                   <div>
-
-                    <p className="text-xs font-medium text-gray-500 dark:text-neutral-400">
-
-                      Complete Address
-
-                    </p>
-
-
-
-                    <p className="mt-1.5 text-sm leading-6 text-gray-800 dark:text-neutral-200">
-
-                      {selectedDC.address || "—"}
-
-                    </p>
-
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                    <p className="mt-2"> Loading DC Details...</p>
                   </div>
-
                 </div>
+        </>
+      ):(
 
+        <div className="flex h-[calc(100dvh-80px)] min-h-0 w-full flex-col overflow-hidden bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+          <div className="shrink-0 space-y-3 border-b border-gray-200 bg-white px-4 py-4 dark:border-gray-800 dark:bg-gray-900">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-semibold">Distribution Centers</h1>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  View and manage delivery center accounts and locations
+                </p>
               </div>
-                  </>
-
-                )
-              }
-
-
-
-
-
-            
-              {isEditing && (
-                <section className="mt-5 rounded-xl border border-blue-200 p-4 dark:border-blue-900">
-                  <h3 className="mb-3 text-sm font-semibold">Edit Distribution Center</h3>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {([
-                      ["dc_name", "DC Name"], ["dc_code", "DC Code"],
-                      ["phone", "Phone"], ["email", "Email"],
-                      ["address", "Address"], ["city", "City"],
-                      ["state", "State"], ["pincode", "Pincode"],
-                      ["password", "New Password (optional)"],
-                    ] as const).map(([field, label]) => (
-                      <label key={field} className="block text-xs font-medium text-gray-600 dark:text-neutral-300">
-                        {label}
-                        <input
-                          type={field === "password" ? "password" : field === "email" ? "email" : "text"}
-                          value={editForm[field] ?? ""}
-                          onChange={(event) => setEditForm((prev) => ({ ...prev, [field]: event.target.value }))}
-                          autoComplete={field === "password" ? "new-password" : "off"}
-                          className="mt-1 block h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 dark:border-neutral-700 dark:bg-neutral-950 dark:text-white"
-                        />
-                      </label>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs text-gray-500">Changing the password revokes existing DC sessions.</p>
-                </section>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void fetchDCs()}
+                  className="inline-flex h-9 items-center gap-2 rounded-md border border-gray-200 px-3 text-sm hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                >
+                  <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+                </button>
+                <Link
+                  to="/user/onboarding/distribution-center"
+                  className="inline-flex h-9 items-center gap-2 rounded-md bg-[#0446DB] px-3 text-sm font-medium text-white hover:bg-blue-800"
+                >
+                  <Plus className="h-4 w-4" /> Add DC
+                </Link>
+              </div>
             </div>
-
-
-
-            {/* MODAL FOOTER */}
-
-
-
-            <div className="flex flex-wrap justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-950/50">
-
-              {(permissions.includes("UPDATE_DC") || permissions.includes("ADMIN_FULL_ACCESS")) && (
-                  <>
-                    {!isEditing ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative min-w-[220px] flex-1 sm:max-w-lg">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  aria-label="Search distribution centers"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search name, code, city, email..."
+                  className="h-10 w-full rounded-md border border-gray-300 bg-white pl-10 pr-8 text-sm outline-none focus:border-[#0446DB] dark:border-gray-700 dark:bg-gray-800"
+                />
+                {!!search && (
+                  <button
+                    type="button"
+                    aria-label="Clear search"
+                    onClick={() => setSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setDraftStatus(status);
+                  setDraftCity(city);
+                  setDrawerOpen(true);
+                }}
+                className="inline-flex h-10 items-center gap-2 rounded-md border border-gray-300 bg-white px-3 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+              >
+                <Filter className="h-4 w-4" /> Filters{" "}
+                {city && <span className="rounded bg-blue-50 px-1.5 text-[#0446DB]">1</span>}
+              </button>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {(
+                [
+                  { value: "all", label: "All" },
+                  { value: "active", label: "Active" },
+                  { value: "inactive", label: "Inactive" },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setStatus(tab.value)}
+                  className={`shrink-0 rounded-md border px-4 py-2 text-sm font-medium transition ${status === tab.value ? "border-[#0446DB] bg-[#0446DB] text-white" : "border-gray-200 bg-white text-gray-600 hover:border-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+    
+          <div className="min-h-0 flex-1 overflow-auto bg-white dark:bg-gray-900">
+            <table className="w-full min-w-[1080px] border-separate border-spacing-0 text-sm">
+              <thead className="sticky top-0 z-20 bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                <tr>
+                  {[
+                    "Distribution Center",
+                    "Code / Username",
+                    "Contact",
+                    "Location",
+                    "Status",
+                    "Actions",
+                  ].map((heading) => (
+                    <th
+                      key={heading}
+                      className="whitespace-nowrap border-b border-gray-200 px-4 py-3 dark:border-gray-700"
+                    >
+                      {heading}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center text-gray-500">
+                      <Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-[#0446DB]" />
+                      Loading Distribution Centers...
+                    </td>
+                  </tr>
+                ) : visible.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center text-gray-500">
+                      <Building2 className="mx-auto mb-3 h-8 w-8 text-gray-300" />
+                      No distribution centers found
+                    </td>
+                  </tr>
+                ) : (
+                  visible.map((dc, index) => (
+                    <tr
+                      key={String(dcId(dc) ?? index)}
+                      className="hover:bg-blue-50/40 dark:hover:bg-gray-800/50"
+                    >
+                      <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#0446DB] dark:bg-blue-950/40">
+                            <Building2 className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="max-w-[250px] truncate font-semibold">
+                              {display(dc.dc_name)}
+                            </div>
+                            <div className="mt-0.5 text-xs text-gray-400">ID: {display(dcId(dc))}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                        <div className="font-mono text-xs font-semibold">{display(dc.dc_code)}</div>
+                        <div className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
+                          <UserRound className="h-3.5 w-3.5" /> {display(dc.username)}
+                        </div>
+                      </td>
+                      <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <Mail className="h-3.5 w-3.5 text-gray-400" />
+                          <span className="max-w-[215px] truncate">{display(dc.email)}</span>
+                        </div>
+                        <div className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500">
+                          <Phone className="h-3.5 w-3.5" /> {display(dc.phone)}
+                        </div>
+                      </td>
+                      <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                        <div className="flex items-start gap-1.5">
+                          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gray-400" />
+                          <div>
+                            <div className="text-sm font-medium">{display(dc.city)}</div>
+                            <div className="mt-0.5 text-xs text-gray-500">
+                              {display(dc.state)}
+                              {dc.pincode ? ` · ${dc.pincode}` : ""}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                        {isActive(dc) ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-950/30 dark:text-green-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                            Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 dark:bg-red-950/30 dark:text-red-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                            Inactive
+                          </span>
+                        )}
+                      </td>
+                      <td className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openDC(dc)}
+                            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-gray-200 px-2.5 text-xs font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-[#0446DB] dark:border-gray-700 dark:text-gray-200"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            View / Edit
+                          </button>
+                          {can("LOGIN_DC") && isActive(dc) && (
+                            <a
+                              href={`${frontendURL}/incognitoLogin/${encodeURIComponent(localStorage.getItem("token") || "")}/${encodeURIComponent(String(dcId(dc) ?? ""))}/dc`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex h-8 items-center gap-1 rounded-md bg-[#0446DB] px-2.5 text-xs font-medium text-white hover:bg-blue-800"
+                            >
+                              Login
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-white px-4 py-3 text-xs dark:border-gray-800 dark:bg-gray-900">
+            <span className="text-gray-600 dark:text-gray-300">
+              {filtered.length
+                ? `${(page - 1) * limit + 1}–${Math.min(page * limit, filtered.length)} of ${filtered.length}`
+                : "0"}{" "}
+              distribution centers
+            </span>
+            <div className="flex items-center gap-2">
+              <span>Rows</span>
+              <select
+                value={limit}
+                onChange={(e) => setLimit(Number(e.target.value))}
+                className="rounded border border-gray-200 px-2 py-1 dark:border-gray-700 dark:bg-gray-800"
+              >
+                {[10, 20, 50, 100].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="rounded border border-gray-200 p-1.5 disabled:opacity-30 dark:border-gray-700"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span>
+                Page {page} of {totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="rounded border border-gray-200 p-1.5 disabled:opacity-30 dark:border-gray-700"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+    
+          {drawerOpen && (
+            <div
+              className="fixed inset-0 z-[100] flex justify-end bg-black/40"
+              onMouseDown={(e) => {
+                if (e.target === e.currentTarget) setDrawerOpen(false);
+              }}
+            >
+              <div className="flex h-full w-full max-w-md flex-col bg-white shadow-xl dark:bg-gray-900">
+                <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800">
+                  <div>
+                    <h2 className="text-lg font-semibold">Advanced Filters</h2>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Filter distribution centers by city and status
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close filters">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setStatus(draftStatus);
+                    setCity(draftCity);
+                    setDrawerOpen(false);
+                  }}
+                  className="flex min-h-0 flex-1 flex-col"
+                >
+                  <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
+                    <label className="block text-sm font-medium">
+                      Status
+                      <select
+                        value={draftStatus}
+                        onChange={(e) => setDraftStatus(e.target.value as Status)}
+                        className={fieldClass}
+                      >
+                        <option value="all">All statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      City
+                      <select
+                        value={draftCity}
+                        onChange={(e) => setDraftCity(e.target.value)}
+                        className={fieldClass}
+                      >
+                        <option value="">All cities</option>
+                        {cities.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="flex gap-3 border-t border-gray-200 p-5 dark:border-gray-800">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDraftCity("");
+                        setDraftStatus("all");
+                        setCity("");
+                        setStatus("all");
+                        setDrawerOpen(false);
+                      }}
+                      className="h-10 flex-1 rounded-md border border-gray-200 text-sm font-medium dark:border-gray-700"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="submit"
+                      className="h-10 flex-1 rounded-md bg-[#0446DB] text-sm font-medium text-white hover:bg-blue-800"
+                    >
+                      Apply Filters
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+    
+          {selected && (
+            <div
+              className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-3 sm:p-5"
+              onMouseDown={(e) => {
+                if (e.target === e.currentTarget) closeDC();
+              }}
+            >
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Distribution center details"
+                className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-900"
+              >
+                <div className="flex shrink-0 items-start justify-between bg-[#0446DB] px-5 py-4 text-white">
+                  <div className="flex items-center gap-3">
+                    <Building2 className="h-6 w-6" />
+                    <div>
+                      <h2 className="text-lg font-semibold">{display(selected.dc_name)}</h2>
+                      <p className="text-xs text-blue-100">
+                        {display(selected.dc_code)} · ID {display(dcId(selected))}
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" disabled={saving} onClick={closeDC} aria-label="Close details">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto p-5">
+                  <div className="mb-5 flex items-center justify-between rounded-md border border-gray-200 px-4 py-3 dark:border-gray-700">
+                    <span className="text-sm font-medium">Account Status</span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${isActive(selected) ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400" : "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"}`}
+                    >
+                      {isActive(selected) ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4" />
+                      )}
+                      {isActive(selected) ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  {!editing ? (
+                    <>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {[
+                          ["DC ID", dcId(selected)],
+                          ["DC Code", selected.dc_code],
+                          ["Username", selected.username],
+                          ["Email", selected.email],
+                          ["Phone", selected.phone],
+                          ["City", selected.city],
+                          ["State", selected.state],
+                          ["Pincode", selected.pincode],
+                        ].map(([label, value]) => (
+                          <div
+                            key={String(label)}
+                            className="rounded-md border border-gray-200 p-3.5 dark:border-gray-700"
+                          >
+                            <p className="text-xs text-gray-500">{label}</p>
+                            <p className="mt-1 break-words text-sm font-semibold">{display(value)}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 rounded-md border border-gray-200 p-3.5 dark:border-gray-700">
+                        <p className="text-xs text-gray-500">Complete Address</p>
+                        <p className="mt-1 text-sm">{display(selected.address)}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <form
+                      id="dc-edit-form"
+                      onSubmit={saveDetails}
+                      className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+                    >
+                      {fields.map(({ key, label }) => (
+                        <label
+                          key={key}
+                          className={`block text-sm font-medium ${key === "address" ? "sm:col-span-2" : ""}`}
+                        >
+                          {label}
+                          {key === "address" ? (
+                            <textarea
+                              rows={3}
+                              value={editForm[key]}
+                              onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
+                              className={`${fieldClass} h-auto py-2`}
+                            />
+                          ) : (
+                            <input
+                              type={
+                                key === "password" ? "password" : key === "email" ? "email" : "text"
+                              }
+                              autoComplete={key === "password" ? "new-password" : "off"}
+                              value={editForm[key]}
+                              onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
+                              className={fieldClass}
+                            />
+                          )}
+                        </label>
+                      ))}
+                      <div className="sm:col-span-2 flex items-center gap-2 text-xs text-gray-500">
+                        <LockKeyhole className="h-4 w-4" /> Changing a DC password revokes its existing
+                        sessions.
+                      </div>
+                    </form>
+                  )}
+                </div>
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/40">
+                  {can("UPDATE_DC") &&
+                    (!editing ? (
                       <>
-                        <button type="button" onClick={() => setIsEditing(true)}
-                          className="mr-2 h-10 rounded-lg border border-blue-300 px-4 text-sm font-semibold text-[#0446DB]">Edit DC</button>
-                        <button type="button" disabled={updateLoading}
-                          onClick={() => handleUpdateDc({ is_active: Number(selectedDC.is_active ?? selectedDC.status) === 1 ? 0 : 1 })}
-                          className="mr-2 h-10 rounded-lg border border-gray-300 px-4 text-sm font-semibold disabled:opacity-50 dark:border-neutral-700">
-                          {updateLoading ? "Updating..." : Number(selectedDC.is_active ?? selectedDC.status) === 1 ? "Deactivate" : "Activate"}
+                        <button
+                          type="button"
+                          onClick={() => setEditing(true)}
+                          className="inline-flex h-9 items-center gap-2 rounded-md border border-gray-200 px-3 text-sm font-medium dark:border-gray-700"
+                        >
+                          <Pencil className="h-4 w-4" /> Edit DC
+                        </button>
+                        <button
+                          type="button"
+                          disabled={saving}
+                          onClick={() => void updateDC({ is_active: isActive(selected) ? 0 : 1 })}
+                          className="h-9 rounded-md border border-gray-200 px-3 text-sm font-medium disabled:opacity-50 dark:border-gray-700"
+                        >
+                          {saving ? "Updating..." : isActive(selected) ? "Deactivate" : "Activate"}
                         </button>
                       </>
                     ) : (
                       <>
-                        <button type="button" disabled={updateLoading} onClick={() => setIsEditing(false)}
-                          className="mr-2 h-10 rounded-lg border border-gray-300 px-4 text-sm">Cancel</button>
-                        <button type="button" disabled={updateLoading} onClick={saveDcDetails}
-                          className="mr-2 h-10 rounded-lg bg-[#0446DB] px-4 text-sm font-semibold text-white disabled:opacity-50">
-                          {updateLoading ? "Saving..." : "Save Changes"}
+                        <button
+                          type="button"
+                          disabled={saving}
+                          onClick={() => setEditing(false)}
+                          className="h-9 rounded-md border border-gray-200 px-3 text-sm font-medium dark:border-gray-700"
+                        >
+                          Cancel Edit
+                        </button>
+                        <button
+                          form="dc-edit-form"
+                          type="submit"
+                          disabled={saving}
+                          className="inline-flex h-9 items-center gap-2 rounded-md bg-[#0446DB] px-3 text-sm font-medium text-white disabled:opacity-50"
+                        >
+                          <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Changes"}
                         </button>
                       </>
-                    )}
-                  </>
-                )}
-                <button
-
-                type="button"
-
-                onClick={closeViewModal}
-
-                className="h-10 rounded-lg bg-[#0446DB] px-5 text-sm font-semibold text-white transition hover:bg-[#0339b5]"
-
-              >
-
-                Close
-
-              </button>
-
+                    ))}
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={closeDC}
+                    className="h-9 rounded-md bg-[#0446DB] px-4 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             </div>
-
-          </div>
-
+          )}
         </div>
-
-      )}
-
-    </div>
-
+      )
+    }
+    
+    </>
   );
-
 }
-
-/* TABLE HEADING */
-
-function TableHeading({ children, center = false }: TableHeadingProps) {
-
-  return (
-
-    <th
-
-      className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-neutral-400 ${center ? "text-center" : "text-left"}`}
-
-    >
-
-      {children}
-
-    </th>
-
-  );
-
-}
-
-/* DETAIL CARD */
-
-function DetailCard({ icon: Icon, label, value }: DetailCardProps) {
-
-  return (
-
-    <div className="rounded-xl border border-gray-200 p-4 dark:border-neutral-800">
-
-      <div className="flex items-start gap-3">
-
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-800 dark:text-neutral-400">
-
-          <Icon className="h-4 w-4" />
-
-        </div>
-
-
-
-        <div className="min-w-0">
-
-          <p className="text-xs font-medium text-gray-500 dark:text-neutral-400">{label}</p>
-
-
-
-          <p className="mt-1 break-words text-sm font-semibold text-gray-800 dark:text-neutral-200">
-
-            {value}
-
-          </p>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  );
-
-}
-
-export default UserDistributionCenterListing;
-

@@ -1697,20 +1697,13 @@ const UserManagement = () => {
       newErrors.phone = "Enter a valid phone number";
 
     }
-
-    if (!formData.email?.trim()) {
-
-      newErrors.email = "Email is required";
-
-    } else if (
-
-      !/^[^\s@]+@[^\s@]+\\.[^\s@]+$/.test(formData.email)
-
-    ) {
-
-      newErrors.email = "Enter a valid email address";
-
-    }
+if (!formData.email?.trim()) {
+  newErrors.email = "Email is required";
+} else if (
+  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())
+) {
+  newErrors.email = "Enter a valid email address";
+}
 
     if (!formData.password) {
 

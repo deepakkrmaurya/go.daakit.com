@@ -495,6 +495,7 @@ import { lazy, Suspense, useEffect, useState, useMemo } from "react";
 // Lazy load all components*
 const Register = lazy(() => import("./components/auth/Register"));
 const Login = lazy(() => import("./components/auth/Login"));
+const NoPermissionPage = lazy(() => import("./components/layout/NoPermissionPage"));
 const Analytics = lazy(() => import("./components/admin/dasboard/Analytics"));
 const Navbar = lazy(() => import("./components/layout/Navbar"));
 const OrderDetails = lazy(() => import("./components/admin/order/OrderDetails"));
@@ -597,6 +598,7 @@ const DcHubList = lazy(() => import("./components/distributionCenter/hub/HubList
 const CreateHub = lazy(() => import("./components/vendor_components/hub/CreateHub"));
 const DcCreateHub = lazy(() => import("./components/distributionCenter/hub/DcHubOnboarding"));
 const OrderHistory = lazy(() => import("./components/admin/order/OrderHistory"));
+const UserOrderHistory = lazy(() => import("./components/User/order/UserOrderHistory"));
 const PriceDetails = lazy(() => import("./components/merchant_component/PriceDetails"));
 const MerchantRecharge = lazy(() => import("./components/merchant_component/Recharge"));
 const PriceCalculate = lazy(() => import("./components/merchant_component/PriceCalculate"));
@@ -608,6 +610,7 @@ const RolePermission = lazy(() => import("./components/admin/RolePermission"));
 const CreateAdmin = lazy(() => import("./components/admin/CreateAdmin"));
 const UserLogin = lazy(() => import("./components/auth/UserLogin"));
 const AdminLoadout = lazy(() => import("./components/admin/loadout/Loadout"));
+const AdminSessionManagement  = lazy(() => import("./components/admin/session/SessionManagement"));
 const UserAnalytics = lazy(() => import("./components/User/UserDashboard"));
 const UserNDR = lazy(() => import("./components/User/NDR"));
 const UserOrderDetails = lazy(() => import("./components/User/UserOrders"));
@@ -639,6 +642,7 @@ const TechInsurance = lazy(() => import("./components/merchant_component/techbas
 const DcUserLogin = lazy(() => import("./components/auth/DcLogin"));
 const DevAnalytics = lazy(() => import("./components/admin/dev/DevAnalytics"));
 const DistributionCenterOnboarding = lazy(() => import("./components/admin/dc/DistributionCenterOnboarding"));
+const UserDistributionCenterOnboarding = lazy(() => import("./components/User/dc/DistributionCenterOnboarding"));
 const DistributionCenterListing = lazy(() => import("./components/admin/dc/DistributionCenterListing"));
 const WeightDiscrepancies = lazy(() => import("./components/merchant_component/WeightDiscrepancies"));
 const WeightMIS = lazy(() => import("./components/admin/WeightReconciliation/WeightMIS"));
@@ -652,6 +656,9 @@ const DcLoadout = lazy(() => import("./components/distributionCenter/order/DcLoa
 const UserLoadout = lazy(() => import("./components/User/Loadout"));
 const VendorLoadout = lazy(() => import("./components/vendor_components/order/VendorLoadout"));
 const VendorAssignPickup = lazy(() => import("./components/vendor_components/order/VendorAssignedPickup"));
+const AgeingDashboard = lazy(() =>import("./components/admin/ageing/AgeingDashboard"));
+const UserAgeingDashboard = lazy(() =>import("./components/User/dashboard/UserAgeingDashboard"));
+const AgeingAccessGate = lazy(() =>import("./components/User/dashboard/AgeingAccessGate"));
 const LoadingFallback = () => <LazyLoading />;
 const UserProtectedRouteLayout = ({allowedRoles,loading,requiredPermission = [],permissions,children,}) => {
   const currentPermissions = permissions ?? localStorage.getItem("permission");
@@ -681,6 +688,8 @@ function App() {
   const appRouter = useMemo(
     () =>
       createBrowserRouter([
+          
+        {path: "/user/unauthorized",element: ( <Suspense fallback={<LoadingFallback />}> <NoPermissionPage /></Suspense>)},
         {path: "/register",element: ( <Suspense fallback={<LoadingFallback />}> <Register /></Suspense>)},
         { path: "/vendor/register", element: (<Suspense fallback={<LoadingFallback />}><VendorRegistrationPage /></Suspense>),},
         {path: "/merchant-forgot-password",element: ( <Suspense fallback={<LoadingFallback />}><ForgotPasswordMerchant /></Suspense>)},
@@ -729,6 +738,7 @@ function App() {
         {path: "/login/admin",element: (<Suspense fallback={<LoadingFallback />}><AdminLogin /> </Suspense>),},
 
         {path: "/login/user",element: (<Suspense fallback={<LoadingFallback />}><UserLogin /></Suspense>),},
+
         { path: "/incognitoLogin/:token/:email/:role", element: (<Suspense fallback={<LoadingFallback />}><IncognitoLogin /></Suspense>), },
 
         // Admin routes*
@@ -739,6 +749,7 @@ function App() {
             element: <ProtectedLayout allowedRoles={["admin"]} permissions={permissions} loading={loading} />,
             children: [
               { path: "analytics", element: (<Suspense fallback={<LoadingFallback />}><Analytics /></Suspense>) },
+              { path: "ageing-dashboard", element: (<Suspense fallback={<LoadingFallback />}><AgeingDashboard /></Suspense>) },
               { path: "order-details", element: (<Suspense fallback={<LoadingFallback />}><OrderDetails /></Suspense>) },
               { path: "order-assignment", element: (<Suspense fallback={<LoadingFallback />}><OrderAssignment /></Suspense>) },
               { path: "rider-onboarding", element: (<Suspense fallback={<LoadingFallback />}><RiderOnboarding /></Suspense>) },
@@ -771,6 +782,7 @@ function App() {
               // dc
               { path: "dc/list", element: (<Suspense fallback={<LoadingFallback />}><DistributionCenterListing /></Suspense>) },
               { path: "loadout", element: <Suspense fallback={<LoadingFallback />}><AdminLoadout /></Suspense> },
+              { path: "session-management", element: <Suspense fallback={<LoadingFallback />}><AdminSessionManagement  /></Suspense> },
               { index: true, element: <Navigate to="analytics" /> },
             ],
           },
@@ -779,13 +791,16 @@ function App() {
         //  User Routes
 
           { path: "/user/analytics", element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["DASHBOARD_VIEW", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserAnalytics /></UserProtectedRouteLayout>) },
+          { path: "/user/ageing-dashboard", element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["ANALYTICS_REPORTS", "ADMIN_FULL_ACCESS"]} permissions={permissions}><AgeingAccessGate><UserAgeingDashboard /></AgeingAccessGate></UserProtectedRouteLayout>) },
           { path: "/user/order-details", element: (<UserProtectedRouteLayout allowedRoles={UserRoles} permissions={permissions} requiredPermission={["ODR_VIEW", "ADMIN_FULL_ACCESS"]}><UserOrderDetails /></UserProtectedRouteLayout>) },
           { path: "/user/ndr", element: (<UserProtectedRouteLayout allowedRoles={UserRoles} permissions={permissions} requiredPermission={["NDR_VIEW", "ADMIN_FULL_ACCESS"]}><UserNDR /></UserProtectedRouteLayout>) },
           { path: "/user/assignemt/console", element: (<UserProtectedRouteLayout allowedRoles={UserRoles} permissions={permissions} requiredPermission={["VIEW_ASSN_CON", "ADMIN_FULL_ACCESS"]}><AssignmentConsole /></UserProtectedRouteLayout>) },
           { path: "/user/loadout",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["LOADOUT_VIEW", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserLoadout /></UserProtectedRouteLayout>)},
+          { path: "/user/order-history",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["ODR_VIEW", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserOrderHistory /></UserProtectedRouteLayout>)},
+         
 
-
-
+         
+          { path: "/user/onboarding/distribution-center",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["CREATE_DC", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserDistributionCenterOnboarding /></UserProtectedRouteLayout>)},
           { path: "/user/dc/list",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["VIEW_DC", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserDistributionCenterListing /></UserProtectedRouteLayout>)},
           { path: "/user/merchant/details",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["LOADOUT_VIEW", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserMerchantDetails /></UserProtectedRouteLayout>)},
           { path: "/user/rider/details",element: (<UserProtectedRouteLayout allowedRoles={UserRoles} requiredPermission={["VIEW_RIDER", "ADMIN_FULL_ACCESS"]} permissions={permissions}><UserRiderList /></UserProtectedRouteLayout>)},
@@ -1564,13 +1579,10 @@ function App() {
   return (
     <ThemeProvider>
       <InspectController />
-
       <RouterProvider router={appRouter} fallbackElement={<LoadingFallback />} />
-
       <Suspense fallback={null}>
         <ChatWidget />
       </Suspense>
-
       <Toaster />
     </ThemeProvider>
   );

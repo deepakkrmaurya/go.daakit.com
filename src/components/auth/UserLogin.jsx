@@ -90,12 +90,12 @@ function UserLogin() {
 
       const permissions = res?.data?.data?.data || [];
 
-      if (permissions.includes("DASHBOARD_VIEW")) {
+      if (permissions.includes("DASHBOARD_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")) {
         navigate("/user/analytics", {
           state: { permissions },
         });
         return;
-      } else if (permissions.includes("ODR_VIEW")) {
+      }  else if (permissions.includes("ODR_VIEW")) {
         navigate("/user/order-details", {
           state: { permissions },
         });
@@ -105,11 +105,21 @@ function UserLogin() {
           state: { permissions },
         });
         return;
-      } else {
-        navigate("/user/analytics", {
+      } else if(permissions.includes("REMITTANCE_VIEW")){
+         navigate("/user/cod-remittances", {
+          state: { permissions },
+        });
+      } else if(permissions.includes("VIEW_VENDOR")){
+         navigate("/user/vendor/details", {
           state: { permissions },
         });
         return;
+      } else {
+        navigate("/user/unauthorized", {
+         state: { permissions },
+        });
+        return;
+      
       }
     } catch (error) {
       toast.error("");
