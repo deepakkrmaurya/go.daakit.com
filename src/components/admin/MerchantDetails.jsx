@@ -467,21 +467,29 @@ function MerchantDetails() {
 
     if (!term) return merchantsData;
 
-    return merchantsData.filter((merchant) =>
-      [
-        merchant?.id,
-        merchant?.name,
-        merchant?.email,
-        merchant?.phone,
-        merchant?.company_name,
-        merchant?.account_type,
-      ].some((value) =>
-        String(value || "")
-          .toLowerCase()
-          .includes(term),
-      ),
-    );
-  }, [merchantsData, search]);
+    const normalizedId = term.replace(/^(?:id\s*)?#?\s*/, "");
+
+    return merchantsData.filter((merchant) => {
+
+        // Exact Merchant ID matching
+        if (/^\d+$/.test(normalizedId)) {
+            return String(merchant?.id ?? "").trim() === normalizedId;
+        }
+
+        // Existing partial search functionality
+        return [
+            merchant?.name,
+            merchant?.email,
+            merchant?.phone,
+            merchant?.company_name,
+            merchant?.account_type,
+        ].some((value) =>
+            String(value ?? "")
+                .toLowerCase()
+                .includes(term)
+        );
+    });
+}, [merchantsData, search]);
 
   // =========================================================
   // STATS

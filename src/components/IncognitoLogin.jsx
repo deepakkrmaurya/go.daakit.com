@@ -82,7 +82,7 @@ function IncognitoLogin() {
       } else if (role === "dc") {
         try {
           const { data } = await axios.post(
-            `${baseURL}/api/user/dcLogin`,
+            `${baseURL}/api/user/loginDc`,
             { dc_id: email },
             {
               headers: {

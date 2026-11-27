@@ -78,7 +78,7 @@ import {
 import { FaRegCopy } from "react-icons/fa";
 import { CiCircleCheck } from "react-icons/ci";
 import { toast } from "react-toastify";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Await, Link, Navigate, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import AxiosInstance from "@/Helper/axiosInstance";
 import CustomButton from "../../common/CustomButton";
@@ -336,6 +336,57 @@ const handleOpenBulkVendorMapping = async () => {
     toast.error("Failed to load eligible vendors");
   } finally {
     setBulkMappingLoading(false);
+  }
+};
+
+
+const DownloadPod = async (awb) => {
+  try {
+    const { data } = await AxiosInstance.get(
+      `/api/admin/downloadPod/${awb}`,
+      {
+        responseType: "blob",
+      }
+    );
+
+    const blob = new Blob([data], {
+      type: "application/pdf",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `POD_${awb}.pdf`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 1000);
+
+    toast.success("POD downloaded successfully");
+  } catch (error) {
+    let message = "Failed to download POD";
+
+    if (error?.response?.data instanceof Blob) {
+      try {
+        const response = JSON.parse(
+          await error.response.data.text()
+        );
+
+        message = response?.message || message;
+      } catch {
+        // Keep default error message
+      }
+    } else {
+      message = error?.response?.data?.message || error.message || message;
+    }
+
+    toast.error(message);
   }
 };
 
@@ -4511,6 +4562,20 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
 
                                     <DialogFooter>
                                       <DialogClose asChild>
+                                        <>
+                                        {
+                                          (selectedStatus=='delivered' || order.status=='delivered') && (
+
+                                        <button
+                                          onClick={() => {
+                                            DownloadPod(order?.awb_number)
+                                          }}
+                                          className="bg-orange-500 mr-2 text-white px-4 py-2 rounded hover:bg-indigo-800 transition"
+                                        >
+                                          Download POD
+                                        </button>
+                                          )
+                                        }
                                         <button
                                           onClick={() => {
                                             navigate(
@@ -4521,6 +4586,7 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                         >
                                           Get History
                                         </button>
+                                        </>
                                       </DialogClose>
                                       <DialogClose asChild>
                                         <Button
@@ -4660,6 +4726,8 @@ className="min-w-0 flex-1 px-4 py-2.5 rounded-l-lg text-sm text-black bg-white b
                                         : order.pickup_stage === "at_dc" ? "At DC" : order.pickup_stage == "at_vendor"  ? "At Vendor Hub" : "-"}
                                     </p>
                                   )}
+
+                                  
 
                                 </td>
                               </>

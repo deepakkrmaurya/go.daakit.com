@@ -599,17 +599,17 @@ function Navbar({ allowedRoles, children }) {
                         },
                       ]
                     : []),
-                  // ...(permissions.includes("REMITTANCE_MERCHANT_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
-                  //   ? [
-                  //       {
-                  //         label: "Merchant Remittance",
-                  //         href: "/user/merchant-remittances",
-                  //         icon: (
-                  //           <FaUserTie className="h-4 w-4" />
-                  //         ),
-                  //       },
-                  //     ]
-                  //   : []),
+                  ...(permissions.includes("REMITTANCE_MERCHANT_VIEW") || permissions.includes("ADMIN_FULL_ACCESS")
+                    ? [
+                        {
+                          label: "Merchant Remittance",
+                          href: "/user/merchant-remittances",
+                          icon: (
+                            <FaUserTie className="h-4 w-4" />
+                          ),
+                        },
+                      ]
+                    : []),
                   
                 ],
               },
@@ -650,11 +650,7 @@ function Navbar({ allowedRoles, children }) {
               href: "/vendor/rider-orders",
               icon: <OrderIcon className="h-5 w-5" />,
             },
-            {
-              label: "New Mapped Orders",
-              href: "/vendor/mapped-orders",
-              icon: <MapOrderIcon className="h-5 w-5" />,
-            },
+            
           ],
         },
 
@@ -1870,9 +1866,13 @@ function Navbar({ allowedRoles, children }) {
                 {/* PUSH ACTIONS RIGHT */}
 
                 <div className="min-w-0 flex-1" />
-
+                 {
+                   console.log(decoded)
+                 }
                 {/* ACTIONS */}
-                <div>{decoded?.usertype == "admin" && <OrderSearch />}</div>
+                <div>{
+               
+                ["admin","customer", "operations", "support", "finance", "sales", "marketing"].includes(decoded?.usertype) && <OrderSearch role={decoded?.usertype}/>}</div>
 
                 <div
                   className="
@@ -1957,7 +1957,7 @@ function Navbar({ allowedRoles, children }) {
                       <span className="flex items-center">
                         <IndianRupee className="h-3.5 w-3.5" />
 
-                        {Number(profile?.wallet_balance || 0).toLocaleString("en-IN")}
+                        {Math.trunc(Number(profile?.wallet_balance || 0)).toLocaleString("en-IN")}
                       </span>
                     </Link>
                   )}

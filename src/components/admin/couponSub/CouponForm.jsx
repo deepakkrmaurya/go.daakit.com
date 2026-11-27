@@ -1,9 +1,10 @@
 
 
-import axios from 'axios';
+
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import AxiosInstance from '@/Helper/axiosInstance';
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -103,10 +104,8 @@ function CouponForm() {
                 description: formData.description || null
             };
 
-            const res = await axios.post(`${baseURL}/api/admin/addCoupon`, payload, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
+            const res = await AxiosInstance.post(`/api/admin/addCoupon`, payload, {
+               
             });
 
             toast.success(res?.data?.message);

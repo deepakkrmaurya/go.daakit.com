@@ -341,7 +341,7 @@ const handleExportCsv = async () => {
   key={card.key}
  className={`rounded-xl border bg-white p-3 shadow-sm md:p-4 ${
   card.key === "all"
-    ? "border-[#0446db] ring-1 ring-[#0446db]"
+    ? ""
     : "border-gray-200"
 }`}
 >

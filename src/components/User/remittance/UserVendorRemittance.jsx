@@ -229,7 +229,7 @@ function UserRemittanceStatusVendor() {
 
   const getVendorList = async () => {
     try {
-      const res = await AxiosInstance.get("api/admin/getAllVendors", {
+      const res = await AxiosInstance.get("api/user/getAllVendors", {
         params: {
           limit: 1000,
         },
@@ -565,127 +565,7 @@ function UserRemittanceStatusVendor() {
   return (
     <>
       <div className="flex h-[calc(100dvh-80px)] min-h-0 w-full flex-col overflow-hidden bg-gray-100 dark:bg-gray-900">
-        <AlertDialog open={!isPageUnlocked}>
-          <AlertDialogContent
-            onEscapeKeyDown={(e) => e.preventDefault()}
-            overlayClassName="left-0"
-            className="
-
-            max-w-[400px]
-
-            -translate-x-1/2
-
-            rounded-sm
-
-            border border-gray-200
-
-            bg-white
-
-            p-0
-
-            shadow-xl
-
-            dark:border-gray-700
-
-            dark:bg-gray-900
-
-          "
-          >
-            <div className="p-6">
-              <AlertDialogHeader className="flex flex-col items-center text-center">
-                <div className="relative mb-4 flex w-full items-center ">
-                  {/* Lock Icon - Center */}
-
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-                    <LockKeyhole className="h-5 w-5" />
-                  </div>
-
-                  {/* Back Button - Right */}
-
-                  <button
-                    type="button"
-                    onClick={() => navigate(-1)}
-                    className="absolute right-0 flex items-center gap-1.5
-
-      rounded-sm px-2 py-1.5 text-sm font-medium
-
-      text-gray-600 transition-colors
-
-      hover:bg-blue-50 hover:text-[#0446DB]
-
-      dark:text-gray-300 dark:hover:bg-gray-800"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
-                  </button>
-                </div>
-
-                <AlertDialogTitle className="text-center text-xl font-semibold text-gray-900 dark:text-white">
-                  Verify Access
-                </AlertDialogTitle>
-
-                <AlertDialogDescription className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
-                  Enter your password to access Vendor Remittances
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-
-              <form onSubmit={handlePageUnlock} className="mt-6">
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Password
-                </label>
-
-                <div className="relative">
-                  <input
-                    type={showPagePassword ? "text" : "password"}
-                    value={pagePassword}
-                    onChange={(e) => {
-                      setPagePassword(e.target.value);
-
-                      setPasswordError("");
-                    }}
-                    autoFocus
-                    autoComplete="off"
-                    placeholder="Enter access password"
-                    className={`h-11 w-full rounded-sm border bg-white px-3 pr-11 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 dark:bg-gray-800 dark:text-white ${
-                      passwordError
-                        ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
-                        : "border-gray-300 focus:border-[#0446DB] focus:ring-2 focus:ring-blue-500/10 dark:border-gray-700"
-                    }`}
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPagePassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-700 dark:hover:text-gray-200"
-                  >
-                    {showPagePassword ? (
-                      <EyeOff className="h-[18px] w-[18px]" />
-                    ) : (
-                      <Eye className="h-[18px] w-[18px]" />
-                    )}
-                  </button>
-                </div>
-
-                {passwordError && (
-                  <p className="mt-2 text-xs font-medium text-red-500">{passwordError}</p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={!pagePassword.trim()}
-                  className="mt-5 h-11 w-full rounded-sm bg-[#0446DB] text-sm font-medium text-white transition-colors hover:bg-[#0339b5] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Continue
-                </button>
-
-                <p className="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
-                  Access expires automatically after 5 minutes
-                </p>
-              </form>
-            </div>
-          </AlertDialogContent>
-        </AlertDialog>
-
+        
         {/* =====================================================*
 
 *          HEADER*

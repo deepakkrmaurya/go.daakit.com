@@ -2940,12 +2940,11 @@ useEffect(() => {
                                       className="border px-2 py-1 rounded-md"
                                       required
                                     >
+                                    
                                       <option value="" disabled>
                                         Select Status
                                       </option>
-                                      <option key={order.id} value={"delivered"}>
-                                        Delivered
-                                      </option>
+                                    
                                     </select>
                                     <button
                                       type="submit"

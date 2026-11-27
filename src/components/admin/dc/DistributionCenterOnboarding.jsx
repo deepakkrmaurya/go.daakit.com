@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import axios from "axios";
+
 
 import Select from "react-select";
 
@@ -36,17 +36,9 @@ import {
   Map as MapIcon,
 
 } from "lucide-react";
+import AxiosInstance from "@/Helper/axiosInstance";
 
-const baseURL = import.meta.env.VITE_BASE_URL;
 
-
-const DC_ONBOARDING_API = `${String(baseURL || "").replace(
-
-  /\/$/,
-
-  ""
-
-)}/api/dc/create`;
 
 
 const initialFormData = {
@@ -730,17 +722,9 @@ if (!emailRegex.test(email.trim())) {
 
       };
 
-      console.log(
+      
 
-        "DC Create Payload:",
-
-        payload
-
-      );
-
-      const response = await axios.post(
-
-        DC_ONBOARDING_API,
+      const response = await AxiosInstance.post('/api/dc/create',
 
         payload,
 

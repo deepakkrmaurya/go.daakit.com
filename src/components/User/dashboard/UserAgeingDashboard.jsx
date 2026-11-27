@@ -146,7 +146,7 @@ export default function UserAgeingDashboard() {
     try {
       setExporting(true);
 
-      const response = await AxiosInstance.get("/api/analytics/ageing/export", {
+      const response = await AxiosInstance.get("/api/analytics/ageing/user/export", {
         params: {
           cluster: "all",
           delivery_city: selectedCity,
@@ -265,7 +265,7 @@ export default function UserAgeingDashboard() {
               <div
                 key={card.key}
                 className={`rounded-xl border bg-white p-3 shadow-sm md:p-4 ${
-                  card.key === "all" ? "border-[#0446db] ring-1 ring-[#0446db]" : "border-gray-200"
+                  card.key === "all" ? "" : "border-gray-200"
                 }`}
               >
                 <div className="flex items-center gap-2">

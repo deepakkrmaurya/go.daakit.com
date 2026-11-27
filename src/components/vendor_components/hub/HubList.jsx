@@ -167,7 +167,7 @@ function HubList() {
   // --- API Calls ---
   const getAllHubs = async () => {
     try {
-      const res = await axios.get(`${baseURL}/api/hub/getAllHubs`, {
+      const res = await axios.get(`${baseURL}/api/facility/getAllHubs`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -181,7 +181,7 @@ function HubList() {
   const handleUpdateHub = async (updatedData) => {
     try {
       const res = await axios.post(
-        `${baseURL}/api/hub/updateHub/${updatedData.id}`,
+        `${baseURL}/api/facility/updateHub/${updatedData.id}`,
         updatedData,
         {
           headers: {

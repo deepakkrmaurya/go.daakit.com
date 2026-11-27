@@ -162,7 +162,7 @@ function CreateHub() {
         Object.keys(validationErrors).length === 0
       ) {
         const res = await axios.post(
-          `${baseURL}/api/hub/registerHub`,
+          `${baseURL}/api/facility/registerHub`,
           formData,
           {
             headers: {

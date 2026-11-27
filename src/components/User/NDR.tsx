@@ -1600,6 +1600,7 @@ const statusTabs = [
 const rtoReasons = [
   "Address Incorrect / Incomplete",
   "Customer Refused / Cancelled",
+  "Customer wants open delivery",
   "Wrong Pincode / Address",
   "Wrong Contact Details",
   "Package Damaged",
@@ -1608,9 +1609,14 @@ const rtoReasons = [
   "Return to Seller / FC",
   "Max. Attempts Reached",
 ];
+const reattemptReasons = [
+  "Customer Requested Reschedule",
+  "Customer wants open delivery",
+];
 const refusalReasons = [
   "Duplicate Order",
   "Order Placed by Mistake",
+  "Deliver to a different address",
   "COD Amount Not Ready",
   "Better Price Elsewhere",
   "Other",
@@ -1786,6 +1792,46 @@ function ActionFields({
           )}
         </>
       )}
+
+      
+       
+       {value.action=='reattempt' && (
+            <label className="block space-y-1.5">
+              <span className="text-sm font-medium">Remarks</span>
+              <select
+               
+                className={inputClass}
+                value={value.remarks}
+                onChange={(e) => change("remarks", e.target.value)}
+              >
+                <option value="">Select sub remarks</option>
+                {reattemptReasons.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+       { value.remarks=='Customer Requested Reschedule' && (
+            <label className="block space-y-1.5">
+              <span className="text-sm font-medium">Sub Remarks</span>
+              <select
+                
+                className={inputClass}
+                value={value.sub_remarks}
+                onChange={(e) => change("sub_remarks", e.target.value)}
+              >
+                <option value="">Select sub remarks</option>
+                
+                  <option  value={'Deliver to a different address'}>
+                   Deliver to a different address
+                  </option>
+                
+              </select>
+            </label>
+          )}
+
       {value.action && (
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">Other Remarks (optional)</span>
@@ -1948,6 +1994,7 @@ export default function UserNDR() {
     if (error) return toast.error(error);
     setSingleSaving(true);
     try {
+      
       await postNdrAction(String(singleItem.ndr_id), singleForm);
       toast.success("NDR action updated");
       setSingleItem(null);

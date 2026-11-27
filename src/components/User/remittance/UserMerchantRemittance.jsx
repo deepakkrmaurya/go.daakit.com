@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
@@ -12,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import {
   FiRefreshCw,
   FiArrowRight,
@@ -81,23 +80,17 @@ export default function UserMerchantRemittances() {
     direction: "desc",
   });
 
-
-
   const [isPageUnlocked, setIsPageUnlocked] = useState(false);
   const [pagePassword, setPagePassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPagePassword, setShowPagePassword] = useState(false);
-  
+
   useEffect(() => {
     const checkPageLock = () => {
-      const unlockedAt = Number(
-        sessionStorage.getItem(PAGE_UNLOCK_KEY) || 0
-      );
-  
-      const isValid =
-        unlockedAt > 0 &&
-        Date.now() - unlockedAt < PAGE_UNLOCK_TIME;
-  
+      const unlockedAt = Number(sessionStorage.getItem(PAGE_UNLOCK_KEY) || 0);
+
+      const isValid = unlockedAt > 0 && Date.now() - unlockedAt < PAGE_UNLOCK_TIME;
+
       if (isValid) {
         setIsPageUnlocked(true);
       } else {
@@ -105,31 +98,28 @@ export default function UserMerchantRemittances() {
         setIsPageUnlocked(false);
       }
     };
-  
+
     checkPageLock();
-  
+
     const interval = setInterval(checkPageLock, 1000);
-  
+
     return () => clearInterval(interval);
   }, []);
 
   const handlePageUnlock = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (pagePassword !== PAGE_PASSWORD) {
-    setPasswordError("Incorrect password. Please try again.");
-    return;
-  }
+    if (pagePassword !== PAGE_PASSWORD) {
+      setPasswordError("Incorrect password. Please try again.");
+      return;
+    }
 
-  sessionStorage.setItem(
-    PAGE_UNLOCK_KEY,
-    String(Date.now())
-  );
+    sessionStorage.setItem(PAGE_UNLOCK_KEY, String(Date.now()));
 
-  setIsPageUnlocked(true);
-  setPagePassword("");
-  setPasswordError("");
-};
+    setIsPageUnlocked(true);
+    setPagePassword("");
+    setPasswordError("");
+  };
 
   const filteredMerchants = allMerchants.filter((mch) => {
     const q = merchantSearch.trim().toLowerCase();
@@ -141,9 +131,7 @@ export default function UserMerchantRemittances() {
     );
   });
 
-  const selectedMerchant = allMerchants.find(
-    (m) => String(m.id) === String(merchant),
-  );
+  const selectedMerchant = allMerchants.find((m) => String(m.id) === String(merchant));
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -155,40 +143,33 @@ export default function UserMerchantRemittances() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const [permissions, setPermissions] = useState(localStorage.getItem("permission"));
 
-    const [permissions, setPermissions] = useState([]);
-     
-    const getUserPermissions = useCallback(async () => {
-      try {
-        const res = await AxiosInstance.get("/api/user/getUserPermissions");
-        const list = res.data?.data?.data;
-        if (!Array.isArray(list)) throw new Error("Invalid permission response");
-        setPermissions(list);
-        if (!list.includes("REMITTANCE_MERCHANT_VIEW") && !list.includes("ADMIN_FULL_ACCESS")) navigate("/unauthorized", { replace: true });
-      } catch (err) {
-        navigate("/unauthorized", { replace: true });
-      }
-    }, [navigate]);
-  
-    useEffect(()=>{
-      getUserPermissions()
-    },[])
+  // const getUserPermissions = useCallback(async () => {
+  //   try {
+  //     const res = await AxiosInstance.get("/api/user/getUserPermissions");
+  //     const list = res.data?.data?.data;
+  //     if (!Array.isArray(list)) throw new Error("Invalid permission response");
+  //     setPermissions(list);
+  //     if (!list.includes("REMITTANCE_MERCHANT_VIEW") && !list.includes("ADMIN_FULL_ACCESS")) navigate("/unauthorized", { replace: true });
+  //   } catch (err) {
+  //     navigate("/unauthorized", { replace: true });
+  //   }
+  // }, [navigate]);
+
+  // useEffect(()=>{
+  //   getUserPermissions()
+  // },[])
 
   const getMerchants = async () => {
     setLoading(true);
     try {
-      const res = await AxiosInstance.get(
-        `/api/user/merchantDropdown`,);
-      
+      const res = await AxiosInstance.get(`/api/user/getMerchantDropdown`);
 
-        console.log(res.data?.data)
-       setAllMerchants(res?.data?.data || []);
+      console.log(res.data?.data);
+      setAllMerchants(res?.data?.data || []);
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Error fetching merchants",
-      );
+      toast.error(err.response?.data?.message || err.message || "Error fetching merchants");
     } finally {
       setLoading(false);
     }
@@ -199,26 +180,21 @@ export default function UserMerchantRemittances() {
     setMerchant(merchantId);
     setLoading(true);
     try {
-      const res = await AxiosInstance.get(
-        `/api/user/getMerchantRemittanceSummary/${merchantId}`,
-        {
-          params: {
-            start_date: filters.startDate,
-            end_date: filters.endDate,
-            awb_numbers: filters.awb_number,
-          },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+      const res = await AxiosInstance.get(`/api/user/getMerchantRemittanceSummary/${merchantId}`, {
+        params: {
+          start_date: filters.startDate,
+          end_date: filters.endDate,
+          awb_numbers: filters.awb_number,
         },
-      );
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       setStats(res.data);
       setLastUpdated(new Date());
     } catch (err) {
       toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Error while fetching the merchant's stat",
+        err.response?.data?.message || err.message || "Error while fetching the merchant's stat",
       );
     } finally {
       setLoading(false);
@@ -231,24 +207,15 @@ export default function UserMerchantRemittances() {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      await AxiosInstance.post(
-        `/api/user/uploadMerchantRemittance`,
-        formData,
-        {
-          headers: {
-           
-            "Content-Type": "multipart/form-data",
-          },
+      await AxiosInstance.post(`/api/user/uploadMerchantRemittance`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
       toast.success("File uploaded successfully");
       getMerchants();
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Error while uploading file",
-      );
+      toast.error(err.response?.data?.message || err.message || "Error while uploading file");
     } finally {
       setLoading(false);
     }
@@ -256,13 +223,9 @@ export default function UserMerchantRemittances() {
 
   const downloadMerchantRemittanceSampleFile = async () => {
     try {
-      const res = await AxiosInstance.get(
-        `/api/user/downloadMerchantRemittanceSampleFile`,
-        {
-          responseType: "blob",
-          
-        },
-      );
+      const res = await AxiosInstance.get(`/api/user/downloadMerchantRemittanceSampleFile`, {
+        responseType: "blob",
+      });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -283,12 +246,9 @@ export default function UserMerchantRemittances() {
 
     setExportLoading(true);
     try {
-      const res = await AxiosInstance.get(
-        `/api/user/exportNextExpectedRemittance/${merchant}`,
-        {
-          responseType: "blob",
-        },
-      );
+      const res = await AxiosInstance.get(`/api/user/exportNextExpectedRemittance/${merchant}`, {
+        responseType: "blob",
+      });
 
       const contentType = res.headers["content-type"] || "";
       if (contentType.includes("application/json")) {
@@ -312,9 +272,7 @@ export default function UserMerchantRemittances() {
       toast.success("Export downloaded successfully");
     } catch (err) {
       toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to export next expected remittance",
+        err.response?.data?.message || err.message || "Failed to export next expected remittance",
       );
     } finally {
       setExportLoading(false);
@@ -333,17 +291,13 @@ export default function UserMerchantRemittances() {
 
     setRowExportLoading(utrNumber);
     try {
-      const res = await AxiosInstance.get(
-        `/api/user/exportMerchantRemittance`,
-        {
-          params: {
-            merchant_id: merchant,
-            utr_number: utrNumber,
-          },
-          responseType: "blob",
-          
+      const res = await AxiosInstance.get(`/api/user/exportMerchantRemittance`, {
+        params: {
+          merchant_id: merchant,
+          utr_number: utrNumber,
         },
-      );
+        responseType: "blob",
+      });
 
       const contentType = res.headers["content-type"] || "";
       if (contentType.includes("application/json")) {
@@ -369,11 +323,7 @@ export default function UserMerchantRemittances() {
 
       toast.success("Remittance CSV downloaded successfully");
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to export remittance",
-      );
+      toast.error(err.response?.data?.message || err.message || "Failed to export remittance");
     } finally {
       setRowExportLoading(null);
     }
@@ -503,128 +453,26 @@ export default function UserMerchantRemittances() {
   };
 
   const hasActiveFilters =
-    appliedFilters.startDate ||
-    appliedFilters.endDate ||
-    appliedFilters.awb_number;
+    appliedFilters.startDate || appliedFilters.endDate || appliedFilters.awb_number;
 
+  const [loadingPage, setLoadingPage] = useState(true);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingPage(false);
+    }, 2000);
 
-      const [loadingPage, setLoadingPage] = useState(true);
-
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setLoadingPage(false);
-  }, 2000);
-
-  return () => clearTimeout(timer);
-}, []);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
-
-
-    <AlertDialog open={!isPageUnlocked}>
-      <AlertDialogContent
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        className="w-[calc(100%-32px)] max-w-[400px] rounded-sm border border-gray-200 bg-white p-0 shadow-xl dark:border-gray-700 dark:bg-gray-900"
-      >
-        <div className="p-6">
-          <AlertDialogHeader className="flex flex-col items-center text-center">
-            
-    <div className="relative mb-4 flex w-full items-center ">
-      {/* Lock Icon - Center */}
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#0446DB] dark:bg-blue-500/10 dark:text-blue-400">
-        <LockKeyhole className="h-5 w-5" />
-      </div>
-    
-      {/* Back Button - Right */}
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="absolute right-0 flex items-center gap-1.5
-          rounded-sm px-2 py-1.5 text-sm font-medium
-          text-gray-600 transition-colors
-          hover:bg-blue-50 hover:text-[#0446DB]
-          dark:text-gray-300 dark:hover:bg-gray-800"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </button>
-    </div>
-    
-    
-            <AlertDialogTitle className="text-center text-xl font-semibold text-gray-900 dark:text-white">
-              Verify Access
-            </AlertDialogTitle>
-    
-            <AlertDialogDescription className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
-              Enter your password to access Remittances
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-    
-          <form onSubmit={handlePageUnlock} className="mt-6">
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Password
-            </label>
-    
-            <div className="relative">
-              <input
-                type={showPagePassword ? "text" : "password"}
-                value={pagePassword}
-                onChange={(e) => {
-                  setPagePassword(e.target.value);
-                  setPasswordError("");
-                }}
-                autoFocus
-                autoComplete="off"
-                placeholder="Enter access password"
-                className={`h-11 w-full rounded-sm border bg-white px-3 pr-11 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 dark:bg-gray-800 dark:text-white ${
-                  passwordError
-                    ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
-                    : "border-gray-300 focus:border-[#0446DB] focus:ring-2 focus:ring-blue-500/10 dark:border-gray-700"
-                }`}
-              />
-    
-              <button
-                type="button"
-                onClick={() => setShowPagePassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-700 dark:hover:text-gray-200"
-              >
-                {showPagePassword ? (
-                  <EyeOff className="h-[18px] w-[18px]" />
-                ) : (
-                  <Eye className="h-[18px] w-[18px]" />
-                )}
-              </button>
-            </div>
-    
-            {passwordError && (
-              <p className="mt-2 text-xs font-medium text-red-500">
-                {passwordError}
-              </p>
-            )}
-    
-            <button
-              type="submit"
-              disabled={!pagePassword.trim()}
-              className="mt-5 h-11 w-full rounded-sm bg-[#0446DB] text-sm font-medium text-white transition-colors hover:bg-[#0339b5] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Continue
-            </button>
-    
-            <p className="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
-              Access expires automatically after 5 minutes
-            </p>
-          </form>
-        </div>
-      </AlertDialogContent>
-        </AlertDialog>
       {loading || loadingPage ? (
-         <div className=" w-full h-[90vh] flex justify-center items-center">
+        <div className=" w-full h-[90vh] flex justify-center items-center">
           <div>
             <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-           <p className="mt-2"> Loading Merchant Remittances Details...</p>
-           </div>
+            <p className="mt-2"> Loading Merchant Remittances Details...</p>
+          </div>
         </div>
       ) : (
         <div className="min-h-screen w-full font-sans bg-[#F8F9FB]">
@@ -643,13 +491,12 @@ useEffect(() => {
                   Updated: {formatUpdatedTime(lastUpdated)}
                 </span>
                 <CustomButton
-                variant='outline'
-                icon = {FiRefreshCw}
-                
+                  variant="outline"
+                  icon={FiRefreshCw}
                   onClick={() => merchant && getMerchantStats(merchant)}
                   disabled={loading || !merchant}
                 >
-                       Refresh
+                  Refresh
                 </CustomButton>
 
                 {/* <button
@@ -679,32 +526,29 @@ useEffect(() => {
                 >
                   Remittance History
                 </button>
-                {
-                    (permissions.includes('REMITTANCE_MERCHANT_UPLOAD') || permissions.includes('ADMIN_FULL_ACCESS')) && (
+                {(permissions.includes("REMITTANCE_MERCHANT_UPLOAD") ||
+                  permissions.includes("ADMIN_FULL_ACCESS")) && (
+                  <button
+                    onClick={() => setSelectedStatus("upload")}
+                    className={`px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-medium shadow-sm transition-all cursor-pointer ${
+                      selectedStatus === "upload"
+                        ? "bg-[#0446DB] text-white"
+                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    ⬆ Upload Remittance
+                  </button>
+                )}
 
-                <button
-                  onClick={() => setSelectedStatus("upload")}
-                  className={`px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-medium shadow-sm transition-all cursor-pointer ${
-                    selectedStatus === "upload"
-                      ? "bg-[#0446DB] text-white"
-                      : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  ⬆ Upload Remittance
-                </button>
-                    )
-                }
-                {
-                     (permissions.includes('REMITTANCE_SAMPLE_DOWNLOAD') || permissions.includes('ADMIN_FULL_ACCESS')) && (
-
-                <button
-                  onClick={downloadMerchantRemittanceSampleFile}
-                  className="col-span-2 sm:col-span-1 bg-white text-[#0446DB] font-semibold text-xs sm:text-sm px-3 sm:px-5 py-2 rounded-xl shadow hover:bg-indigo-50 transition cursor-pointer"
-                >
-                  ⬇ Sample CSV
-                </button>
-                     )
-                }
+                {(permissions.includes("REMITTANCE_SAMPLE_DOWNLOAD") ||
+                  permissions.includes("ADMIN_FULL_ACCESS")) && (
+                  <button
+                    onClick={downloadMerchantRemittanceSampleFile}
+                    className="col-span-2 sm:col-span-1 bg-white text-[#0446DB] font-semibold text-xs sm:text-sm px-3 sm:px-5 py-2 rounded-xl shadow hover:bg-indigo-50 transition cursor-pointer"
+                  >
+                    ⬇ Sample CSV
+                  </button>
+                )}
               </div>
             </div>
 
@@ -804,24 +648,19 @@ useEffect(() => {
                         {selectedMerchant ? (
                           <div className="flex items-center gap-3 min-w-0">
                             <div className="w-8 h-8 rounded-full bg-[#0446DB] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                              {(selectedMerchant.name || "?")
-                                .charAt(0)
-                                .toUpperCase()}
+                              {(selectedMerchant.name || "?").charAt(0).toUpperCase()}
                             </div>
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-gray-900 truncate">
                                 {selectedMerchant.name}
                               </p>
                               <p className="text-[11px] text-gray-500 truncate">
-                                #{selectedMerchant.id} ·{" "}
-                                {selectedMerchant.email}
+                                #{selectedMerchant.id} · {selectedMerchant.email}
                               </p>
                             </div>
                           </div>
                         ) : (
-                          <span className="text-gray-400">
-                            -- Choose a merchant --
-                          </span>
+                          <span className="text-gray-400">-- Choose a merchant --</span>
                         )}
                         <FiChevronDown
                           className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${
@@ -841,9 +680,7 @@ useEffect(() => {
                                 autoFocus
                                 type="text"
                                 value={merchantSearch}
-                                onChange={(e) =>
-                                  setMerchantSearch(e.target.value)
-                                }
+                                onChange={(e) => setMerchantSearch(e.target.value)}
                                 placeholder="Search by name, email or ID..."
                                 className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#0446DB] focus:border-[#0446DB]"
                               />
@@ -858,8 +695,7 @@ useEffect(() => {
                               </p>
                             ) : (
                               filteredMerchants.map((mch) => {
-                                const isSelected =
-                                  String(mch.id) === String(merchant);
+                                const isSelected = String(mch.id) === String(merchant);
                                 return (
                                   <button
                                     key={mch.id}
@@ -870,15 +706,11 @@ useEffect(() => {
                                       setMerchantSearch("");
                                     }}
                                     className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors cursor-pointer ${
-                                      isSelected
-                                        ? "bg-blue-50"
-                                        : "hover:bg-gray-50"
+                                      isSelected ? "bg-blue-50" : "hover:bg-gray-50"
                                     }`}
                                   >
                                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#0446DB] to-[#3b71e2] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                                      {(mch.name || "?")
-                                        .charAt(0)
-                                        .toUpperCase()}
+                                      {(mch.name || "?").charAt(0).toUpperCase()}
                                     </div>
                                     <div className="min-w-0 flex-1">
                                       <p className="text-sm font-semibold text-gray-900 truncate">
@@ -968,16 +800,11 @@ useEffect(() => {
                               {formatCurrency(lastRemittance.amount)}
                             </div>
                             <p className="text-[10px] sm:text-xs text-gray-500 truncate">
-                              UTR:{" "}
-                              <span className="text-gray-800">
-                                {lastRemittance.utr}
-                              </span>
+                              UTR: <span className="text-gray-800">{lastRemittance.utr}</span>
                             </p>
                           </>
                         ) : (
-                          <p className="text-gray-400 text-xs sm:text-sm">
-                            No recent remittance
-                          </p>
+                          <p className="text-gray-400 text-xs sm:text-sm">No recent remittance</p>
                         )}
                       </div>
                     </div>
@@ -990,9 +817,7 @@ useEffect(() => {
                         </div>
                         <p className="text-gray-500 text-[10px] sm:text-xs mb-1">
                           {nextExpectedCod.deliveryDate
-                            ? `Expected: ${formatDate(
-                                nextExpectedCod.deliveryDate,
-                              )}`
+                            ? `Expected: ${formatDate(nextExpectedCod.deliveryDate)}`
                             : "No delivery scheduled"}
                         </p>
                         <div className="text-base sm:text-lg md:text-xl font-bold text-[#2563EB] mb-1.5 break-words">
@@ -1000,9 +825,7 @@ useEffect(() => {
                         </div>
                         <p className="text-gray-500 text-[11px] sm:text-xs md:text-sm mb-0.5">
                           Orders:{" "}
-                          <span className="text-[#1E293B] font-bold">
-                            {nextExpectedCod.count}
-                          </span>
+                          <span className="text-[#1E293B] font-bold">{nextExpectedCod.count}</span>
                         </p>
                         <p className="text-gray-500 text-[11px] sm:text-xs md:text-sm">
                           Cycle:{" "}
@@ -1012,21 +835,18 @@ useEffect(() => {
                         </p>
                       </div>
 
-                      {
-                        (permissions.includes('REMITTANCE_MERCHANT_EXPORT') || permissions.includes('ADMIN_FULL_ACCESS')) && (
-
-                      <button
-                        onClick={handleExportNextExpected}
-                        disabled={exportLoading || !merchant}
-                        title="Export Next Expected Remittance"
-                        className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#2563EB] bg-blue-100/70 hover:bg-blue-200 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <FiDownload className="w-3.5 h-3.5" />
-                        {exportLoading ? "Exporting..." : "Export"}
-                      </button>
-                        )
-                      }
-
+                      {(permissions.includes("REMITTANCE_MERCHANT_EXPORT") ||
+                        permissions.includes("ADMIN_FULL_ACCESS")) && (
+                        <button
+                          onClick={handleExportNextExpected}
+                          disabled={exportLoading || !merchant}
+                          title="Export Next Expected Remittance"
+                          className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#2563EB] bg-blue-100/70 hover:bg-blue-200 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <FiDownload className="w-3.5 h-3.5" />
+                          {exportLoading ? "Exporting..." : "Export"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1060,9 +880,7 @@ useEffect(() => {
                     {isFilterOpen && (
                       <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-xs sm:w-80 bg-white border border-gray-200 rounded-xl shadow-lg p-4">
                         <div className="flex justify-between items-center mb-4">
-                          <h3 className="font-semibold text-gray-800">
-                            Filter Records
-                          </h3>
+                          <h3 className="font-semibold text-gray-800">Filter Records</h3>
                           <button
                             onClick={() => setIsFilterOpen(false)}
                             className="text-gray-400 hover:text-gray-600 cursor-pointer"
@@ -1173,15 +991,12 @@ useEffect(() => {
                             onClick={() => handleSort("created_at")}
                           >
                             Upload Date
-                            {sortConfig.key === "created_at" &&
-                            sortConfig.direction === "asc" ? (
+                            {sortConfig.key === "created_at" && sortConfig.direction === "asc" ? (
                               <FiArrowUp className="w-3 h-3 text-blue-600" />
                             ) : (
                               <FiArrowDown
                                 className={`w-3 h-3 ${
-                                  sortConfig.key === "created_at"
-                                    ? "text-blue-600"
-                                    : ""
+                                  sortConfig.key === "created_at" ? "text-blue-600" : ""
                                 }`}
                               />
                             )}
@@ -1198,12 +1013,8 @@ useEffect(() => {
                           <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
                             Convenience Fee
                           </th>
-                          <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                            AWB
-                          </th>
-                          <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                            UTR
-                          </th>
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">AWB</th>
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">UTR</th>
                           <th className="px-3 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap">
                             Action
                           </th>
@@ -1211,12 +1022,9 @@ useEffect(() => {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {currentRecords.map((remittance, idx) => {
-                          const freight =
-                            Number(remittance.freight_deductions) || 0;
+                          const freight = Number(remittance.freight_deductions) || 0;
                           const conv = Number(remittance.convenience_fee) || 0;
-                          const awbList = (remittance.awb_number || "")
-                            .split(",")
-                            .filter(Boolean);
+                          const awbList = (remittance.awb_number || "").split(",").filter(Boolean);
 
                           return (
                             <tr
@@ -1261,9 +1069,7 @@ useEffect(() => {
                                   {remittance.utr_number && (
                                     <button
                                       onClick={() => {
-                                        navigator.clipboard.writeText(
-                                          remittance.utr_number,
-                                        );
+                                        navigator.clipboard.writeText(remittance.utr_number);
                                         toast.success("UTR copied!");
                                       }}
                                       className="text-gray-400 hover:text-gray-600 cursor-pointer"
@@ -1274,34 +1080,27 @@ useEffect(() => {
                                 </div>
                               </td>
                               <td className="px-3 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap">
-                                {
-                                    (permissions.includes('REMITTANCE_MERCHANT_EXPORT') || permissions.includes('ADMIN_FULL_ACCESS')) ? (
-
-                                <button
-                                  onClick={() =>
-                                    handleExportRemittanceByUtr(
-                                      remittance.utr_number,
-                                    )
-                                  }
-                                  disabled={
-                                    rowExportLoading ===
-                                      remittance.utr_number ||
-                                    !remittance.utr_number
-                                  }
-                                  title="Download Remittance CSV"
-                                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-medium text-[#0446DB] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  <FiDownload className="w-3.5 h-3.5" />
-                                  {rowExportLoading === remittance.utr_number
-                                    ? "Exporting..."
-                                    : "Export"}
-                                </button>
-                                    ):(
-                                        <>
-                                        -
-                                        </>
-                                    )
-                                }
+                                {permissions.includes("REMITTANCE_MERCHANT_EXPORT") ||
+                                permissions.includes("ADMIN_FULL_ACCESS") ? (
+                                  <button
+                                    onClick={() =>
+                                      handleExportRemittanceByUtr(remittance.utr_number)
+                                    }
+                                    disabled={
+                                      rowExportLoading === remittance.utr_number ||
+                                      !remittance.utr_number
+                                    }
+                                    title="Download Remittance CSV"
+                                    className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-medium text-[#0446DB] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <FiDownload className="w-3.5 h-3.5" />
+                                    {rowExportLoading === remittance.utr_number
+                                      ? "Exporting..."
+                                      : "Export"}
+                                  </button>
+                                ) : (
+                                  <>-</>
+                                )}
                               </td>
                             </tr>
                           );
@@ -1323,35 +1122,22 @@ useEffect(() => {
                   {totalPages > 1 && (
                     <div className="px-3 sm:px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50/50">
                       <span className="text-[11px] sm:text-sm text-gray-500">
-                        Showing{" "}
-                        <span className="font-medium">
-                          {indexOfFirstItem + 1}
-                        </span>{" "}
-                        to{" "}
+                        Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{" "}
                         <span className="font-medium">
                           {Math.min(indexOfLastItem, sortedRecords.length)}
                         </span>{" "}
-                        of{" "}
-                        <span className="font-medium">
-                          {sortedRecords.length}
-                        </span>{" "}
-                        entries
+                        of <span className="font-medium">{sortedRecords.length}</span> entries
                       </span>
                       <div className="flex items-center gap-1 sm:gap-2">
                         <button
-                          onClick={() =>
-                            setCurrentPage((prev) => Math.max(prev - 1, 1))
-                          }
+                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                           disabled={currentPage === 1}
                           className="p-1.5 sm:p-2 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
                           <FiChevronLeft className="w-4 h-4" />
                         </button>
                         <div className="flex items-center gap-1">
-                          {Array.from(
-                            { length: totalPages },
-                            (_, i) => i + 1,
-                          ).map((page) => (
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                             <button
                               key={page}
                               onClick={() => setCurrentPage(page)}
@@ -1366,11 +1152,7 @@ useEffect(() => {
                           ))}
                         </div>
                         <button
-                          onClick={() =>
-                            setCurrentPage((prev) =>
-                              Math.min(prev + 1, totalPages),
-                            )
-                          }
+                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                           disabled={currentPage === totalPages}
                           className="p-1.5 sm:p-2 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
@@ -1390,9 +1172,7 @@ useEffect(() => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
           <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[70vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base sm:text-lg font-semibold text-gray-800">
-                AWB Numbers
-              </h2>
+              <h2 className="text-base sm:text-lg font-semibold text-gray-800">AWB Numbers</h2>
               <button
                 onClick={closePopUp}
                 className="text-gray-400 hover:text-gray-700 text-xl leading-none"

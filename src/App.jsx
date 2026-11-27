@@ -656,7 +656,7 @@ const DcLoadout = lazy(() => import("./components/distributionCenter/order/DcLoa
 const UserLoadout = lazy(() => import("./components/User/Loadout"));
 const VendorLoadout = lazy(() => import("./components/vendor_components/order/VendorLoadout"));
 const VendorAssignPickup = lazy(() => import("./components/vendor_components/order/VendorAssignedPickup"));
-const AgeingDashboard = lazy(() =>import("./components/admin/ageing/AgeingDashboard"));
+const AgeingDashboard = lazy(() =>import("./components/admin/dasboard/AgeingDashboard"));
 const UserAgeingDashboard = lazy(() =>import("./components/User/dashboard/UserAgeingDashboard"));
 const AgeingAccessGate = lazy(() =>import("./components/User/dashboard/AgeingAccessGate"));
 const LoadingFallback = () => <LazyLoading />;

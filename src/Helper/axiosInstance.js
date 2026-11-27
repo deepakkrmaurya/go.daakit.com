@@ -22,13 +22,13 @@ const handleLogout = () => {
       clearStorageAndRedirect()  
     } else if (role === "admin") {
       clearStorageAndRedirect()
-      // navigate("/login/admin");
+      navigate("/login/admin");
     } else if (UserRoles.includes(role)) {
       clearStorageAndRedirect()
-      // navigate("/login/user");
+      navigate("/login/user");
     } else {
       clearStorageAndRedirect()
-      // navigate("/login");
+      navigate("/login");
     }
 
     toast.success("Logout successful");
@@ -68,9 +68,9 @@ AxiosInstance.interceptors.response.use(
 
     // Token Expired / Unauthorized
     if (error?.response?.status === 401) {
-       return
+       handleLogout()
       // Remove Token
-      localStorage.removeItem("token");
+     
 
       // Redirect Login Page
       

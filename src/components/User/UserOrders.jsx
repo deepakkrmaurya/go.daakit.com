@@ -4440,8 +4440,8 @@ useEffect(() => {
                                 </p>
                               </td>
 
-                              <td className=" py-2">
-                              <div className="flex flex-col gap-1.5 text-sm">
+                              <td className="">
+                              <div className="flex flex-col  text-sm">
                                 <p className="text-gray-700 dark:text-gray-300">
                                   <span className="font-medium text-gray-900 dark:text-white">
                                     Merchant ID:
@@ -4479,7 +4479,7 @@ useEffect(() => {
                                   <>
 
                                     <td className=" px-6 text-left ">
-                                  {order.mapped_dc_id !== null ? (
+                                  {/* {order.mapped_dc_id !== null ? (
                                     <>DC_{order.mapped_dc_id}</>
                                   ) : order.rider_vendor_id === null &&
                                     order.rider_merchant_id === null &&
@@ -4500,15 +4500,54 @@ useEffect(() => {
 
                                       {order.rider_id}
                                     </>
-                                  )}
+                                  )} */}
 
-                                  {(selectedStatus === "picked" || selectedStatus == "undelivered") && (
+                                  {/* {(selectedStatus === "picked" || selectedStatus == "undelivered") && (
                                     <p>
                                       {order.pickup_stage === "at_central_hub"
                                         ? "At Central Hub"
                                         : order.pickup_stage === "at_dc" ? "At DC" : "At Vendor Hub"}
                                     </p>
                                   )}
+
+                                  <br />
+                                  {order?.mapped_vendor_name && `Vendor Name : (${order.mapped_with}) ${order?.mapped_vendor_name}`}
+                                  <br />
+                                  {order?.rider_name && `Rider Name : (${order.rider_id}) ${order?.rider_name}`} */}
+                                   
+{(() => {
+  const showPickupStage =
+    selectedStatus === "picked" ||
+    selectedStatus === "undelivered";
+
+  const pickupStage = showPickupStage
+    ? order?.pickup_stage === "at_central_hub"
+      ? "At Central Hub"
+      : order?.pickup_stage === "at_dc"
+        ? "At DC"
+        : order?.pickup_stage
+          ? "At Vendor Hub"
+          : null
+    : null;
+
+  const vendorName = order?.mapped_vendor_name
+    ? `Vendor Name : (${order?.mapped_with ?? "—"}) ${order.mapped_vendor_name}`
+    : null;
+
+  const riderName = order?.rider_name
+    ? `Rider Name : (${order?.rider_id ?? "—"}) ${order.rider_name}`
+    : null;
+
+  const details = [pickupStage, vendorName, riderName].filter(Boolean);
+
+  return details.length > 0 ? (
+    details.map((detail, index) => (
+      <p key={index}>{detail}</p>
+    ))
+  ) : (
+    <span>—</span>
+  );
+})()}
 
                                  
                                 </td>
@@ -4712,7 +4751,7 @@ useEffect(() => {
                                                     className="text-xs border border-gray-300 rounded-md px-2 py-1"
                                                     required
                                                   >
-                                                    <option disabled value="">
+                                                    <option  value="">
                                                       Change Status
                                                     </option>
                                                     {order.status === "booked" && (
@@ -4725,9 +4764,7 @@ useEffect(() => {
                                                     {order.status ===
                                                       "pending pickup" && (
                                                         <>
-                                                          <option value="in transit">
-                                                            In Transit
-                                                          </option>
+                                                         
                                                           <option value="cancelled">
                                                             Cancelled
                                                           </option>

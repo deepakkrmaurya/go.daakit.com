@@ -670,7 +670,7 @@ const searchOptions = [
   },
 ];
 
-export default function OrderSearch({ onClose, autoFocusMobile = false }) {
+export default function OrderSearch({ onClose, autoFocusMobile = false ,role}) {
   const [searchType, setSearchType] = useState("awb_number");
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
@@ -733,8 +733,20 @@ export default function OrderSearch({ onClose, autoFocusMobile = false }) {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Session expired. Please login again.");
+      
+      if(["customer", "operations", "support", "finance", "sales", "marketing"].includes(role)){
+       const { data } = await AxiosInstance.get(
+        `/api/user/getAwbCompleteHistory/${params?.awb_number}`
+      );
 
-      const { data } = await AxiosInstance.get(
+      const { awb_number } = data.data?.order;
+      navigate(`/user/order-history?awb_number=${awb_number}`);
+      setSearchValue("");
+      setIsMobileSearchOpen(false); 
+      
+      if (onClose) onClose();
+      }else{
+        const { data } = await AxiosInstance.get(
         `/api/admin/getAwbCompleteHistory/${params?.awb_number}`
       );
 
@@ -744,6 +756,9 @@ export default function OrderSearch({ onClose, autoFocusMobile = false }) {
       setIsMobileSearchOpen(false); 
       
       if (onClose) onClose();
+      }
+
+      
 
     } catch (err) {
       if (axios.isCancel(err)) return;
